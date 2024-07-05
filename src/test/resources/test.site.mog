@@ -1,0 +1,58 @@
+{
+    "name": "Unit Tests",
+    "description": "Unit Test MOG Config File",
+    "group": "test",
+    "user": "test",
+    "environment": [
+        {
+            "name": "var1",
+            "value": "value"
+        },
+        {
+            "name": "var2",
+            "value": true
+        }
+    ],
+    "logging": {
+        "logFile": "mog.log",
+        "logLevel": "trace",
+        "timestampFormat": "%Y%m%d %H%M%S"
+    },
+    "devops": {
+        "sourceControl": [
+            {
+                "name": "gitea",
+                "type": "gitea",
+                "site": "http://192.168.50.29/git/",
+                "api": "http://192.168.50.29/git/api/v1",
+                "cloneUrl": "gitea@192.168.50.29:${project_owner}/${project_name}.git"
+            }
+        ],
+        "builders": [
+            {
+                "name": "jenkins",
+                "type": "jenkins",
+                "site": "http://192.168.50.29/build/"
+            },
+            {
+                "name": "make",
+                "type": "make",
+                "command": "/usr/bin/make clean all"
+            },
+            {
+                "name": "install",
+                "type": "make",
+                "command": "/usr/bin/make clean install"
+            }
+        ]
+    },
+    "contexts": [],
+    "archiving": {
+        "timestampFormat": "%Y%m%d_%H%M%S",
+        "filePrefix": "rpmbuild-",
+        "path": "/conv/var/archives",
+        "archiveSets": []
+    },
+    "datasources": [],
+    "functionalAreas": []
+}
