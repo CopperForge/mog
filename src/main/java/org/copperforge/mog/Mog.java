@@ -1,0 +1,33 @@
+package org.copperforge.mog;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import org.copperforge.mog.annotations.MogModule;
+import org.copperforge.mog.archiving.MogArchiver;
+import org.copperforge.mog.reflection.MogAnnotationFilter;
+import org.copperforge.mog.reflection.MogClassScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Mog {
+
+    private static Logger log = LoggerFactory.getLogger(Mog.class);
+
+    public static void main(String[] args) throws MogException {
+        Mog mog = new Mog();
+        mog.initialize();
+        mog.run(args);
+    }
+
+    public void run(String... args) throws MogException {
+        log.info("Running " + args);
+        // big todo
+    }
+
+    private void initialize() throws MogException {
+        MogClassScanner scanner = new MogClassScanner();
+        Set<Class<?>> clazzes = scanner.filter(MogAnnotationFilter.filter(MogModule.class)).scan();
+        System.out.println("clazzes = " + clazzes);
+    }
+}
