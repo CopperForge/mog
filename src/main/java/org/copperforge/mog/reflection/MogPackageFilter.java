@@ -12,7 +12,7 @@ public class MogPackageFilter implements MogClassFilter {
 
     @Override
     public boolean matches(Class<?> clazz) {
-        return clazz.getPackageName().equals(packageName);
+        return clazz.getPackageName().startsWith(packageName);
     }
 
 }
