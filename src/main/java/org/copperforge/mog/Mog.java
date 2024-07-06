@@ -1,9 +1,5 @@
 package org.copperforge.mog;
 
-import java.util.Set;
-
-import org.copperforge.mog.reflection.MogClassScanner;
-import org.copperforge.mog.reflection.MogPackageFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +19,6 @@ public class Mog {
     }
 
     private void initialize() throws MogException {
-        MogClassScanner scanner = new MogClassScanner();
-        Set<Class<?>> clazzes = scanner.filter(MogPackageFilter.filter("org.copperforge")).scan();
-        log.info("clazzes = " + clazzes);
+        MogServiceManager.instance();
     }
 }
