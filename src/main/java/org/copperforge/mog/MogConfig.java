@@ -1,4 +1,4 @@
-package org.copperforge.mog.core;
+package org.copperforge.mog;
 
 import org.copperforge.mog.logging.MogLoggingConfig;
 
@@ -8,7 +8,7 @@ public class MogConfig implements MogObject {
 
     private String description;
 
-    private MogEnvironmentVariable environment[];
+    private MogVariable environment[];
 
     private String mogUser;
 
@@ -32,11 +32,11 @@ public class MogConfig implements MogObject {
         this.description = description;
     }
 
-    public MogEnvironmentVariable[] getEnvironment() {
+    public MogVariable[] getEnvironment() {
         return environment;
     }
 
-    public void setEnvironment(MogEnvironmentVariable[] environment) {
+    public void setEnvironment(MogVariable[] environment) {
         this.environment = environment;
     }
 

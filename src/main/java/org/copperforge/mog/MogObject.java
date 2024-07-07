@@ -1,4 +1,4 @@
-package org.copperforge.mog.core;
+package org.copperforge.mog;
 
 import java.io.Serializable;
 

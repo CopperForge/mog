@@ -1,17 +1,17 @@
-package org.copperforge.mog.core;
+package org.copperforge.mog;
 
-public class MogEnvironmentVariable implements MogObject {
+public class MogVariable implements MogObject {
 
-    private String name;
+    private String key;
 
     private Object value;
 
-    public String getName() {
-        return name;
+    public String getKey() {
+        return key;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public Object getValue() {
@@ -24,14 +24,14 @@ public class MogEnvironmentVariable implements MogObject {
 
     @Override
     public String toString() {
-        return "MogEnvironmentVariable [name=" + name + ", value=" + value + "]";
+        return "MogVariable [key=" + key + ", value=" + value + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((key == null) ? 0 : key.hashCode());
         result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
@@ -44,11 +44,11 @@ public class MogEnvironmentVariable implements MogObject {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MogEnvironmentVariable other = (MogEnvironmentVariable) obj;
-        if (name == null) {
-            if (other.name != null)
+        MogVariable other = (MogVariable) obj;
+        if (key == null) {
+            if (other.key != null)
                 return false;
-        } else if (!name.equals(other.name))
+        } else if (!key.equals(other.key))
             return false;
         if (value == null) {
             if (other.value != null)

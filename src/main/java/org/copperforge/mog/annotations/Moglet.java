@@ -6,7 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
-public @interface Moggable {
+@Target({ ElementType.FIELD })
+public @interface Moglet {
+
+    public String name() default "";
+
+    public Class<?> type() default Object.class;
 
 }

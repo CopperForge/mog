@@ -1,5 +1,6 @@
-package org.copperforge.mog.core;
+package org.copperforge.mog.site;
 
+import org.copperforge.mog.MogObject;
 import org.copperforge.mog.archiving.MogArchivingConfig;
 import org.copperforge.mog.contexts.MogContexts;
 import org.copperforge.mog.data.MogDataSources;

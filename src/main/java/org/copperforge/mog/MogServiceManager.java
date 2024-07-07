@@ -2,6 +2,7 @@ package org.copperforge.mog;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.copperforge.mog.annotations.MogService;
@@ -41,6 +42,18 @@ public class MogServiceManager {
             _instance = new MogServiceManager();
 
         return _instance;
+    }
+
+    public Object get(String serviceName) throws MogException {
+        Object service = services.get(serviceName);
+        if (service == null) throw new MogException("Unable to find service by name " + serviceName);
+        return services.get(serviceName);
+    }
+
+    public Object get(Class<?> serviceType) throws MogException {
+        Optional<Object> service = services.values().stream().filter(s -> serviceType.isInstance(s)).findFirst();
+        if (service.isEmpty()) throw new MogException("Unable to find service by type " + serviceType.getName());
+        return service.get();
     }
 
 }
