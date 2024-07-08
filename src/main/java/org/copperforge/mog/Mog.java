@@ -7,8 +7,7 @@ import java.util.Arrays;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.commands.MogCommand;
 import org.copperforge.mog.commands.MogCommandRunner;
-import org.copperforge.mog.commands.MogLinuxCommandRunner;
-import org.copperforge.mog.commands.MogWindowsCommandRunner;
+import org.copperforge.mog.commands.MogCommandRunnerFactory;
 import org.copperforge.mog.env.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public class Mog {
     private static Logger log = LoggerFactory.getLogger(Mog.class);
 
     private MogServiceManager serviceManager;
-    private MogCommandRunner runner;
+    private final MogCommandRunner runner = MogCommandRunnerFactory.create();
 
     private MogConfig config;
 
@@ -52,9 +51,8 @@ public class Mog {
 
     public void run() throws MogException {
         // big todo
-        MogCommand cmd = new MogCommand();
-        cmd.setCommand("dir");
-
+        MogCommand cmd = MogCommand.load("src\\test\\resources\\commands\\example.command.mog");
+        log.info("cmd = " + cmd);
         runner.run(cmd);
     }
 
@@ -66,13 +64,6 @@ public class Mog {
         log.info("config = " + config);
 
         siteFile = environmentService.envsubst(siteFile);
-
-        // get the correct command runner
-        if (System.getProperty("os.name").startsWith("Windows")) {
-            runner = new MogWindowsCommandRunner();
-        } else {
-            runner = new MogLinuxCommandRunner();
-        }
     }
 
     private void transmogrify(Object moggable) throws MogException {
