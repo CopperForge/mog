@@ -1,6 +1,5 @@
 package org.copperforge.mog;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 
