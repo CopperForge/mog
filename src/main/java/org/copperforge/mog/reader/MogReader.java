@@ -17,7 +17,7 @@ public class MogReader<T> {
         this.type = type;
     }
 
-    public T load(final String filename) throws MogException {
+    public T read(final String filename) throws MogException {
         try {
             return read(new FileInputStream(filename));
         } catch (Exception e) {
@@ -25,7 +25,7 @@ public class MogReader<T> {
         }
     }
 
-    public T read(final String text) throws MogException {
+    public T parse(final String text) throws MogException {
         try {
             return read(new ByteArrayInputStream(text.getBytes()));
         } catch (Exception e) {

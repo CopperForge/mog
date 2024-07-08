@@ -1,11 +1,10 @@
 package org.copperforge.mog;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.commands.MogCommand;
+import org.copperforge.mog.commands.MogCommandReader;
 import org.copperforge.mog.commands.MogCommandRunner;
 import org.copperforge.mog.commands.MogCommandRunnerFactory;
 import org.copperforge.mog.env.EnvironmentService;
@@ -19,10 +18,7 @@ import picocli.CommandLine.Parameters;
 public class Mog {
 
     private static Logger log = LoggerFactory.getLogger(Mog.class);
-
-    private MogServiceManager serviceManager;
     private final MogCommandRunner runner = MogCommandRunnerFactory.create();
-
     private MogConfig config;
 
     @Moglet
@@ -51,47 +47,19 @@ public class Mog {
 
     public void run() throws MogException {
         // big todo
-        MogCommand cmd = MogCommand.load("src\\test\\resources\\commands\\example.command.mog");
+        MogCommand cmd = new MogCommandReader().read("src\\test\\resources\\commands\\example.command.mog");
         log.info("cmd = " + cmd);
         runner.run(cmd);
     }
 
     private void initialize() throws MogException {
-        serviceManager = MogServiceManager.instance();
-        transmogrify(this);
+        MogServiceManager.instance();
+        Mogrifier.mogrify(this);
         configFile = environmentService.envsubst(configFile);
         config = MogConfig.load(configFile);
         log.info("config = " + config);
 
         siteFile = environmentService.envsubst(siteFile);
-    }
-
-    private void transmogrify(Object moggable) throws MogException {
-        log.trace("Transmogrifying :: " + moggable.getClass());
-        try {
-
-            Field[] fields = moggable.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                Annotation[] fieldAnnotations = field.getAnnotationsByType(Moglet.class);
-                for (Annotation annotation : fieldAnnotations) {
-                    if (annotation.annotationType().equals(Moglet.class)) {
-                        Moglet moglet = (Moglet) annotation;
-                        if (moglet.name().isEmpty()) {
-                            Class<?> mogletClass = moglet.type();
-                            if (mogletClass.equals(Object.class)) {
-                                mogletClass = field.getType();
-                            }
-                            field.set(this, serviceManager.get(mogletClass));
-                        } else {
-                            field.set(this, serviceManager.get(moglet.name()));
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Exception during transomogrification of " + moggable.getClass().getName(), e);
-            throw new MogException("Error during transmogrification", e);
-        }
     }
 
     @Override
