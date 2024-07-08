@@ -24,10 +24,12 @@ public class MogServiceManager {
             Set<Class<?>> mogServices = scanner.filter(MogAnnotationFilter.filter(MogService.class)).scan();
 
             MogService serviceAnnotation;
+            Object instance;
             log.info("Finding MogServices ...");
             for (Class<?> service : mogServices) {
                 serviceAnnotation = service.getAnnotation(MogService.class);
-                services.put(serviceAnnotation.name(), service.getDeclaredConstructor().newInstance());
+                instance = service.getDeclaredConstructor().newInstance();
+                services.put(serviceAnnotation.name(), instance);
             }
             log.info("Found :: " + services.toString());
         } catch (Exception e) {

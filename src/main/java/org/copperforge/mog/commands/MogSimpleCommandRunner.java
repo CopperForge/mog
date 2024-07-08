@@ -22,6 +22,7 @@ public class MogSimpleCommandRunner implements MogCommandRunner {
     @Override
     public void run(MogCommand command) throws MogException {
         try {
+            if (command.getCommand() == null) throw new NullMogCommandException();
             List<String> commands = new ArrayList<>();
             commands.addAll(Arrays.asList(prefixes()));
             commands.addAll(Arrays.asList(command.getCommand()));

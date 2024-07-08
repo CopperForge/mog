@@ -8,9 +8,25 @@ import org.slf4j.LoggerFactory;
 
 public class Mogrifier {
 
-    private static Logger log = LoggerFactory.getLogger(Mog.class);
+    private Logger log = LoggerFactory.getLogger(Mogrifier.class);
+    private MogConfig config = Mog.mog().config();
+    private MogServiceManager manager;
 
-    public static void mogrify(Object moggable) throws MogException {
+    public Mogrifier() throws MogException {
+        manager = MogServiceManager.instance();
+    }
+
+    public Mogrifier(MogConfig config) throws MogException {
+        this.config = config;
+        manager = MogServiceManager.instance();
+    }
+
+    public Mogrifier config(MogConfig config) {
+        this.config = config;
+        return this;
+    }
+
+    public Mogrifier mogrify(Object moggable) throws MogException {
         log.trace("Transmogrifying :: " + moggable.getClass());
         try {
 
@@ -18,21 +34,26 @@ public class Mogrifier {
             for (Field field : fields) {
                 Moglet[] moglets = field.getAnnotationsByType(Moglet.class);
                 for (Moglet moglet : moglets) {
-                    if (moglet.name().isEmpty()) {
-                        Class<?> mogletClass = moglet.type();
+                    Class<?> mogletClass = moglet.type();
+
+                    if (mogletClass.equals(MogConfig.class)) {
+                        field.set(moggable, config);
+                    } else if (moglet.name().isEmpty()) {
                         if (mogletClass.equals(Object.class)) {
                             mogletClass = field.getType();
                         }
-                        field.set(moggable, MogServiceManager.instance().get(mogletClass));
+                        field.set(moggable, manager.get(mogletClass));
                     } else {
-                        field.set(moggable, MogServiceManager.instance().get(moglet.name()));
+                        field.set(moggable, manager.get(moglet.name()));
                     }
                 }
+
             }
+            return this;
         } catch (Exception e) {
             log.error("Exception during transomogrification of " + moggable.getClass().getName(), e);
             throw new MogException("Error during transmogrification", e);
         }
     }
-    
+
 }
