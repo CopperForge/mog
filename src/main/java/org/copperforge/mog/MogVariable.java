@@ -1,6 +1,8 @@
 package org.copperforge.mog;
 
-public class MogVariable implements MogObject {
+import java.io.Serializable;
+
+public class MogVariable implements Serializable {
 
     private String key;
 

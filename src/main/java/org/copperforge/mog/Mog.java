@@ -2,20 +2,29 @@ package org.copperforge.mog;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import org.copperforge.mog.annotations.Moglet;
+import org.copperforge.mog.commands.MogCommand;
+import org.copperforge.mog.commands.MogCommandRunner;
+import org.copperforge.mog.commands.MogLinuxCommandRunner;
+import org.copperforge.mog.commands.MogWindowsCommandRunner;
 import org.copperforge.mog.env.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 public class Mog {
 
     private static Logger log = LoggerFactory.getLogger(Mog.class);
 
     private MogServiceManager serviceManager;
+    private MogCommandRunner runner;
+
+    private MogConfig config;
 
     @Moglet
     EnvironmentService environmentService;
@@ -29,29 +38,45 @@ public class Mog {
     @Option(names = "--site", description = "specify site configuration file")
     private String siteFile = "${MOG_HOME}/site.mog";
 
+    @Parameters(paramLabel = "COMMANDS", description = "mog commands")
+    private String[] commands;
+
     public static void main(String[] args) throws MogException {
         Mog mog = new Mog();
         new CommandLine(mog).parseArgs(args);
         log.info("mog = " + mog);
-        
+
         mog.initialize();
-        mog.run(args);
+        mog.run();
     }
 
-    public void run(String... args) throws MogException {
-        log.info("Running " + args);
+    public void run() throws MogException {
         // big todo
+        MogCommand cmd = new MogCommand();
+        cmd.setCommand("dir");
+
+        runner.run(cmd);
     }
 
     private void initialize() throws MogException {
         serviceManager = MogServiceManager.instance();
         transmogrify(this);
-        log.info("configFile = " + environmentService.envsubst(configFile));
-        log.info("siteFile = " + siteFile);
+        configFile = environmentService.envsubst(configFile);
+        config = MogConfig.load(configFile);
+        log.info("config = " + config);
+
+        siteFile = environmentService.envsubst(siteFile);
+
+        // get the correct command runner
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            runner = new MogWindowsCommandRunner();
+        } else {
+            runner = new MogLinuxCommandRunner();
+        }
     }
 
     private void transmogrify(Object moggable) throws MogException {
-        log.info("Transmogrifying " + moggable.getClass());
+        log.trace("Transmogrifying :: " + moggable.getClass());
         try {
 
             Field[] fields = moggable.getClass().getDeclaredFields();
@@ -73,12 +98,14 @@ public class Mog {
                 }
             }
         } catch (Exception e) {
+            log.error("Exception during transomogrification of " + moggable.getClass().getName(), e);
             throw new MogException("Error during transmogrification", e);
         }
     }
 
     @Override
     public String toString() {
-        return "Mog [helpRequested=" + helpRequested + ", configFile=" + configFile + ", siteFile=" + siteFile + "]";
+        return "Mog [helpRequested=" + helpRequested + ", configFile=" + configFile + ", siteFile=" + siteFile
+                + ", commands = " + (commands != null ? Arrays.asList(commands) : null) + "]";
     }
 }

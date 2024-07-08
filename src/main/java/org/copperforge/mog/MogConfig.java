@@ -1,12 +1,23 @@
 package org.copperforge.mog;
 
-import org.copperforge.mog.logging.MogLoggingConfig;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.List;
 
+import org.copperforge.mog.archiving.MogArchivingConfig;
+import org.copperforge.mog.contexts.MogContext;
+import org.copperforge.mog.data.MogDataSources;
+import org.copperforge.mog.devops.MogDevops;
+import org.copperforge.mog.logging.MogLoggingConfig;
+import org.copperforge.mog.teams.MogTeams;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MogConfig implements MogObject {
 
-    private String name;
-
-    private String description;
+    private static MogConfig _config;
 
     private MogVariable environment[];
 
@@ -15,6 +26,64 @@ public class MogConfig implements MogObject {
     private String mogGroup;
 
     private MogLoggingConfig logging;
+
+    private String name;
+
+    private String description;
+
+    private MogDevops devops;
+
+    private List<MogContext> contexts;
+
+    private MogArchivingConfig archiving;
+
+    private MogDataSources dataSources;
+
+    private MogTeams teams;
+
+    private MogConfig() {
+
+    }
+
+    public MogDevops getDevops() {
+        return devops;
+    }
+
+    public void setDevops(MogDevops devops) {
+        this.devops = devops;
+    }
+
+    public List<MogContext> getContexts() {
+        return contexts;
+    }
+
+    public void setContexts(List<MogContext> contexts) {
+        this.contexts = contexts;
+    }
+
+    public MogArchivingConfig getArchiving() {
+        return archiving;
+    }
+
+    public void setArchiving(MogArchivingConfig archiving) {
+        this.archiving = archiving;
+    }
+
+    public MogDataSources getDataSources() {
+        return dataSources;
+    }
+
+    public void setDataSources(MogDataSources dataSources) {
+        this.dataSources = dataSources;
+    }
+
+    public MogTeams getTeams() {
+        return teams;
+    }
+
+    public void setTeams(MogTeams teams) {
+        this.teams = teams;
+    }
 
     public String getName() {
         return name;
@@ -62,6 +131,21 @@ public class MogConfig implements MogObject {
 
     public void setLogging(MogLoggingConfig logging) {
         this.logging = logging;
+    }
+
+    public static MogConfig load(final String filename) throws MogException {
+        try {
+            FileInputStream is = new FileInputStream(filename);
+            ObjectMapper mapper = new ObjectMapper(); // todo make a singleton
+            _config = mapper.readValue(is, MogConfig.class);
+            return _config;
+        } catch (Exception e) {
+            throw new MogException("Unable to load config file :: " + filename, e);
+        }
+    }
+
+    public static MogConfig config() {
+        return _config;
     }
 
     @Override
@@ -125,5 +209,4 @@ public class MogConfig implements MogObject {
         return true;
     }
 
-    
 }
