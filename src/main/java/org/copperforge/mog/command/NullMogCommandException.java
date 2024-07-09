@@ -1,4 +1,4 @@
-package org.copperforge.mog.commands;
+package org.copperforge.mog.command;
 
 import org.copperforge.mog.MogException;
 

@@ -3,10 +3,14 @@ package org.copperforge.mog;
 import java.util.Arrays;
 
 import org.copperforge.mog.annotations.Moglet;
-import org.copperforge.mog.commands.MogCommandService;
+import org.copperforge.mog.command.MogCommand;
+import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.env.EnvironmentService;
 import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
+import org.copperforge.mog.runner.MogCommandRunner;
+import org.copperforge.mog.runner.MogCommandRunnerFactory;
+import org.copperforge.mog.runner.MogSimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +53,16 @@ public class Mog {
         log.info("mog = " + mog);
 
         mog.initialize();
-        mog.run();
+        mog.run(args);
     }
 
-    public void run() throws MogException {
+    public void run(String... args) throws MogException {
         // big todo
+        String command = commands[0];
+        log.info("Finding command " + command);
+        MogCommand cmd = commandService.get(command);
+        log.info("command = " + cmd);
+        MogCommandRunnerFactory.create(cmd.getType()).run(cmd, args);
     }
 
     private void initialize() throws MogException {
@@ -74,7 +83,7 @@ public class Mog {
         }
 
         // loads the available commands
-        log.info("commands = " + commandService.list());
+        log.info("commands = " + commandService.find());
 
         // TODO mogrify all moggables
 
@@ -85,4 +94,5 @@ public class Mog {
         return "Mog [helpRequested=" + helpRequested + ", configFile=" + configFile
                 + ", commands = " + (commands != null ? Arrays.asList(commands) : null) + "]";
     }
+
 }

@@ -1,6 +1,6 @@
 {
     "name": "example",
-    "type": "command",
+    "type": "shell",
     "description": "Runs the conversion for the current project",
     "usage": "${MOG_COMMAND_HOME}/convert.command.usage.txt",
     "commands": [ "cnvj" ],

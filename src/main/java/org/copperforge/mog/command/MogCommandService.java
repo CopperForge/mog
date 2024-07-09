@@ -1,7 +1,6 @@
-package org.copperforge.mog.commands;
+package org.copperforge.mog.command;
 
 import java.io.File;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,12 +22,31 @@ public class MogCommandService {
 
     private Logger log = LoggerFactory.getLogger(MogCommandService.class);
 
+    private final List<MogCommand> commands = new ArrayList<>();
+
     @Moglet
     MogConfig config;
+
     @Moglet
     MogEnvironmentService environmentService;
 
     public MogCommandService() {
+    }
+
+    public MogCommand get(String name) {
+        return commands.stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
+    }
+
+    public List<MogCommand> find() throws MogException {
+        commands.clear();
+
+        // search command folders for *.command.mog
+        commands.addAll(findCommandMogs());
+
+        // search annotations for @MogCommand
+        commands.addAll(findAnnotated());
+
+        return commands;
     }
 
     /**
@@ -36,26 +54,19 @@ public class MogCommandService {
      * 
      * @return a list of MogCommands; possibly empty, never null
      */
-    public List<MogCommand> list() throws MogException {
-        List<MogCommand> commands = new ArrayList<>();
-
-        // search command folders for *.command.mog
-        commands.addAll(findCommandMogs());
-        
-        // search annotations for @MogCommand
-        commands.addAll(findAnnotated());
-
+    public List<? extends MogCommand> list() throws MogException {
         return commands;
     }
 
-    protected List<MogCommand> findAnnotated() throws MogException {
+    protected List<? extends MogCommand> findAnnotated() throws MogException {
         return new MogClassScanner()
                 .filter(MogAnnotationFilter.filter(org.copperforge.mog.annotations.MogCommand.class))
                 .scan().stream().map(c -> {
                     log.info("c = " + c);
                     org.copperforge.mog.annotations.MogCommand annotation = c
                             .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
-                    MogCommand command = new MogCommand();
+                    MogAnnotatedCommand command = new MogAnnotatedCommand();
+                    command.setClassName(c.getName());
                     command.setDescription(annotation.description());
                     command.setName(annotation.name());
                     log.info("annotation = " + annotation);
@@ -64,10 +75,10 @@ public class MogCommandService {
 
     }
 
-    protected List<MogCommand> findCommandMogs() throws MogException {
+    protected List<? extends MogCommand> findCommandMogs() throws MogException {
         MogReader<MogCommand> commandReader = new MogReader<MogCommand>(MogCommand.class);
         List<MogCommand> commands = new ArrayList<MogCommand>();
-        
+
         for (String path : config.getCommandPaths()) {
             path = environmentService.envsubst(path);
             log.info("path = " + path);
@@ -87,7 +98,7 @@ public class MogCommandService {
             }
 
         }
-        
+
         return commands;
     }
 }
