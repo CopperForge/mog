@@ -12,6 +12,7 @@ import org.copperforge.mog.MogException;
 import org.copperforge.mog.annotations.MogService;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.env.MogEnvironmentService;
+import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
 import org.slf4j.Logger;
@@ -39,24 +40,16 @@ public class MogCommandService {
         List<MogCommand> commands = new ArrayList<>();
 
         // search command folders for *.command.mog
-        for (String path : config.getCommandPaths()) {
-            path = environmentService.envsubst(path);
-            log.info("path = " + path);
-
-            File p = new File(path);
-            if (p.exists() && p.isDirectory()) {
-                log.info("contents = " + Stream.of(new File(path).listFiles()).collect(Collectors.toList()));
-            } else if (p.exists() && p.isFile()) {
-
-            } else if (!p.exists()) {
-                // throw new MogException("Resource " + path + " does not exist");
-                log.warn("Resource " + path + " does not exist");
-            }
-                
-        }
-
+        commands.addAll(findCommandMogs());
+        
         // search annotations for @MogCommand
-        commands.addAll(new MogClassScanner()
+        commands.addAll(findAnnotated());
+
+        return commands;
+    }
+
+    protected List<MogCommand> findAnnotated() throws MogException {
+        return new MogClassScanner()
                 .filter(MogAnnotationFilter.filter(org.copperforge.mog.annotations.MogCommand.class))
                 .scan().stream().map(c -> {
                     log.info("c = " + c);
@@ -67,9 +60,34 @@ public class MogCommandService {
                     command.setName(annotation.name());
                     log.info("annotation = " + annotation);
                     return command;
-                }).collect(Collectors.toList()));
+                }).collect(Collectors.toList());
 
-        return commands;
     }
 
+    protected List<MogCommand> findCommandMogs() throws MogException {
+        MogReader<MogCommand> commandReader = new MogReader<MogCommand>(MogCommand.class);
+        List<MogCommand> commands = new ArrayList<MogCommand>();
+        
+        for (String path : config.getCommandPaths()) {
+            path = environmentService.envsubst(path);
+            log.info("path = " + path);
+
+            File p = new File(path);
+            if (p.exists() && p.isDirectory()) {
+                List<File> files = Stream.of(new File(path).listFiles())
+                        .filter(f -> f.getName().matches(".*\\.command\\.mog")).collect(Collectors.toList());
+                for (File file : files) {
+                    commands.add(commandReader.read(file));
+                }
+            } else if (p.exists() && p.isFile()) {
+                commands.add(commandReader.read(p));
+            } else if (!p.exists()) {
+                // throw new MogException("Resource " + path + " does not exist");
+                log.warn("Resource " + path + " does not exist");
+            }
+
+        }
+        
+        return commands;
+    }
 }

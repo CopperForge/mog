@@ -1,5 +1,6 @@
 package org.copperforge.mog.reader;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -22,6 +23,14 @@ public class MogReader<T> {
             return read(new FileInputStream(filename));
         } catch (Exception e) {
             throw new MogException("Unable to load MOG file :: " + filename, e);
+        }
+    }
+
+    public T read(final File file) throws MogException {
+        try {
+            return read(new FileInputStream(file));
+        } catch (Exception e) {
+            throw new MogException("Unable to load MOG file :: " + file.getAbsolutePath(), e);
         }
     }
 
