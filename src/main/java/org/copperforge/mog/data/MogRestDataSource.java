@@ -26,7 +26,7 @@ public class MogRestDataSource extends MogDataSource {
     private String method;
 
     @Override
-    public List<Fetchable> data() {
+    public List<MogFetchable> data() {
         try {
             // create client
             HttpClient client = HttpClient.newHttpClient();
@@ -42,7 +42,7 @@ public class MogRestDataSource extends MogDataSource {
             };
 
             List<Map<String, Object>> response = mapper.readValue(resp.body().toString(), typeRef);
-            return response.stream().map(Fetchable::new).collect(Collectors.toList());
+            return response.stream().map(MogFetchable::new).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
         }

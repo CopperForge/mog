@@ -1,5 +1,6 @@
 package org.copperforge.mog;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -56,6 +57,10 @@ public class MogServiceManager {
         Optional<Object> service = services.values().stream().filter(s -> serviceType.isInstance(s)).findFirst();
         if (service.isEmpty()) throw new MogException("Unable to find service by type " + serviceType.getName());
         return service.get();
+    }
+
+    public Collection<Object> services() {
+        return services.values();
     }
 
 }

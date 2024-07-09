@@ -118,8 +118,8 @@ public class MogJdbcDataSource extends MogDataSource {
     }
 
     @Override
-    public List<Fetchable> data() throws MogException {
-        List<Fetchable> data = new ArrayList<>();
+    public List<MogFetchable> data() throws MogException {
+        List<MogFetchable> data = new ArrayList<>();
         try {
             String url = getUrl(); // table details
             String username = getUser(); // MySQL credentials
@@ -135,7 +135,7 @@ public class MogJdbcDataSource extends MogDataSource {
             String columnName;
             Object value;
             while (rs.next()) {
-                Fetchable reportable = new Fetchable();
+                MogFetchable reportable = new MogFetchable();
 
                 for (int colidx = 1 ; colidx <= meta.getColumnCount(); colidx++) {
                     columnName = meta.getColumnName(colidx);

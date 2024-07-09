@@ -3,12 +3,9 @@ package org.copperforge.mog;
 import java.util.Arrays;
 
 import org.copperforge.mog.annotations.Moglet;
-import org.copperforge.mog.commands.MogCommand;
-import org.copperforge.mog.commands.MogCommandReader;
-import org.copperforge.mog.commands.MogCommandRunner;
-import org.copperforge.mog.commands.MogCommandRunnerFactory;
 import org.copperforge.mog.commands.MogCommandService;
 import org.copperforge.mog.env.EnvironmentService;
+import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +17,6 @@ import picocli.CommandLine.Parameters;
 public class Mog {
 
     private static Logger log = LoggerFactory.getLogger(Mog.class);
-    private final MogCommandRunner runner = MogCommandRunnerFactory.create();
     private static Mog mog;
     private MogConfig config;
 
@@ -58,22 +54,24 @@ public class Mog {
 
     public void run() throws MogException {
         // big todo
-        MogCommand cmd = new MogCommandReader().read("src\\test\\resources\\commands\\example.command.mog");
-        log.info("cmd = " + cmd);
-        runner.run(cmd);
     }
 
     private void initialize() throws MogException {
         // initalize the service manager
-        MogServiceManager.instance();
+        MogServiceManager manager = MogServiceManager.instance();
+        environmentService = (EnvironmentService) manager.get(MogEnvironmentService.class);
 
-        // mogrify this guy
-        new Mogrifier().mogrify(this);
-
-        // load the config
         configFile = environmentService.envsubst(configFile);
         config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
         log.trace("config = " + config);
+
+        // mogrify this guy
+        Mogrifier mogrifier = new Mogrifier().config(config);
+        mogrifier.mogrify(this);
+
+        for (Object service : manager.services()) {
+            mogrifier.mogrify(service);
+        }
 
         // loads the available commands
         log.info("commands = " + commandService.list());

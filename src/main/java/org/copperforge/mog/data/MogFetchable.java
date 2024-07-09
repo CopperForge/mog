@@ -7,20 +7,20 @@ import java.util.Set;
 
 import org.copperforge.mog.MogException;
 
-public class Fetchable {
+public class MogFetchable {
 
     private final Map<String, Object> fields = new HashMap<>();
 
-    public Fetchable() {
+    public MogFetchable() {
 
     }
 
-    public Fetchable(Map<String, Object> fields) {
+    public MogFetchable(Map<String, Object> fields) {
         this.fields.clear();
         this.fields.putAll(fields);
     }
 
-    public Fetchable(Object obj) throws MogException {
+    public MogFetchable(Object obj) throws MogException {
         Field[] objFields = obj.getClass().getFields();
         for (Field objField : objFields) {
             try {
@@ -57,7 +57,7 @@ public class Fetchable {
 
             // test object is Map<String, Object>
             if (top instanceof Map) return get((Map<String, Object>) top, childKey);
-            else if (top instanceof Fetchable) return get(((Fetchable) top).fields(), key);
+            else if (top instanceof MogFetchable) return get(((MogFetchable) top).fields(), key);
             else return top.toString();
         }
 

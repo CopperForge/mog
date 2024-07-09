@@ -27,14 +27,16 @@ public class Mogrifier {
     }
 
     public Mogrifier mogrify(Object moggable) throws MogException {
-        log.trace("Transmogrifying :: " + moggable.getClass());
+        log.info("Transmogrifying :: " + moggable.getClass());
         try {
 
             Field[] fields = moggable.getClass().getDeclaredFields();
             for (Field field : fields) {
                 Moglet[] moglets = field.getAnnotationsByType(Moglet.class);
                 for (Moglet moglet : moglets) {
-                    Class<?> mogletClass = moglet.type();
+                    field.setAccessible(true);
+                    Class<?> mogletClass = field.getType();
+                    log.info("mogletClass :: " + mogletClass);
 
                     if (mogletClass.equals(MogConfig.class)) {
                         field.set(moggable, config);

@@ -23,6 +23,8 @@ public class MogConfig implements MogObject {
 
     private List<MogDataSource> dataSources = new ArrayList<>();
 
+    private List<String> commandPaths = new ArrayList<>();
+
     private MogConfig() {
 
     }
@@ -75,11 +77,19 @@ public class MogConfig implements MogObject {
         this.dataSources = dataSources;
     }
 
+    public List<String> getCommandPaths() {
+        return commandPaths;
+    }
+
+    public void setCommandPaths(List<String> commandPaths) {
+        this.commandPaths = commandPaths;
+    }
+
     @Override
     public String toString() {
         return "MogConfig [environment=" + Arrays.toString(environment) + ", mogUser=" + mogUser + ", mogGroup="
-                + mogGroup + ", name=" + name + ", description=" + description + ", dataSources=" + dataSources + "]";
+                + mogGroup + ", name=" + name + ", description=" + description + ", dataSources=" + dataSources
+                + ", commandPaths=" + commandPaths + "]";
     }
-
 
 }
