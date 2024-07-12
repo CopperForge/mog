@@ -1,7 +1,5 @@
 package org.copperforge.mog;
 
-import java.util.Arrays;
-
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.MogCommand;
 import org.copperforge.mog.command.MogCommandService;
@@ -13,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 public class Mog {
 
@@ -28,15 +24,6 @@ public class Mog {
     @Moglet
     MogCommandService commandService;
 
-    @Option(names = { "-h", "--help" }, description = "display help")
-    private boolean helpRequested = false;
-
-    @Option(names = "--config", description = "specify MOG config file (defaults to ${MOG_HOME}/config.mog)")
-    private String configFile = "${MOG_HOME}/config.mog";
-
-    @Parameters(paramLabel = "COMMANDS", description = "mog commands")
-    private String[] commands;
-
     public static Mog mog() {
         return mog;
     }
@@ -47,35 +34,34 @@ public class Mog {
 
     public static void main(String[] args) throws MogException {
         mog = new Mog();
-        new CommandLine(mog).parseArgs(args);
-        log.info("mog = " + mog);
+        MogCommandOptions options = new MogCommandOptions();
+        new CommandLine(options).parseArgs(args);
+        log.info("options = " + options);
 
-        mog.initialize();
-        mog.run(args);
+        mog.initialize(options);
+        mog.run(options, args);
     }
 
-    public void run(String... args) throws MogException {
+    public void run(MogCommandOptions options, String... rawArgs) throws MogException {
         // big todo
-        String command = null;
-        if (commands != null && commands.length > 0) {
-            command = commands[0];
-            log.info("Finding command " + command);
-            MogCommand cmd = commandService.get(command);
+        if (options.getCommand() != null) {
+            log.info("Finding command " + options.getCommand());
+            MogCommand cmd = commandService.get(options.getCommand());
             log.info("command = " + cmd);
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
             log.info("runner = " + runner);
-            runner.run(cmd, args);
+            runner.run(cmd, options, rawArgs);
         }
 
     }
 
-    private void initialize() throws MogException {
+    private void initialize(MogCommandOptions options) throws MogException {
         // initalize the service manager
         MogServiceManager manager = MogServiceManager.instance();
         environmentService = (EnvironmentService) manager.get(MogEnvironmentService.class);
 
-        log.info("configFile = " + configFile);
-        configFile = environmentService.envsubst(configFile);
+        log.info("configFile = " + options.getConfigFile());
+        String configFile = environmentService.envsubst(options.getConfigFile());
         log.info("configFile (after) = " + configFile);
         config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
         log.trace("config = " + config);
@@ -93,12 +79,6 @@ public class Mog {
 
         // TODO mogrify all moggables
 
-    }
-
-    @Override
-    public String toString() {
-        return "Mog [helpRequested=" + helpRequested + ", configFile=" + configFile
-                + ", commands = " + (commands != null ? Arrays.asList(commands) : null) + "]";
     }
 
 }
