@@ -2,18 +2,23 @@ package org.copperforge.mog.command;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.copperforge.mog.MogConfig;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.annotations.MogService;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
+import org.copperforge.mog.runner.MogCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +28,8 @@ public class MogCommandService {
     private Logger log = LoggerFactory.getLogger(MogCommandService.class);
 
     private final List<MogCommand> commands = new ArrayList<>();
+    private final Map<String, Object> runners = new HashMap<>();
+
 
     @Moglet
     MogConfig config;
@@ -30,7 +37,9 @@ public class MogCommandService {
     @Moglet
     MogEnvironmentService environmentService;
 
-    public MogCommandService() {
+    public MogCommandService() throws MogException {
+        discoverRunners();
+        // find();
     }
 
     public MogCommand get(String name) {
@@ -101,4 +110,43 @@ public class MogCommandService {
 
         return commands;
     }
+
+    @SuppressWarnings({ "unchecked" })
+    protected void discoverRunners() throws MogException {
+        // discover all the services available and put them in the service map
+        try {
+            MogClassScanner scanner = new MogClassScanner();
+            log.info("Finding MogRunners ...");
+            Set<Class<?>> runnerClasses = scanner.filter(MogAnnotationFilter.filter(MogRunner.class)).scan();
+            log.info("Found classes = " + runnerClasses);
+            
+            Set<Class<? extends MogCommandRunner<?>>> mogRunners = runnerClasses.stream()
+                    .map(c -> (Class<? extends MogCommandRunner<?>>) c).collect(Collectors.toSet());
+
+            MogRunner annote;
+            Object instance;
+            log.info("Finding MogRunners ...");
+            for (Class<? extends MogCommandRunner<?>> runner : mogRunners) {
+                log.info("Found runner : " + runner);
+                annote = runner.getAnnotation(MogRunner.class);
+                instance = runner.getDeclaredConstructor().newInstance();
+                runners.put(annote.commandClass().getName(), instance);
+            }
+            log.info("Found :: " + runners.toString());
+        } catch (Exception e) {
+            log.error("Unable to process MogServiceManager initialization", e);
+            throw new MogException(e);
+        }
+
+    }
+
+    public Map<String, Object> runners() {
+        return runners;
+    }
+
+    @SuppressWarnings("unchecked")
+    public MogCommandRunner<? extends MogCommand> runner(Class<? extends MogCommand> commandClass) {
+        return (MogCommandRunner<? extends MogCommand>) runners.get(commandClass.getName());
+    }
+
 }

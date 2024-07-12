@@ -3,11 +3,13 @@ package org.copperforge.mog.runner;
 import java.lang.reflect.Method;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.command.MogAnnotatedCommand;
 import org.copperforge.mog.command.MogCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@MogRunner(name = "annotatedCommandRunner", description = "Mog Annotated Command Runner", commandClass = MogAnnotatedCommand.class)
 public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedCommand> {
 
     private Logger log = LoggerFactory.getLogger(MogAnnotatedCommandRunner.class);
@@ -31,7 +33,7 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
                 org.copperforge.mog.annotations.MogCommand annotation = method
                         .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
                 if (annotation != null) {
-                    log.info("Annotated method = " + method.getName());
+                    log.info("Annotated method = " + method + ", " + annotation.name() + ", " + annotation.description());
                 }
             }
 

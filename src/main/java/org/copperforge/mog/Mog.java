@@ -9,8 +9,6 @@ import org.copperforge.mog.env.EnvironmentService;
 import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.runner.MogCommandRunner;
-import org.copperforge.mog.runner.MogCommandRunnerFactory;
-import org.copperforge.mog.runner.MogSimpleCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,11 +56,16 @@ public class Mog {
 
     public void run(String... args) throws MogException {
         // big todo
-        String command = commands[0];
-        log.info("Finding command " + command);
-        MogCommand cmd = commandService.get(command);
-        log.info("command = " + cmd);
-        MogCommandRunnerFactory.create(cmd.getType()).run(cmd, args);
+        String command = null;
+        if (commands != null && commands.length > 0) {
+            command = commands[0];
+            log.info("Finding command " + command);
+            MogCommand cmd = commandService.get(command);
+            log.info("command = " + cmd);
+            MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
+            log.info("runner = " + runner);
+        }
+
     }
 
     private void initialize() throws MogException {
@@ -70,7 +73,9 @@ public class Mog {
         MogServiceManager manager = MogServiceManager.instance();
         environmentService = (EnvironmentService) manager.get(MogEnvironmentService.class);
 
+        log.info("configFile = " + configFile);
         configFile = environmentService.envsubst(configFile);
+        log.info("configFile (after) = " + configFile);
         config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
         log.trace("config = " + config);
 
