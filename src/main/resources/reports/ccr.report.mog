@@ -1,0 +1,250 @@
+{
+    "name": "Conversion Cycle Summary",
+    "type": "xlsx",
+    "filename": "Conversion_Cycle_Summary_%{timestamp}.xlsx",
+    "styles": [
+        {
+            "type": "table",
+            "name": "TableStyleLight12",
+            "showFirstColumn": false,
+            "showLastColumn": false,
+            "showRowStripes": true,
+            "showColumnStripes": true
+        },
+        {
+            "type": "cell",
+            "name": "TopWrap",
+            "wrapText": true,
+            "verticalAlginment": "top"
+        }
+    ],
+    "sheets": [
+        {
+            "name": "information",
+            "title": "Information",
+            "elements": [
+                {
+                    "type": "spannedText",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "lowerRight": {
+                        "row": 0,
+                        "col": 3
+                    },
+                    "height": 100,
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nReport ID: 5010 - Conversion Cycle\n\nPurpose: The purpose of this report is to provide a single source by which leadership can assess the overall performance of the conversion upon the completion of a conversion cycle."
+                },
+                {
+                    "type": "table",
+                    "name": "changeLog",
+                    "title": "ChangeLog",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 2,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Date",
+                            "key": "change_date",
+                            "width": 31
+                        },
+                        {
+                            "title": "Name",
+                            "key": "change_user",
+                            "width": 21
+                        },
+                        {
+                            "title": "Ver",
+                            "key": "change_version",
+                            "width": 21
+                        },
+                        {
+                            "title": "Change",
+                            "key": "change_text",
+                            "width": 75
+                        }
+                    ],
+                    "dataSource": {
+                        "type": "jdbc",
+                        "url": "jdbc:h2:file:d:/var/reporting.db",
+                        "user": "h2",
+                        "password": "password",
+                        "query": "select * from t_ccr_changelog order by change_date desc",
+                        "jdbcClass": "org.h2.Driver"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "cc_summary",
+            "title": "Conversion Cycle Summary",
+            "elements": [
+                {
+                    "type": "spannedText",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "lowerRight": {
+                        "row": 0,
+                        "col": 3
+                    },
+                    "height": 50,
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information."
+                },
+                {
+                    "type": "table",
+                    "name": "summaryReport",
+                    "title": "SummaryReport",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 2,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "RUN ID",
+                            "key": "run_id",
+                            "width": 31
+                        },
+                        {
+                            "title": "Run Date",
+                            "key": "date_run",
+                            "width": 31
+                        },
+                        {
+                            "title": "Cycle Duration",
+                            "key": "duration",
+                            "width": 31
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "src_summary",
+            "title": "Conv Cycle Source Summary",
+            "elements": [
+                {
+                    "type": "spannedText",
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information for sources.",
+                    "height": 75,
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "lowerRight": {
+                        "row": 0,
+                        "col": 11
+                    }
+
+                },
+                {
+                    "type": "table",
+                    "name": "sourceSummaryTable",
+                    "title": "sourceSummaryTable",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 2,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Functional Area",
+                            "key": "functional_area",
+                            "width": 31
+                        },
+                        {
+                            "title": "Program",
+                            "key": "program_name",
+                            "width": 31
+                        },
+                        {
+                            "title": "Run ID",
+                            "key": "run_id",
+                            "width": 31
+                        },
+                        {
+                            "title": "Table Name",
+                            "key": "table_name",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Record Count",
+                            "key": "source_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Bypassed Record Count",
+                            "key": "ignored_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Orphan Record Count",
+                            "key": "orphan_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Considered Count",
+                            "key": "source_considered_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Error Count",
+                            "key": "source_errored_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Converted Count",
+                            "key": "source_converted_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Quarter",
+                            "key": "quarter",
+                            "width": 31
+                        }
+                   ],
+                   "dataSource": {
+                       "type": "jdbc",
+                       "url": "jdbc:h2:file:d:/var/reporting.db",
+                       "user": "h2",
+                       "password": "password",
+                       "query": "select * from t_ccr_source_summary",
+                       "jdbcClass": "org.h2.Driver"
+                   }
+                }
+            ]
+        },
+        {
+            "name": "summary_report",
+            "title": "Summary Report",
+            "elements": [
+                {
+                    "type": "pivotTable",
+                    "upperLeft": {
+                        "row": 3,
+                        "col": 1
+                    },
+                    "referenceTable": "sourceSummaryTable",
+                    "pivotRows": [
+                        0, 3
+                    ],
+                    "pivotColumns": [
+                        2
+                    ],
+                    "consolidators": [
+                        {
+                            "type": "SUM",
+                            "column": 4,
+                            "valueFieldName": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

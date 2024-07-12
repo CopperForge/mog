@@ -1,4 +1,4 @@
-package org.copperforge.mog.data;
+package org.copperforge.mog.reporting.datasource.rest;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,8 +12,10 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.copperforge.mog.reporting.core.Reportable;
+import org.copperforge.mog.reporting.datasource.ReportDataSource;
 
-public class MogRestDataSource extends MogDataSource {
+public class ReportRestDataSource extends ReportDataSource {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -26,7 +28,7 @@ public class MogRestDataSource extends MogDataSource {
     private String method;
 
     @Override
-    public List<MogFetchable> data() {
+    public List<Reportable> data() {
         try {
             // create client
             HttpClient client = HttpClient.newHttpClient();
@@ -42,7 +44,7 @@ public class MogRestDataSource extends MogDataSource {
             };
 
             List<Map<String, Object>> response = mapper.readValue(resp.body().toString(), typeRef);
-            return response.stream().map(MogFetchable::new).collect(Collectors.toList());
+            return response.stream().map(Reportable::new).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,15 +86,14 @@ public class MogRestDataSource extends MogDataSource {
 
     @Override
     public String toString() {
-        return "MogRestDataSource [url=" + url + ", token=" + token + ", keyPath=" + keyPath + ", method=" + method
+        return "ReportRestDataSource [url=" + url + ", token=" + token + ", keyPath=" + keyPath + ", method=" + method
                 + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + ((mapper == null) ? 0 : mapper.hashCode());
+        int result = super.hashCode();
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
         result = prime * result + ((keyPath == null) ? 0 : keyPath.hashCode());
@@ -104,16 +105,11 @@ public class MogRestDataSource extends MogDataSource {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null)
+        if (!super.equals(obj))
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MogRestDataSource other = (MogRestDataSource) obj;
-        if (mapper == null) {
-            if (other.mapper != null)
-                return false;
-        } else if (!mapper.equals(other.mapper))
-            return false;
+        ReportRestDataSource other = (ReportRestDataSource) obj;
         if (url == null) {
             if (other.url != null)
                 return false;

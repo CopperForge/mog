@@ -1,4 +1,4 @@
-package org.copperforge.mog.data;
+package org.copperforge.mog.reporting.datasource.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,9 +8,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.copperforge.mog.MogException;
+import org.copperforge.mog.reporting.core.Reportable;
+import org.copperforge.mog.reporting.datasource.ReportDataSource;
 
-public class MogJdbcDataSource extends MogDataSource {
+public class ReportJdbcDataSource extends ReportDataSource {
 
     private String url;
 
@@ -64,62 +65,13 @@ public class MogJdbcDataSource extends MogDataSource {
 
     @Override
     public String toString() {
-        return "MogJdbcDataSource [url=" + url + ", user=" + user + ", password=*, query=" + query
+        return "ReportJdbcDataSource [url=" + url + ", user=" + user + ", password=*, query=" + query
                 + ", jdbcClass=" + jdbcClass + "]";
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
-        result = prime * result + ((query == null) ? 0 : query.hashCode());
-        result = prime * result + ((jdbcClass == null) ? 0 : jdbcClass.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        MogJdbcDataSource other = (MogJdbcDataSource) obj;
-        if (url == null) {
-            if (other.url != null)
-                return false;
-        } else if (!url.equals(other.url))
-            return false;
-        if (user == null) {
-            if (other.user != null)
-                return false;
-        } else if (!user.equals(other.user))
-            return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
-            return false;
-        if (query == null) {
-            if (other.query != null)
-                return false;
-        } else if (!query.equals(other.query))
-            return false;
-        if (jdbcClass == null) {
-            if (other.jdbcClass != null)
-                return false;
-        } else if (!jdbcClass.equals(other.jdbcClass))
-            return false;
-        return true;
-    }
-
-    @Override
-    public List<MogFetchable> data() throws MogException {
-        List<MogFetchable> data = new ArrayList<>();
+    public List<Reportable> data() {
+        List<Reportable> data = new ArrayList<>();
         try {
             String url = getUrl(); // table details
             String username = getUser(); // MySQL credentials
@@ -135,7 +87,7 @@ public class MogJdbcDataSource extends MogDataSource {
             String columnName;
             Object value;
             while (rs.next()) {
-                MogFetchable reportable = new MogFetchable();
+                Reportable reportable = new Reportable();
 
                 for (int colidx = 1 ; colidx <= meta.getColumnCount(); colidx++) {
                     columnName = meta.getColumnName(colidx);
@@ -154,5 +106,4 @@ public class MogJdbcDataSource extends MogDataSource {
         return data;
     }
 
-  
 }
