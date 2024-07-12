@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet id="cycle-report-001" author="brian.eldridge@gainwelltechnologies.com">
+
+        <!-- changelog -->
+        <createTable tableName="t_ccr_changelog">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="change_date" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="change_user" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="change_version" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="change_text" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <!-- cycle summary -->
+        <createTable tableName="t_ccr_cycle_summary">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="run_id" type="char(6)">
+                <constraints nullable="false" />
+            </column>
+            <column name="started_on" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="ended_on" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_date" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_database" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_records" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="bypassed_records" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="orphan_records" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="records_considered" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_errors" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="records_converted" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_records" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_errors" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_warnings" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_messages" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+        <!-- cycle summary -->
+        <createTable tableName="t_ccr_source_summary">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="functional_area" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+            <column name="program_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+            <column name="run_id" type="char(6)">
+                <constraints nullable="false" />
+            </column>
+            <column name="table_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_record_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="ignored_record_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="orphan_record_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_considered_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_errored_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_converted_count" type="bigint" defaultValue="0">
+                <constraints nullable="true" />
+            </column>
+            <column name="quarter" type="varchar(64)">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="cycle-report-sample" author="brian.eldridge@gainwelltechnologies.com">
+
+        <!-- changelog sample data -->
+        <insert tableName="t_ccr_changelog">
+            <column name="change_date" value="2022-12-31 23.59.59" />
+            <column name="change_user" value="Brian Eldridge" />
+            <column name="change_version" value="1.0" />
+            <column name="change_text" value="Ran cycle: RUNID" />
+        </insert>
+        <insert tableName="t_ccr_changelog">
+            <column name="change_date" value="2023-02-15 23.59.59" />
+            <column name="change_user" value="Brian Eldridge" />
+            <column name="change_version" value="1.1" />
+            <column name="change_text" value="Ran cycle: RUNID2" />
+        </insert>
+
+
+        <!-- source summary sample data -->
+        <loadData file="app/src/main/resources/reports/ccr/data/t_ccr_source_summary.csv" tableName="t_ccr_source_summary" />
+    </changeSet>
+
+</databaseChangeLog>
