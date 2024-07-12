@@ -30,6 +30,7 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
             log.info("runnable? = " + commandClass.isInstance(Runnable.class));
 
             for (Method method : commandClass.getDeclaredMethods()) {
+                log.info("Testing " + method.getName());
                 org.copperforge.mog.annotations.MogCommand annotation = method
                         .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
                 if (annotation != null) {

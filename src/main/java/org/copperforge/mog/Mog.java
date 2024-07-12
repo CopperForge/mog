@@ -64,6 +64,7 @@ public class Mog {
             log.info("command = " + cmd);
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
             log.info("runner = " + runner);
+            runner.run(cmd, args);
         }
 
     }
