@@ -2,7 +2,7 @@ package org.copperforge.mog.reporting.element.table;
 
 import java.util.List;
 
-import org.copperforge.mog.reporting.datasource.ReportDataSource;
+import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.reporting.definition.CellReference;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.element.ReportElement;
@@ -14,7 +14,7 @@ public class Table extends ReportElement {
     private String style;
     private List<Column> columns;
     private CellReference upperLeft;
-    private ReportDataSource dataSource;
+    private MogDataSource dataSource;
     private Boolean enableFilters = true;
 
     public List<Column> getColumns() {
@@ -57,11 +57,11 @@ public class Table extends ReportElement {
         this.upperLeft = upperLeft;
     }
 
-    public ReportDataSource getDataSource() {
+    public MogDataSource getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(ReportDataSource dataSource) {
+    public void setDataSource(MogDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

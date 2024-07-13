@@ -4,8 +4,7 @@ import java.io.FileOutputStream;
 
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import org.copperforge.mog.reporting.core.ReportException;
+import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.Sheet;
 import org.copperforge.mog.reporting.element.ReportElement;
@@ -23,13 +22,13 @@ public class XLSXReportWriter extends AbstractReportWriter {
     }
 
     @Override
-    protected void buildReport(Report report) throws ReportException {
+    protected void buildReport(Report report) throws MogException {
         workbook = new XSSFWorkbook();
         super.buildReport(report);
     }    
 
     @Override
-    protected void buildSheet(Report report, Sheet sheet) throws ReportException {
+    protected void buildSheet(Report report, Sheet sheet) throws MogException {
         XSSFSheet xlsxSheet = workbook.createSheet(sheet.getTitle());
         for (ReportElement element : sheet.getElements()) {
              XLSXElementWriter<?> writer = ((XLSXElementWriter<?>) (elementWriters().get(element.getType())));
@@ -38,14 +37,14 @@ public class XLSXReportWriter extends AbstractReportWriter {
     }
 
     @Override
-    public void save(String filename) throws ReportException {
-        if (workbook == null) throw new ReportException("The report must be built before it can be saved");
+    public void save(String filename) throws MogException {
+        if (workbook == null) throw new MogException("The report must be built before it can be saved");
         try {
             FileOutputStream outputStream = new FileOutputStream(filename);
             workbook.write(outputStream);
             workbook.close();
         } catch (Exception e) {
-            throw new ReportException(e);
+            throw new MogException(e);
         }
     }
 

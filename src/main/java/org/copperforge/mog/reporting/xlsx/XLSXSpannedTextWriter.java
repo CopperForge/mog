@@ -5,8 +5,7 @@ import java.util.Optional;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
-
-import org.copperforge.mog.reporting.core.ReportException;
+import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.ReportElement;
 import org.copperforge.mog.reporting.element.SpannedText;
@@ -14,7 +13,7 @@ import org.copperforge.mog.reporting.element.SpannedText;
 public class XLSXSpannedTextWriter extends XLSXElementWriter<SpannedText> {
 
     @Override
-    public void write(Report report, ReportElement element) throws ReportException {
+    public void write(Report report, ReportElement element) throws MogException {
         XLSXReport xlsx = (XLSXReport) report;
         SpannedText textElement = (SpannedText) element;
 

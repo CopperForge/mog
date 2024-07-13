@@ -9,9 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-
-import org.copperforge.mog.reporting.core.ReportException;
-import org.copperforge.mog.reporting.core.Reportable;
+import org.copperforge.mog.MogException;
+import org.copperforge.mog.data.MogFetchable;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.ReportElement;
@@ -20,11 +19,11 @@ import org.copperforge.mog.reporting.element.table.Table;
 public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
-    public void write(Report report, ReportElement element) throws ReportException {
+    public void write(Report report, ReportElement element) throws MogException {
         Table tableElement = (Table) element;
 
         // get the data
-        List<Reportable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().data() : null;
+        List<MogFetchable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().data() : null;
         List<Column> columns = tableElement.getColumns();
         int rowCount = (data != null) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;
@@ -78,7 +77,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             colNum = 0;
             Object value;
             if (data != null) {
-                for (Reportable reportable : data) {
+                for (MogFetchable reportable : data) {
                     row = sheet().createRow(rowNum++);
 
                     colNum = tableElement.getUpperLeft().getCol();

@@ -2,8 +2,9 @@ package org.copperforge.mog.reporting.definition;
 
 import java.io.InputStream;
 
+import org.copperforge.mog.MogException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.copperforge.mog.reporting.core.ReportException;
 
 public class ReportService {
 
@@ -19,13 +20,13 @@ public class ReportService {
         return _instance;
     }
 
-    public Report parse(final String filename) throws ReportException {
+    public Report parse(final String filename) throws MogException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             InputStream in = this.getClass().getResourceAsStream(filename);
             return objectMapper.readValue(in, Report.class);
         } catch (Exception e) {
-            throw new ReportException(e);
+            throw new MogException(e);
         }
     }
 

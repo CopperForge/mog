@@ -3,7 +3,7 @@ package org.copperforge.mog.reporting.writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.copperforge.mog.reporting.core.ReportException;
+import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.Sheet;
 import org.copperforge.mog.reporting.element.ElementWriter;
@@ -25,17 +25,17 @@ public abstract class AbstractReportWriter implements ReportWriter {
     }
 
     @Override
-    public void build(Report report) throws ReportException {
+    public void build(Report report) throws MogException {
         buildReport(report);
     }
 
-    protected void buildReport(Report report) throws ReportException {
+    protected void buildReport(Report report) throws MogException {
         for (Sheet sheet : report.getSheets()) {
             buildSheet(report, sheet);
         }
     }
 
-    protected void buildSheet(Report report, Sheet sheet) throws ReportException {
+    protected void buildSheet(Report report, Sheet sheet) throws MogException {
         for (ReportElement element : sheet.getElements()) {
             elementWriters.get(element.getType()).write(report, element);
         }

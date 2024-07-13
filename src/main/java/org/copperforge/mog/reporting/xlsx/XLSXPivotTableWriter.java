@@ -4,8 +4,7 @@ import org.apache.poi.ss.usermodel.DataConsolidateFunction;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFPivotTable;
 import org.apache.poi.xssf.usermodel.XSSFTable;
-
-import org.copperforge.mog.reporting.core.ReportException;
+import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.ReportElement;
 import org.copperforge.mog.reporting.element.table.PivotTable;
@@ -13,7 +12,7 @@ import org.copperforge.mog.reporting.element.table.PivotTable;
 public class XLSXPivotTableWriter extends XLSXElementWriter<PivotTable> {
 
     @Override
-    public void write(Report report, ReportElement element) throws ReportException {
+    public void write(Report report, ReportElement element) throws MogException {
         PivotTable tableElement = (PivotTable) element;
 
         XSSFTable refTable = workbook().getTable(tableElement.getReferenceTable());
