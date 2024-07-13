@@ -10,8 +10,6 @@ import org.copperforge.mog.runner.MogCommandRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import picocli.CommandLine;
-
 public class Mog {
 
     private static Logger log = LoggerFactory.getLogger(Mog.class);
@@ -34,15 +32,14 @@ public class Mog {
 
     public static void main(String[] args) throws MogException {
         mog = new Mog();
-        MogCommandOptions options = new MogCommandOptions();
-        new CommandLine(options).parseArgs(args);
+        MogOptions options = MogOptions.parse(args);
         log.info("options = " + options);
 
         mog.initialize(options);
-        mog.run(options, args);
+        mog.run(options);
     }
 
-    public void run(MogCommandOptions options, String... rawArgs) throws MogException {
+    public void run(MogOptions options) throws MogException {
         // big todo
         if (options.getCommand() != null) {
             log.info("Finding command " + options.getCommand());
@@ -50,12 +47,12 @@ public class Mog {
             log.info("command = " + cmd);
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
             log.info("runner = " + runner);
-            runner.run(cmd, options, rawArgs);
+            runner.run(cmd, options);
         }
 
     }
 
-    private void initialize(MogCommandOptions options) throws MogException {
+    private void initialize(MogOptions options) throws MogException {
         // initalize the service manager
         MogServiceManager manager = MogServiceManager.instance();
         environmentService = (EnvironmentService) manager.get(MogEnvironmentService.class);

@@ -1,12 +1,16 @@
 package org.copperforge.mog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-public class MogCommandOptions {
+public class MogOptions {
+
+    private final List<String> rawArgs = new ArrayList<>();
 
     @Option(names = { "-h", "--help" }, description = "display help")
     private boolean helpRequested = false;
@@ -56,4 +60,16 @@ public class MogCommandOptions {
                 + commands + "]";
     }
 
+    public List<String> rawArgs() {
+        return rawArgs;
+    }
+
+    public static MogOptions parse(String... args) {
+        MogOptions options = new MogOptions();
+        options.rawArgs.clear();
+        options.rawArgs.addAll(Arrays.asList(args));
+        new CommandLine(options).setUnmatchedArgumentsAllowed(true)
+                .parseArgs(args);
+        return options;
+    }
 }

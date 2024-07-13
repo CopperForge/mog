@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.copperforge.mog.MogCommandOptions;
+import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.command.MogCommand;
@@ -27,13 +27,13 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
     }
 
     @Override
-    public void run(MogShellCommand command, MogCommandOptions options) throws MogException {
+    public void run(MogShellCommand command, MogOptions options) throws MogException {
         log.trace("Running " + command);
         run(command, options, new String[] {});
     }
 
     @Override
-    public void run(MogCommand command, MogCommandOptions options, String... args) throws MogException {
+    public void run(MogCommand command, MogOptions options, String... args) throws MogException {
         log.trace("Running " + command + "(" + args + ")");
         try {
             if (command.getCommand() == null)
