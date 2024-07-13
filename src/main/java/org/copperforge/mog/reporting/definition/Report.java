@@ -22,6 +22,8 @@ public class Report implements Serializable {
 
     private final List<Sheet> sheets = new ArrayList<>();
 
+    private String filename;
+
     public String getName() {
         return name;
     }
@@ -48,9 +50,12 @@ public class Report implements Serializable {
         if (sheets != null) this.sheets.addAll(sheets);
     }
 
-    @Override
-    public String toString() {
-        return "ReportDefinition [name=" + name + ", type=" + type + ", reportSheets=" + sheets + "]";
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     @Override
@@ -60,6 +65,7 @@ public class Report implements Serializable {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + ((sheets == null) ? 0 : sheets.hashCode());
+        result = prime * result + ((filename == null) ? 0 : filename.hashCode());
         return result;
     }
 
@@ -87,9 +93,17 @@ public class Report implements Serializable {
                 return false;
         } else if (!sheets.equals(other.sheets))
             return false;
+        if (filename == null) {
+            if (other.filename != null)
+                return false;
+        } else if (!filename.equals(other.filename))
+            return false;
         return true;
     }
 
-    
+    @Override
+    public String toString() {
+        return "Report [name=" + name + ", type=" + type + ", sheets=" + sheets + ", filename=" + filename + "]";
+    }
 
 }

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogServiceManager;
+import org.copperforge.mog.MogVariableService;
+import org.copperforge.mog.VariableService;
 
 public class MogJdbcDataSource extends MogDataSource {
 
@@ -120,10 +123,13 @@ public class MogJdbcDataSource extends MogDataSource {
     @Override
     public List<MogFetchable> data() throws MogException {
         List<MogFetchable> data = new ArrayList<>();
+        MogServiceManager manager = MogServiceManager.instance();
+        VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
         try {
-            String url = getUrl(); // table details
-            String username = getUser(); // MySQL credentials
-            String password = getPassword();
+            String url = environmentService.envsubst(getUrl()); // url
+            System.out.println("url = " + url);
+            String username = getUser(); // credentials
+            String password = getPassword(); // TODO encryption
             String query = getQuery(); // query to be run
             Class.forName(getJdbcClass()); // Driver name
             Connection con = DriverManager.getConnection(

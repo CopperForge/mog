@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 import org.copperforge.mog.MogConfig;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogVariableService;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.annotations.MogService;
 import org.copperforge.mog.annotations.Moglet;
-import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
@@ -35,7 +35,7 @@ public class MogCommandService {
     MogConfig config;
 
     @Moglet
-    MogEnvironmentService environmentService;
+    MogVariableService environmentService;
 
     public MogCommandService() throws MogException {
         discoverRunners();

@@ -13,7 +13,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = MogJdbcDataSource.class, name = "jdbc"),
     @JsonSubTypes.Type(value = MogRestDataSource.class, name = "api"),
-    @JsonSubTypes.Type(value = MogRestDataSource.class, name = "rest")
+    @JsonSubTypes.Type(value = MogRestDataSource.class, name = "rest"),
+    @JsonSubTypes.Type(value = MogNamedDataSource.class, name = "named")
 })
 public abstract class MogDataSource {
 

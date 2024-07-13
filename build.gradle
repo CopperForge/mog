@@ -96,7 +96,7 @@ liquibase {
     activities {
         main {
           changelogFile './src/main/resources/reports/ccr/ccr.changelog.xml'
-          url "jdbc:h2:file:~/reporting.db"
+          url "jdbc:h2:file:${System.getenv('MOG_HOME')}/reporting.db"
           username "h2"
           password "password"
           logLevel "info"

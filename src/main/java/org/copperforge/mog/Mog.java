@@ -3,8 +3,6 @@ package org.copperforge.mog;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.MogCommand;
 import org.copperforge.mog.command.MogCommandService;
-import org.copperforge.mog.env.EnvironmentService;
-import org.copperforge.mog.env.MogEnvironmentService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.runner.MogCommandRunner;
 import org.slf4j.Logger;
@@ -17,7 +15,7 @@ public class Mog {
     private MogConfig config;
 
     @Moglet
-    EnvironmentService environmentService;
+    VariableService environmentService;
 
     @Moglet
     MogCommandService commandService;
@@ -60,7 +58,7 @@ public class Mog {
     private void initialize(MogOptions options) throws MogException {
         // initalize the service manager
         MogServiceManager manager = MogServiceManager.instance();
-        environmentService = (EnvironmentService) manager.get(MogEnvironmentService.class);
+        environmentService = (VariableService) manager.get(MogVariableService.class);
 
         log.info("configFile = " + options.getConfigFile());
         String configFile = environmentService.envsubst(options.getConfigFile());

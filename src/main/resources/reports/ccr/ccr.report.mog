@@ -1,7 +1,7 @@
 {
     "name": "Conversion Cycle Summary",
     "type": "xlsx",
-    "filename": "Conversion_Cycle_Summary_%{timestamp}.xlsx",
+    "filename": "${MOG_HOME}/Conversion_Cycle_Summary_${timestamp}.xlsx",
     "styles": [
         {
             "type": "table",
@@ -69,7 +69,7 @@
                     ],
                     "dataSource": {
                         "type": "jdbc",
-                        "url": "jdbc:h2:file:~/reporting.db",
+                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                         "user": "h2",
                         "password": "password",
                         "query": "select * from t_ccr_changelog order by change_date desc",
@@ -210,7 +210,7 @@
                    ],
                    "dataSource": {
                        "type": "jdbc",
-                       "url": "jdbc:h2:file:~/reporting.db",
+                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                        "user": "h2",
                        "password": "password",
                        "query": "select * from t_ccr_source_summary",
