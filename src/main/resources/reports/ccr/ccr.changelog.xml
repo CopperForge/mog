@@ -141,7 +141,7 @@
 
 
         <!-- source summary sample data -->
-        <loadData file="app/src/main/resources/reports/ccr/data/t_ccr_source_summary.csv" tableName="t_ccr_source_summary" />
+        <loadData file="src/main/resources/reports/ccr/data/t_ccr_source_summary.csv" tableName="t_ccr_source_summary" />
     </changeSet>
 
 </databaseChangeLog>

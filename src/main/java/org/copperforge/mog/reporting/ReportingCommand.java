@@ -24,7 +24,7 @@ public class ReportingCommand {
         log.info("report def = " + definition);
         ReportWriter builder = ReportWriterService.instance().builder(definition.getType());
         builder.build(definition);
-        builder.save("~/temp.xlsx");
+        builder.save("/home/brian/temp.xlsx");
     }
 
 }

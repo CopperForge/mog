@@ -15,11 +15,16 @@ import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.ReportElement;
 import org.copperforge.mog.reporting.element.table.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
+    private Logger log = LoggerFactory.getLogger(XLSXTableWriter.class);
+
     @Override
     public void write(Report report, ReportElement element) throws MogException {
+        log.debug("Writing element " + element);
         Table tableElement = (Table) element;
 
         // get the data
@@ -68,6 +73,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     sheet().setColumnWidth(colNum + tableElement.getUpperLeft().getCol(), columnDef.getWidth() * 256);
                 }
 
+                log.debug("table.getColumns() = " + table.getColumnCount());
                 column = table.getColumns().get(colNum);
                 column.setName(columnDef.getTitle());
                 cell = row.createCell(colNum++);
@@ -88,9 +94,9 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                         if (value instanceof Long) {
                             cell.setCellValue((Long) value);
                         } else if (value instanceof Integer) {
-                                cell.setCellValue((Integer) value);
-                            } else {
-                            cell.setCellValue(value.toString());                        
+                            cell.setCellValue((Integer) value);
+                        } else {
+                            cell.setCellValue(value.toString());
                         }
                     }
                 }
@@ -103,7 +109,8 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             }
         }
 
-        if (tableElement.getEnableFilters()) table.getCTTable().addNewAutoFilter().setRef(reference.formatAsString());
+        if (tableElement.getEnableFilters())
+            table.getCTTable().addNewAutoFilter().setRef(reference.formatAsString());
     }
 
 }
