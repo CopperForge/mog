@@ -30,13 +30,18 @@ public class Mog {
         return config;
     }
 
-    public static void main(String[] args) throws MogException {
-        mog = new Mog();
-        MogOptions options = MogOptions.parse(args);
-        log.info("options = " + options);
+    public static void main(String[] args) {
+        System.out.println("Yo!");
+        try {
+            mog = new Mog();
+            MogOptions options = MogOptions.parse(args);
+            log.info("options = " + options);
 
-        mog.initialize(options);
-        mog.run(options);
+            mog.initialize(options);
+            mog.run(options);
+        } catch (MogException e) {
+            log.error("Exception occurred:" , e);
+        }
     }
 
     public void run(MogOptions options) throws MogException {
