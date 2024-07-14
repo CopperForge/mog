@@ -39,6 +39,9 @@ dependencies {
     implementation 'com.gwt.conversion:dotout:0.0.1-SNAPSHOT'
     implementation 'com.h2database:h2:2.2.224'
 
+    implementation 'io.undertow:undertow-core:2.3.14.Final'
+    implementation 'io.undertow:undertow-servlet:2.3.14.Final'
+
     liquibaseRuntime 'org.liquibase:liquibase-core:4.24.0'
     liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:2.1.1'
     liquibaseRuntime 'info.picocli:picocli:4.7.5'
