@@ -1,0 +1,25 @@
+package org.copperforge.mog.server;
+
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.Headers;
+
+public class MogEndpointHandler implements HttpHandler {
+
+    private final MogEndpoint endpoint;
+
+    public MogEndpointHandler(MogEndpoint endpoint) {
+        System.out.println("endpoint = " + endpoint);
+        this.endpoint = endpoint;
+    }
+
+    @Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        System.out.println("endpoint = " + endpoint);
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "text/plain");
+        exchange.getResponseSender().send("Hello Baeldung");
+
+    }
+
+}

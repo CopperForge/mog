@@ -5,11 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.copperforge.mog.data.MogDataSource;
+import org.copperforge.mog.server.MogServerConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MogConfig implements MogObject {
+
+    private MogServerConfig serverConfig;
 
     private MogVariable environment[];
 
@@ -85,11 +88,19 @@ public class MogConfig implements MogObject {
         this.commandPaths = commandPaths;
     }
 
+    public MogServerConfig getServer() {
+        return serverConfig;
+    }
+
+    public void setServer(MogServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
+    }
+
     @Override
     public String toString() {
-        return "MogConfig [environment=" + Arrays.toString(environment) + ", mogUser=" + mogUser + ", mogGroup="
-                + mogGroup + ", name=" + name + ", description=" + description + ", dataSources=" + dataSources
-                + ", commandPaths=" + commandPaths + "]";
+        return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
+                + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
+                + ", dataSources=" + dataSources + ", commandPaths=" + commandPaths + "]";
     }
 
 }
