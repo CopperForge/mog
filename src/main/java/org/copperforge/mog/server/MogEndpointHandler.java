@@ -18,16 +18,7 @@ public class MogEndpointHandler implements HttpHandler {
         System.out.println("endpoint = " + endpoint);
 
         if (endpoint instanceof MogAnnotatedEndpoint) {
-            MogAnnotatedEndpoint ae = (MogAnnotatedEndpoint) endpoint;
-            String response = "n/a";
-            if (ae.getCallback() != null && ae.getCallback() != null) {
-                response = (String) ae.getCallback().invoke(ae.getController());
-            }
-
-            exchange.getResponseHeaders()
-                    .put(Headers.CONTENT_TYPE, endpoint.getProduces());
-            exchange.getResponseSender().send(response);
-
+            new MogAnnotatedEndpointHandler(endpoint).handleRequest(exchange);
         } else {
             exchange.getResponseHeaders()
                     .put(Headers.CONTENT_TYPE, "text/plain");
