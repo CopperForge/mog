@@ -28,6 +28,6 @@ public abstract class MogDataSource {
         this.type = type;
     }
 
-    public abstract List<MogFetchable> data() throws MogException;
+    public abstract List<MogFetchable> fetch() throws MogException;
 
 }

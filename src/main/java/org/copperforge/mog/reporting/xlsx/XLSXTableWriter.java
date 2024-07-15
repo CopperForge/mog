@@ -28,7 +28,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         Table tableElement = (Table) element;
 
         // get the data
-        List<MogFetchable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().data() : null;
+        List<MogFetchable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().fetch() : null;
         List<Column> columns = tableElement.getColumns();
         int rowCount = (data != null) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;

@@ -26,7 +26,7 @@ public class MogRestDataSource extends MogDataSource {
     private String method;
 
     @Override
-    public List<MogFetchable> data() {
+    public List<MogFetchable> fetch() {
         try {
             // create client
             HttpClient client = HttpClient.newHttpClient();

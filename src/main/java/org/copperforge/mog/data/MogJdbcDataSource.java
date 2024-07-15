@@ -121,7 +121,7 @@ public class MogJdbcDataSource extends MogDataSource {
     }
 
     @Override
-    public List<MogFetchable> data() throws MogException {
+    public List<MogFetchable> fetch() throws MogException {
         List<MogFetchable> data = new ArrayList<>();
         MogServiceManager manager = MogServiceManager.instance();
         VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
