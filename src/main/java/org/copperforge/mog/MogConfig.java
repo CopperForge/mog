@@ -26,7 +26,7 @@ public class MogConfig implements MogObject {
 
     private List<MogDataSource> dataSources = new ArrayList<>();
 
-    private List<String> commandPaths = new ArrayList<>();
+    private MogSearchPathsConfig searchPaths;
 
     private MogConfig() {
 
@@ -80,14 +80,6 @@ public class MogConfig implements MogObject {
         this.dataSources = dataSources;
     }
 
-    public List<String> getCommandPaths() {
-        return commandPaths;
-    }
-
-    public void setCommandPaths(List<String> commandPaths) {
-        this.commandPaths = commandPaths;
-    }
-
     public MogServerConfig getServer() {
         return serverConfig;
     }
@@ -96,11 +88,27 @@ public class MogConfig implements MogObject {
         this.serverConfig = serverConfig;
     }
 
+    public MogServerConfig getServerConfig() {
+        return serverConfig;
+    }
+
+    public void setServerConfig(MogServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
+    }
+
+    public MogSearchPathsConfig getSearchPaths() {
+        return searchPaths;
+    }
+
+    public void setSearchPaths(MogSearchPathsConfig searchPaths) {
+        this.searchPaths = searchPaths;
+    }
+
     @Override
     public String toString() {
         return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
                 + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
-                + ", dataSources=" + dataSources + ", commandPaths=" + commandPaths + "]";
+                + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + "]";
     }
 
 }

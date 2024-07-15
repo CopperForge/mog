@@ -88,7 +88,7 @@ public class MogCommandService {
         MogReader<MogCommand> commandReader = new MogReader<MogCommand>(MogCommand.class);
         List<MogCommand> commands = new ArrayList<MogCommand>();
 
-        for (String path : config.getCommandPaths()) {
+        for (String path : config.getSearchPaths().getCommands()) {
             path = environmentService.envsubst(path);
             log.info("path = " + path);
 
