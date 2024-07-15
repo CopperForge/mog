@@ -96,7 +96,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                         } else if (value instanceof Integer) {
                             cell.setCellValue((Integer) value);
                         } else {
-                            cell.setCellValue(value.toString());
+                            cell.setCellValue(value != null ? value.toString() : "");
                         }
                     }
                 }

@@ -37,7 +37,7 @@
             <column name="run_id" type="char(6)">
                 <constraints nullable="false" />
             </column>
-            <column name="started_on" type="timestamp">
+            <column name="date_run" type="timestamp">
                 <constraints nullable="true" />
             </column>
             <column name="ended_on" type="timestamp">
@@ -81,7 +81,7 @@
             </column>
         </createTable>
 
-        <!-- cycle summary -->
+        <!-- source summary -->
         <createTable tableName="t_ccr_source_summary">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false" />
@@ -121,6 +121,83 @@
             </column>
         </createTable>
 
+        <!-- target summary -->
+        <createTable tableName="t_ccr_target_summary">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="functional_area" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+            <column name="program_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+            <column name="run_id" type="char(6)">
+                <constraints nullable="false" />
+            </column>
+            <column name="table_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+            <column name="target_record_count" type="bigint" defaultValue="0">
+                <constraints nullable="true" />
+            </column>
+            <column name="quarter" type="varchar(64)" defaultValue="0">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+        <!-- message summary -->
+        <createTable tableName="t_ccr_message_summary">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="functional_area" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+            <column name="program_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+            <column name="run_id" type="char(6)">
+                <constraints nullable="false" />
+            </column>
+            <column name="msg_code" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+            <column name="msg_type" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_table" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_column" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_type" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_table" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_column" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="target_type" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="msg_text" type="clob">
+                <constraints nullable="true" />
+            </column>
+            <column name="msg_count" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="disposition" type="varchar(256)">
+                <constraints nullable="true" />
+            </column>
+            <column name="quarter" type="varchar(64)">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
     </changeSet>
 
     <changeSet id="cycle-report-sample" author="brian.eldridge@gainwelltechnologies.com">
@@ -142,6 +219,13 @@
 
         <!-- source summary sample data -->
         <loadData file="src/main/resources/reports/ccr/data/t_ccr_source_summary.csv" tableName="t_ccr_source_summary" />
+
+        <!-- target summary sample data -->
+        <loadData file="src/main/resources/reports/ccr/data/t_ccr_target_summary.csv" tableName="t_ccr_target_summary" />
+
+        <!-- message summary sample data -->
+        <loadData file="src/main/resources/reports/ccr/data/t_ccr_message_summary.csv" tableName="t_ccr_message_summary" />
+
     </changeSet>
 
 </databaseChangeLog>

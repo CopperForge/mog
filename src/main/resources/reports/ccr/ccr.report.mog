@@ -119,6 +119,71 @@
                             "title": "Cycle Duration",
                             "key": "duration",
                             "width": 31
+                        },
+                        {
+                            "title": "Source Date",
+                            "key": "source_date",
+                            "width": 50 
+                        },
+                        {
+                            "title": "Target Database",
+                            "key": "target_database",
+                            "width": 31 
+                        },
+                        {
+                            "title": "Source Record Count",
+                            "key": "source_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Bypassed Record Count",
+                            "key": "bypassed_record_count",
+                            "width": 31 
+                        },
+                        {
+                            "title": "Orphan Record Count",
+                            "key": "orphan_record_count",
+                            "width": 31 
+                        },
+                        {
+                            "title": "Source Records Considered Count",
+                            "key": "considered_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Error Count",
+                            "key": "source_errors_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Converted Count",
+                            "key": "converted_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Records Converted Percent",
+                            "key": "converted_record_percent",
+                            "width": 31
+                        },
+                        {
+                            "title": "Target Record Count",
+                            "key": "target_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Error Record Count",
+                            "key": "error_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Warning Record Count",
+                            "key": "warning_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Informational Record Count",
+                            "key": "info_record_count",
+                            "width": 31
                         }
                     ]
                 }
@@ -240,6 +305,244 @@
                         {
                             "type": "SUM",
                             "column": 4,
+                            "valueFieldName": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "tgt_summary",
+            "title": "Conv Cycle Target Summary",
+            "elements": [
+                {
+                    "type": "spannedText",
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information for targets.",
+                    "height": 75,
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "lowerRight": {
+                        "row": 0,
+                        "col": 11
+                    }
+
+                },
+                {
+                    "type": "table",
+                    "name": "targetSummaryTable",
+                    "title": "targetSummaryTable",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 2,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Functional Area",
+                            "key": "functional_area",
+                            "width": 31
+                        },
+                        {
+                            "title": "Program",
+                            "key": "program_name",
+                            "width": 31
+                        },
+                        {
+                            "title": "Run ID",
+                            "key": "run_id",
+                            "width": 31
+                        },
+                        {
+                            "title": "Table Name",
+                            "key": "table_name",
+                            "width": 31
+                        },
+                        {
+                            "title": "Target Record Count",
+                            "key": "target_record_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Quarter",
+                            "key": "quarter",
+                            "width": 31
+                        }
+                   ],
+                   "dataSource": {
+                       "type": "jdbc",
+                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+                       "user": "h2",
+                       "password": "password",
+                       "query": "select * from t_ccr_target_summary",
+                       "jdbcClass": "org.h2.Driver"
+                   }
+                }
+            ]
+        },
+        {
+            "name": "target_report",
+            "title": "Target Report",
+            "elements": [
+                {
+                    "type": "pivotTable",
+                    "upperLeft": {
+                        "row": 3,
+                        "col": 1
+                    },
+                    "referenceTable": "targetSummaryTable",
+                    "pivotRows": [
+                        0, 1, 3
+                    ],
+                    "pivotColumns": [
+                        2
+                    ],
+                    "consolidators": [
+                        {
+                            "type": "SUM",
+                            "column": 4,
+                            "valueFieldName": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "msg_summary",
+            "title": "Conv Cycle Message Summary",
+            "elements": [
+                {
+                    "type": "spannedText",
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information for targets.",
+                    "height": 75,
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "lowerRight": {
+                        "row": 0,
+                        "col": 11
+                    }
+                },
+                {
+                    "type": "table",
+                    "name": "messageSummaryTable",
+                    "title": "messageSummaryTable",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 2,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Functional Area",
+                            "key": "functional_area",
+                            "width": 31
+                        },
+                        {
+                            "title": "Program",
+                            "key": "program_name",
+                            "width": 31
+                        },
+                        {
+                            "title": "Run ID",
+                            "key": "run_id",
+                            "width": 31
+                        },
+                        {
+                            "title": "Message Code",
+                            "key": "msg_code",
+                            "width": 31
+                        },
+                        {
+                            "title": "Message Type",
+                            "key": "msg_type",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Table",
+                            "key": "source_table",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Column",
+                            "key": "source_column",
+                            "width": 31
+                        },
+                        {
+                            "title": "Source Type",
+                            "key": "source_type",
+                            "width": 31
+                        },
+                        {
+                            "title": "Target Table",
+                            "key": "target_table",
+                            "width": 31
+                        },
+                        {
+                            "title": "Target Column",
+                            "key": "target_column",
+                            "width": 31
+                        },
+                        {
+                            "title": "Target Type",
+                            "key": "target_type",
+                            "width": 31
+                        },
+                        {
+                            "title": "Message Text",
+                            "key": "msg_text",
+                            "width": 31
+                        },
+                        {
+                            "title": "Message Count",
+                            "key": "msg_count",
+                            "width": 31
+                        },
+                        {
+                            "title": "Message Disposition",
+                            "key": "disposition",
+                            "width": 31
+                        },
+                        {
+                            "title": "Quarter",
+                            "key": "quarter",
+                            "width": 31
+                        }
+                   ],
+                   "dataSource": {
+                       "type": "jdbc",
+                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+                       "user": "h2",
+                       "password": "password",
+                       "query": "select * from t_ccr_message_summary",
+                       "jdbcClass": "org.h2.Driver"
+                   }
+                }
+            ]
+        },
+        {
+            "name": "msg_report",
+            "title": "Message Report",
+            "elements": [
+                {
+                    "type": "pivotTable",
+                    "upperLeft": {
+                        "row": 3,
+                        "col": 1
+                    },
+                    "referenceTable": "messageSummaryTable",
+                    "pivotRows": [
+                        0, 1, 11, 13
+                    ],
+                    "pivotColumns": [
+                        2
+                    ],
+                    "consolidators": [
+                        {
+                            "type": "SUM",
+                            "column": 12,
                             "valueFieldName": ""
                         }
                     ]
