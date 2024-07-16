@@ -17,10 +17,10 @@ public class MogVariableService implements VariableService {
     private Logger log = LoggerFactory.getLogger(MogVariableService.class);
 
     public String envsubst(String source) {
-        log.info("Running envsubst over '" + source + "'");
+        log.trace("Running envsubst over '" + source + "'");
         String subst = new String(source);
         Set<String> variables = findVariables(source);
-        log.info("variables = " + variables);
+        log.trace("variables = " + variables);
 
         String val;
         String var;
@@ -30,19 +30,19 @@ public class MogVariableService implements VariableService {
             if (val == null || val.isEmpty()) {
                 continue;
             }
-            log.info("Replacing " + var + " with '" + val + "'");
+            log.trace("Replacing " + var + " with '" + val + "'");
             subst = subst.replace(var, val);
         }
 
-        log.info("returning '" + subst + "'");
+        log.trace("returning '" + subst + "'");
         return subst;
     }
 
     public String varsubst(String source) {
-        log.info("Running varsubst over '" + source + "'");
+        log.trace("Running varsubst over '" + source + "'");
         String subst = new String(source);
         Set<String> variables = findVariables(source);
-        log.info("variables = " + variables);
+        log.trace("variables = " + variables);
 
         String var;
         for (String variable : variables) {
@@ -53,7 +53,7 @@ public class MogVariableService implements VariableService {
             }
         }
 
-        log.info("returning '" + subst + "'");
+        log.trace("returning '" + subst + "'");
         return subst;
     }
 

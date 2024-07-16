@@ -127,7 +127,6 @@ public class MogJdbcDataSource extends MogDataSource {
         VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
         try {
             String url = environmentService.envsubst(getUrl()); // url
-            System.out.println("url = " + url);
             String username = getUser(); // credentials
             String password = getPassword(); // TODO encryption
             String query = getQuery(); // query to be run

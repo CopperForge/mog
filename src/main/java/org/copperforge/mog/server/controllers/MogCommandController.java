@@ -21,11 +21,8 @@ public class MogCommandController {
     @MogRequest(path="/execute", method = Methods.POST_STRING)
     public MogResponse<MogCommandResponse> execute(@MogBody MogCommandRequest request) throws MogException {
         MogCommandResponse response = new MogCommandResponse();
-        System.out.println("request = " + request);
-
         MogCommandService commandService = (MogCommandService) MogServiceManager.instance().get(MogCommandService.class);
         MogCommand command = commandService.get(request.getCommand());
-        System.out.println("command = " + command);
 
         MogOptions options = MogOptions.parse(request.getRawArgs().toArray(new String[0]));
         commandService.runner(command.getClass()).run(command, options);

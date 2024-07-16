@@ -9,14 +9,11 @@ public class MogEndpointHandler implements HttpHandler {
     private final MogEndpoint endpoint;
 
     public MogEndpointHandler(MogEndpoint endpoint) {
-        System.out.println("endpoint = " + endpoint);
         this.endpoint = endpoint;
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        System.out.println("endpoint = " + endpoint);
-
         if (endpoint instanceof MogAnnotatedEndpoint) {
             new MogAnnotatedEndpointHandler(endpoint).handleRequest(exchange);
         } else {

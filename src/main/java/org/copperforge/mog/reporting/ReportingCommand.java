@@ -21,11 +21,14 @@ public class ReportingCommand {
         ReportOptions reportOptions = ReportOptions.parse(options);
         log.trace("reportOptions = " + reportOptions);
 
+        log.info("Generating report " + reportOptions.getReport() + " ...");
         Report definition = ReportService.instance().parse(reportOptions.getReport());
         log.trace("report def = " + definition);
         ReportWriter builder = ReportWriterService.instance().builder(definition.getType());
         builder.build(definition);
-        builder.save(FileNameBuilder.build(definition.getFilename()));
+        String filename = FileNameBuilder.build(definition.getFilename());
+        builder.save(filename);
+        log.info("Report can be found at '" + filename + "' ...");
     }
 
 }

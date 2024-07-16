@@ -26,13 +26,13 @@ public class MogServiceManager {
 
             MogService serviceAnnotation;
             Object instance;
-            log.info("Finding MogServices ...");
+            log.trace("Finding MogServices ...");
             for (Class<?> service : mogServices) {
                 serviceAnnotation = service.getAnnotation(MogService.class);
                 instance = service.getDeclaredConstructor().newInstance();
                 services.put(serviceAnnotation.name(), instance);
             }
-            log.info("Found :: " + services.toString());
+            log.trace("Found :: " + services.toString());
         } catch (Exception e) {
             log.error("Unable to process MogServiceManager initialization", e);
             throw new MogException(e);

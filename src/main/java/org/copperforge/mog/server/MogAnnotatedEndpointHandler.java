@@ -28,8 +28,6 @@ public class MogAnnotatedEndpointHandler extends MogEndpointHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        System.out.println("endpoint = " + annotatedEndpoint);
-
         String response = "n/a";
         if (annotatedEndpoint.getCallback() != null && annotatedEndpoint.getCallback() != null) {
             Class<?> returnType = annotatedEndpoint.getCallback().getReturnType();
@@ -58,7 +56,6 @@ public class MogAnnotatedEndpointHandler extends MogEndpointHandler {
             } else {
                 List<Object> values = new ArrayList<>();
                 for (Parameter p : paramters) {
-                    System.out.println("processsing " + p.getName() + " : " + p.getType().getName());
                     if (p.getType().equals(HeaderMap.class)) {
                         values.add(exchange.getRequestHeaders());
                     } else if (p.getType().equals(HttpServerExchange.class)) {
@@ -70,11 +67,9 @@ public class MogAnnotatedEndpointHandler extends MogEndpointHandler {
                                 new InputStreamReader(exchange.getInputStream(), StandardCharsets.UTF_8))
                                 .lines()
                                 .collect(Collectors.joining("\n"));
-                        System.out.println("text = " + text);
 
                         ObjectMapper mapper = new ObjectMapper();
                         Object obj = mapper.readValue(text, p.getType());
-                        System.out.println("obj = " + obj);
 
                         // parse object from json
                         values.add(obj); // TODO

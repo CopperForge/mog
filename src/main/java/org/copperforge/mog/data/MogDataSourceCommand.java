@@ -13,8 +13,8 @@ public class MogDataSourceCommand {
 
     @MogCommand(name="list", description="List the data sources available")
     public void list() throws MogException {
-        log.info("Command datasource list");
-        log.info(Mog.mog().config().getDataSources().toString());
+        log.debug("Command datasource list");
+        log.debug(Mog.mog().config().getDataSources().toString());
     }
     
 }

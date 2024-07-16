@@ -27,7 +27,7 @@ public class Mogrifier {
     }
 
     public Mogrifier mogrify(Object moggable) throws MogException {
-        log.info("Transmogrifying :: " + moggable.getClass());
+        log.debug("Transmogrifying :: " + moggable.getClass());
         try {
 
             Field[] fields = moggable.getClass().getDeclaredFields();
@@ -36,7 +36,7 @@ public class Mogrifier {
                 for (Moglet moglet : moglets) {
                     field.setAccessible(true);
                     Class<?> mogletClass = field.getType();
-                    log.info("mogletClass :: " + mogletClass);
+                    log.debug("mogletClass :: " + mogletClass);
 
                     if (mogletClass.equals(MogConfig.class)) {
                         field.set(moggable, config);

@@ -39,7 +39,6 @@ public class MogServer {
             log.info("Adding endpoint '" + path + "' as " + endpoint);
             routingHandler.add(new HttpString(endpoint.getHttpMethod()), endpoint.getPath(), new MogEndpointHandler(endpoint));
         }
-        System.out.println("routingHandler = " + routingHandler);
 
         server = Undertow.builder().addHttpListener(8080, "localhost").setHandler(new BlockingHandler(routingHandler))
                 .build();

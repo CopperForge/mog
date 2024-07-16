@@ -29,11 +29,10 @@ public class Mog {
     }
 
     public static void main(String[] args) {
-        System.out.println("Yo!");
         try {
             mog = new Mog();
             MogOptions options = MogOptions.parse(args);
-            log.info("options = " + options);
+            log.debug("options = " + options);
 
             mog.initialize(options);
             mog.run(options);
@@ -45,11 +44,11 @@ public class Mog {
     public void run(MogOptions options) throws MogException {
         // big todo
         if (options.getCommand() != null) {
-            log.info("Finding command " + options.getCommand());
+            log.debug("Finding command " + options.getCommand());
             MogCommand cmd = commandService.get(options.getCommand());
-            log.info("command = " + cmd);
+            log.debug("command = " + cmd);
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
-            log.info("runner = " + runner);
+            log.debug("runner = " + runner);
             runner.run(cmd, options);
         }
 
@@ -60,9 +59,9 @@ public class Mog {
         MogServiceManager manager = MogServiceManager.instance();
         environmentService = (VariableService) manager.get(MogVariableService.class);
 
-        log.info("configFile = " + options.getConfigFile());
+        log.debug("configFile = " + options.getConfigFile());
         String configFile = environmentService.envsubst(options.getConfigFile());
-        log.info("configFile (after) = " + configFile);
+        log.debug("configFile (after) = " + configFile);
         config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
         log.trace("config = " + config);
 
@@ -75,7 +74,7 @@ public class Mog {
         }
 
         // loads the available commands
-        log.info("commands = " + commandService.find());
+        log.debug("commands = " + commandService.find());
 
         // TODO mogrify all moggables
 

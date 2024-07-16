@@ -71,14 +71,12 @@ public class MogCommandService {
         return new MogClassScanner()
                 .filter(MogAnnotationFilter.filter(org.copperforge.mog.annotations.MogCommand.class))
                 .scan().stream().map(c -> {
-                    log.info("c = " + c);
                     org.copperforge.mog.annotations.MogCommand annotation = c
                             .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
                     MogAnnotatedCommand command = new MogAnnotatedCommand();
                     command.setClassName(c.getName());
                     command.setDescription(annotation.description());
                     command.setName(annotation.name());
-                    log.info("annotation = " + annotation);
                     return command;
                 }).collect(Collectors.toList());
 
@@ -90,7 +88,7 @@ public class MogCommandService {
 
         for (String path : config.getSearchPaths().getCommands()) {
             path = environmentService.envsubst(path);
-            log.info("path = " + path);
+            log.debug("path = " + path);
 
             File p = new File(path);
             if (p.exists() && p.isDirectory()) {
@@ -116,23 +114,23 @@ public class MogCommandService {
         // discover all the services available and put them in the service map
         try {
             MogClassScanner scanner = new MogClassScanner();
-            log.info("Finding MogRunners ...");
+            log.debug("Finding MogRunners ...");
             Set<Class<?>> runnerClasses = scanner.filter(MogAnnotationFilter.filter(MogRunner.class)).scan();
-            log.info("Found classes = " + runnerClasses);
+            log.debug("Found classes = " + runnerClasses);
             
             Set<Class<? extends MogCommandRunner<?>>> mogRunners = runnerClasses.stream()
                     .map(c -> (Class<? extends MogCommandRunner<?>>) c).collect(Collectors.toSet());
 
             MogRunner annote;
             Object instance;
-            log.info("Finding MogRunners ...");
+            log.debug("Finding MogRunners ...");
             for (Class<? extends MogCommandRunner<?>> runner : mogRunners) {
-                log.info("Found runner : " + runner);
+                log.debug("Found runner : " + runner);
                 annote = runner.getAnnotation(MogRunner.class);
                 instance = runner.getDeclaredConstructor().newInstance();
                 runners.put(annote.commandClass().getName(), instance);
             }
-            log.info("Found :: " + runners.toString());
+            log.debug("Found :: " + runners.toString());
         } catch (Exception e) {
             log.error("Unable to process MogServiceManager initialization", e);
             throw new MogException(e);

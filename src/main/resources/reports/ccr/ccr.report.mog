@@ -123,12 +123,12 @@
                         {
                             "title": "Source Date",
                             "key": "source_date",
-                            "width": 50 
+                            "width": 50
                         },
                         {
                             "title": "Target Database",
                             "key": "target_database",
-                            "width": 31 
+                            "width": 31
                         },
                         {
                             "title": "Source Record Count",
@@ -138,12 +138,12 @@
                         {
                             "title": "Bypassed Record Count",
                             "key": "bypassed_record_count",
-                            "width": 31 
+                            "width": 31
                         },
                         {
                             "title": "Orphan Record Count",
                             "key": "orphan_record_count",
-                            "width": 31 
+                            "width": 31
                         },
                         {
                             "title": "Source Records Considered Count",
@@ -205,7 +205,6 @@
                         "row": 0,
                         "col": 11
                     }
-
                 },
                 {
                     "type": "table",
@@ -272,15 +271,15 @@
                             "key": "quarter",
                             "width": 31
                         }
-                   ],
-                   "dataSource": {
-                       "type": "jdbc",
-                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                       "user": "h2",
-                       "password": "password",
-                       "query": "select * from t_ccr_source_summary",
-                       "jdbcClass": "org.h2.Driver"
-                   }
+                    ],
+                    "dataSource": {
+                        "type": "jdbc",
+                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+                        "user": "h2",
+                        "password": "password",
+                        "query": "select * from t_ccr_source_summary",
+                        "jdbcClass": "org.h2.Driver"
+                    }
                 }
             ]
         },
@@ -296,7 +295,8 @@
                     },
                     "referenceTable": "sourceSummaryTable",
                     "pivotRows": [
-                        0, 3
+                        0,
+                        3
                     ],
                     "pivotColumns": [
                         2
@@ -327,7 +327,6 @@
                         "row": 0,
                         "col": 11
                     }
-
                 },
                 {
                     "type": "table",
@@ -369,15 +368,15 @@
                             "key": "quarter",
                             "width": 31
                         }
-                   ],
-                   "dataSource": {
-                       "type": "jdbc",
-                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                       "user": "h2",
-                       "password": "password",
-                       "query": "select * from t_ccr_target_summary",
-                       "jdbcClass": "org.h2.Driver"
-                   }
+                    ],
+                    "dataSource": {
+                        "type": "jdbc",
+                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+                        "user": "h2",
+                        "password": "password",
+                        "query": "select * from t_ccr_target_summary",
+                        "jdbcClass": "org.h2.Driver"
+                    }
                 }
             ]
         },
@@ -393,7 +392,9 @@
                     },
                     "referenceTable": "targetSummaryTable",
                     "pivotRows": [
-                        0, 1, 3
+                        0,
+                        1,
+                        3
                     ],
                     "pivotColumns": [
                         2
@@ -510,15 +511,15 @@
                             "key": "quarter",
                             "width": 31
                         }
-                   ],
-                   "dataSource": {
-                       "type": "jdbc",
-                       "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                       "user": "h2",
-                       "password": "password",
-                       "query": "select * from t_ccr_message_summary",
-                       "jdbcClass": "org.h2.Driver"
-                   }
+                    ],
+                    "dataSource": {
+                        "type": "jdbc",
+                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+                        "user": "h2",
+                        "password": "password",
+                        "query": "select * from t_ccr_message_summary",
+                        "jdbcClass": "org.h2.Driver"
+                    }
                 }
             ]
         },
@@ -534,7 +535,10 @@
                     },
                     "referenceTable": "messageSummaryTable",
                     "pivotRows": [
-                        0, 1, 11, 13
+                        0,
+                        1,
+                        11,
+                        13
                     ],
                     "pivotColumns": [
                         2

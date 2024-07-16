@@ -24,21 +24,21 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
     public void run(MogCommand command, MogOptions options, String... args) throws MogException {
         try {
             MogAnnotatedCommand cmd = (MogAnnotatedCommand) command;
-            log.info("Running annotated command " + command + " with args " + args);
+            log.debug("Running annotated command " + command + " with args " + args);
 
             Class<?> commandClass = Class.forName(cmd.getClassName());
-            log.info("commandClass = " + commandClass);
-            log.info("runnable? = " + commandClass.isInstance(Runnable.class));
+            log.debug("commandClass = " + commandClass);
+            log.debug("runnable? = " + commandClass.isInstance(Runnable.class));
 
             String subcommand = options.getSubCommands().stream().findFirst().orElse(null);
-            log.info("Looking for subcommand: " + subcommand);
+            log.debug("Looking for subcommand: " + subcommand);
 
             Object commandObject = commandClass.getConstructor().newInstance();
             for (Method method : commandClass.getDeclaredMethods()) {
                 org.copperforge.mog.annotations.MogCommand annotation = method
                         .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
                 if (annotation != null && annotation.name().equals(subcommand)) {
-                    log.info("Annotated method = " + method + ", " + annotation.name() + ", "
+                    log.debug("Annotated method = " + method + ", " + annotation.name() + ", "
                             + annotation.description());
 
                     if (method.getParameterCount() == 1

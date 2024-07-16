@@ -42,10 +42,8 @@ public class ReportService {
                     } else {
                         fullpath += "/" + filename;
                     }
-                    System.out.println("searching " + fullpath);
                     file = new File(fullpath);
                     if (file.exists()) {
-                        System.out.println("Found at " + path + filename);
                         InputStream in = new FileInputStream(file);
                         return objectMapper.readValue(in, Report.class);
                     }
