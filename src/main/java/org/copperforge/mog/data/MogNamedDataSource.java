@@ -9,7 +9,7 @@ public class MogNamedDataSource extends MogDataSource {
     private String name;
 
     @Override
-    public List<MogFetchable> fetch() throws MogException {
+    public List<MogFetchable> fetch(int offset, int limit) throws MogException {
         throw new MogException("Unimplemented method 'data'");
     }
 

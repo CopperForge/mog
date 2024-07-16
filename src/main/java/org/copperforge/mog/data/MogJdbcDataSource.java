@@ -121,7 +121,7 @@ public class MogJdbcDataSource extends MogDataSource {
     }
 
     @Override
-    public List<MogFetchable> fetch() throws MogException {
+    public List<MogFetchable> fetch(int offset, int limit) throws MogException {
         List<MogFetchable> data = new ArrayList<>();
         MogServiceManager manager = MogServiceManager.instance();
         VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
@@ -134,6 +134,15 @@ public class MogJdbcDataSource extends MogDataSource {
             Connection con = DriverManager.getConnection(
                     url, username, password);
             Statement st = con.createStatement();
+            
+            if (offset > 0) {
+                query = addOffset(query, offset);
+            }
+
+            if (limit > 0) {
+                query = addLimit(query, limit);
+            }
+
             ResultSet rs = st.executeQuery(query); // Execute query
             ResultSetMetaData meta = rs.getMetaData();
             
@@ -157,6 +166,14 @@ public class MogJdbcDataSource extends MogDataSource {
         }
 
         return data;
+    }
+
+    private String addLimit(String query, int limit) {
+        return query + " FETCH NEXT " + limit + " ROWS ONLY";
+    }
+
+    private String addOffset(String query, int offset) {
+        return query + " OFFSET " + offset + " ROWS";
     }
 
   
