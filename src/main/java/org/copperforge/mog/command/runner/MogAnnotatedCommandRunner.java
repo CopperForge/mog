@@ -1,5 +1,6 @@
-package org.copperforge.mog.runner;
+package org.copperforge.mog.command.runner;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 
 import org.copperforge.mog.MogOptions;
@@ -7,6 +8,7 @@ import org.copperforge.mog.MogException;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.command.MogAnnotatedCommand;
 import org.copperforge.mog.command.MogCommand;
+import org.copperforge.mog.command.MogCommandResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +18,13 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
     private Logger log = LoggerFactory.getLogger(MogAnnotatedCommandRunner.class);
 
     @Override
-    public void run(MogAnnotatedCommand command, MogOptions options) throws MogException {
-        run(command, options, new String[] {});
+    public MogCommandResponse run(MogAnnotatedCommand command, MogOptions options) throws MogException {
+        return run(command, options, new String[] {});
     }
 
     @Override
-    public void run(MogCommand command, MogOptions options, String... args) throws MogException {
+    public MogCommandResponse run(MogCommand command, MogOptions options, String... args) throws MogException {
+        MogCommandResponse response = new MogCommandResponse();
         try {
             MogAnnotatedCommand cmd = (MogAnnotatedCommand) command;
             log.debug("Running annotated command " + command + " with args " + args);
@@ -51,8 +54,11 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
             }
 
         } catch (Exception e) {
-            throw new MogException(e);
+            log.error("Error running command: ", e);
+            response.setReturnCode(-1);
+            response.setResponse(new ByteArrayInputStream(e.getMessage().getBytes()));
         }
+        return response;
     }
 
 }
