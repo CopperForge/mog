@@ -1,8 +1,6 @@
 package org.copperforge.mog.archiving;
 
 import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +64,7 @@ public class MogArchiver {
     @MogCommand(name = "deflate", description = "Deflate the given archive set")
     public MogCommandResponse deflate() throws MogException {
         MogCommandResponse response = new MogCommandResponse();
+        MogFileFinder fileFinder = new MogFileFinder();
 
         log.info("Archive sets = " + Mog.mog().config().getArchiveSets());
 
@@ -76,15 +75,13 @@ public class MogArchiver {
         for (String assetPath : archiveSet.getAssets()) {
             File f = new File(assetPath);
             if (!f.exists()) {
-                log.warn("Asset '" + assetPath + "' does not exist");
-
                 // check to see if it is a pattern
                 MogPath path = new MogPath(assetPath);
                 log.info("" + path);
-                assets.addAll(new MogFileFinder(path.getFilename()).find(path.getBase()));
+                assets.addAll(fileFinder.listFiles(path.getBase(), path.getFilename()));
             } else if (f.isDirectory()) {
                 log.info("Found directory '" + f.getAbsolutePath() + "'");
-                assets.addAll(getDirectoryAssets(f.getAbsolutePath()));
+                assets.addAll(fileFinder.listFiles(f.getAbsolutePath()));
             } else {
                 log.info("Found file '" + f.getAbsolutePath() + "'");
                 assets.add(f);
@@ -93,35 +90,16 @@ public class MogArchiver {
         log.info("Assets = " + assets);
 
         // match and remove exclusions
-        PathMatcher matcher;
         List<File> exclusions = new ArrayList<>();
-        for (File asset : assets) {
-            for (String exclusion : archiveSet.getExclusions()) {
-                matcher = FileSystems.getDefault().getPathMatcher("glob:" + exclusion);
-                if (matcher.matches(asset.toPath())) {
-                    log.info("File '" + asset.getAbsolutePath() + "' matches exclusion '" + exclusion + "'");
-                    exclusions.add(asset);
-                }
-            }
+        for (String exclusion : archiveSet.getExclusions()) {
+            exclusions.addAll(fileFinder.matchFiles(assets, exclusion));
         }
+        log.info("exclusions = " + exclusions);
 
         assets.removeAll(exclusions);
         log.info("Assets (final) = " + assets);
 
         return response;
-    }
-
-    private List<File> getDirectoryAssets(String absolutePath) {
-        List<File> assets = new ArrayList<>();
-        File d = new File(absolutePath);
-        for (File f : d.listFiles()) {
-            if (f.isDirectory()) {
-                assets.addAll(getDirectoryAssets(f.getAbsolutePath()));
-            } else {
-                assets.add(f);
-            }
-        }
-        return assets;
     }
 
     @MogCommand(name = "inflate", description = "Inflate the given archive set")
