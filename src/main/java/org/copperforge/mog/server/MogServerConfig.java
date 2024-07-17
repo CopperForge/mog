@@ -6,7 +6,7 @@ public class MogServerConfig {
 
     private Integer port = 8080;
 
-    private String prefix = "/mog";
+    private String prefix = "/";
 
     public String getHost() {
         return host;

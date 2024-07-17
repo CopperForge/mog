@@ -9,10 +9,12 @@ import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.server.MogServerConfig;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MogConfig implements MogObject {
 
+    @JsonProperty("server")
     private MogServerConfig serverConfig;
 
     private MogVariable environment[];
@@ -81,14 +83,6 @@ public class MogConfig implements MogObject {
 
     public void setDataSources(List<MogDataSource> dataSources) {
         this.dataSources = dataSources;
-    }
-
-    public MogServerConfig getServer() {
-        return serverConfig;
-    }
-
-    public void setServer(MogServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
     }
 
     public MogServerConfig getServerConfig() {
