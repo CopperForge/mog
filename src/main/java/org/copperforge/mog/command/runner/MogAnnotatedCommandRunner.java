@@ -1,10 +1,12 @@
 package org.copperforge.mog.command.runner;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 
-import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.command.MogAnnotatedCommand;
 import org.copperforge.mog.command.MogCommand;
@@ -44,11 +46,22 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
                     log.debug("Annotated method = " + method + ", " + annotation.name() + ", "
                             + annotation.description());
 
+                    Object invokeResp;
                     if (method.getParameterCount() == 1
                             && method.getParameters()[0].getType().equals(MogOptions.class)) {
-                        method.invoke(commandObject, options); // TODO pass args
+                        invokeResp = method.invoke(commandObject, options);
                     } else {
-                        method.invoke(commandObject); // TODO pass args
+                        invokeResp = method.invoke(commandObject);
+                    }
+
+                    if (invokeResp instanceof MogCommandResponse) {
+                        return (MogCommandResponse) invokeResp;
+                    } else {
+                        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(byteOut);
+                        oos.writeObject(invokeResp);
+
+                        response.setResponse(new ByteArrayInputStream(byteOut.toByteArray()));
                     }
                 }
             }
