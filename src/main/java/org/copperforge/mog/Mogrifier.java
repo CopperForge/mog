@@ -3,6 +3,7 @@ package org.copperforge.mog;
 import java.lang.reflect.Field;
 
 import org.copperforge.mog.annotations.Moglet;
+import org.copperforge.mog.config.MogConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

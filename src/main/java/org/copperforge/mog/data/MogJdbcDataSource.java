@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogServiceManager;
-import org.copperforge.mog.MogVariableService;
-import org.copperforge.mog.VariableService;
+import org.copperforge.mog.var.MogVariableService;
+import org.copperforge.mog.var.VariableService;
 
 public class MogJdbcDataSource extends MogDataSource {
 

@@ -4,7 +4,10 @@ import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.MogCommand;
 import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
+import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.reader.MogReader;
+import org.copperforge.mog.var.MogVariableService;
+import org.copperforge.mog.var.VariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

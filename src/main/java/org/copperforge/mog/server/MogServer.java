@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogCommand;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
@@ -33,8 +34,16 @@ public class MogServer {
     }
 
     @MogCommand(name = "start", description = "start MOG server")
-    public void start() {
+    public void start(MogOptions options) {
         MogServerConfig config = Mog.mog().config().getServerConfig();
+        log.info("serverConfig = " + config);
+        MogServerOptions serverOpts = (MogServerOptions) MogServerOptions.parse(options);
+        log.info("serverOpts = " + serverOpts);
+
+        int port = serverOpts.getPort() != null ? serverOpts.getPort() : config.getPort();
+        String host = serverOpts.getHost() != null ? serverOpts.getHost() : config.getHost();
+        String prefix = serverOpts.getPrefix() != null ? serverOpts.getPrefix() : config.getPrefix();
+
         RoutingHandler routingHandler = new RoutingHandler();
         for (String path : endpoints.keySet()) {
             MogEndpoint endpoint = endpoints.get(path);
@@ -42,10 +51,10 @@ public class MogServer {
             routingHandler.add(new HttpString(endpoint.getHttpMethod()), endpoint.getPath(), new MogEndpointHandler(endpoint));
         }
 
-        server = Undertow.builder().addHttpListener(config.getPort(), config.getHost()).setHandler(new BlockingHandler(routingHandler))
+        server = Undertow.builder().addHttpListener(port, host).setHandler(new BlockingHandler(routingHandler))
                 .build();
         server.start();
-        log.info("MOG server listening at http://" + config.getHost() + ":" + config.getPort() + config.getPrefix());
+        log.info("MOG server listening at http://" + host + ":" + port + prefix);
     }
 
     protected Map<String, MogEndpoint> findAnnotatedEndpoints() throws MogException {

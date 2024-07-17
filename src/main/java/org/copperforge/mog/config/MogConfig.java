@@ -1,12 +1,14 @@
-package org.copperforge.mog;
+package org.copperforge.mog.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.copperforge.mog.MogObject;
 import org.copperforge.mog.archiving.MogArchiveSet;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.server.MogServerConfig;
+import org.copperforge.mog.var.MogVariable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

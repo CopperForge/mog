@@ -9,16 +9,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.copperforge.mog.MogConfig;
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.MogVariableService;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.annotations.MogService;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.runner.MogCommandRunner;
+import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
+import org.copperforge.mog.var.MogVariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

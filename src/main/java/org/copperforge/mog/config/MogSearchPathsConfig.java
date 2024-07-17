@@ -1,4 +1,4 @@
-package org.copperforge.mog;
+package org.copperforge.mog.config;
 
 import java.util.List;
 
