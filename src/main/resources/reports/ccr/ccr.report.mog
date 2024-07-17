@@ -34,7 +34,8 @@
                         "col": 3
                     },
                     "height": 100,
-                    "text": "Copyright © 2022 Gainwell Technologies\n\nReport ID: 5010 - Conversion Cycle\n\nPurpose: The purpose of this report is to provide a single source by which leadership can assess the overall performance of the conversion upon the completion of a conversion cycle."
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nReport ID: 5010 - Conversion Cycle\n\nPurpose: The purpose of this report is to provide a single source by which leadership can assess the overall performance of the conversion upon the completion of a conversion cycle.",
+                    "style": "TopWrap"
                 },
                 {
                     "type": "table",
@@ -93,7 +94,8 @@
                         "col": 3
                     },
                     "height": 50,
-                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information."
+                    "text": "Copyright © 2022 Gainwell Technologies\n\nThis tab contains the conversion cycle summary information.",
+                    "style": "TopWrap"
                 },
                 {
                     "type": "table",
@@ -204,7 +206,8 @@
                     "lowerRight": {
                         "row": 0,
                         "col": 11
-                    }
+                    },
+                    "style": "TopWrap"
                 },
                 {
                     "type": "table",
@@ -326,7 +329,8 @@
                     "lowerRight": {
                         "row": 0,
                         "col": 11
-                    }
+                    },
+                    "style": "TopWrap"
                 },
                 {
                     "type": "table",
@@ -424,7 +428,8 @@
                     "lowerRight": {
                         "row": 0,
                         "col": 11
-                    }
+                    },
+                    "style": "TopWrap"
                 },
                 {
                     "type": "table",

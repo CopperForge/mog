@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.copperforge.mog.archiving.MogArchiveSet;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.server.MogServerConfig;
 
@@ -27,6 +28,8 @@ public class MogConfig implements MogObject {
     private List<MogDataSource> dataSources = new ArrayList<>();
 
     private MogSearchPathsConfig searchPaths;
+
+    private List<MogArchiveSet> archiveSets;
 
     private MogConfig() {
 
@@ -104,11 +107,20 @@ public class MogConfig implements MogObject {
         this.searchPaths = searchPaths;
     }
 
+    public List<MogArchiveSet> getArchiveSets() {
+        return archiveSets;
+    }
+
+    public void setArchiveSets(List<MogArchiveSet> archiveSets) {
+        this.archiveSets = archiveSets;
+    }
+
     @Override
     public String toString() {
         return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
                 + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
-                + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + "]";
+                + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + ", archiveSets=" + archiveSets
+                + "]";
     }
 
 }

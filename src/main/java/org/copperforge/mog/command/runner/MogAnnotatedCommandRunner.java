@@ -69,7 +69,9 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
         } catch (Exception e) {
             log.error("Error running command: ", e);
             response.setReturnCode(-1);
-            response.setResponse(new ByteArrayInputStream(e.getMessage().getBytes()));
+            response.setResponse(
+                    new ByteArrayInputStream(e.getLocalizedMessage() != null ? e.getLocalizedMessage().getBytes()
+                            : new String("Error running command").getBytes()));
         }
         return response;
     }

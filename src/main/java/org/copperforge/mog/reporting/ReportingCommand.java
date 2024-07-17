@@ -3,7 +3,7 @@ package org.copperforge.mog.reporting;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogCommand;
-import org.copperforge.mog.io.FileNameBuilder;
+import org.copperforge.mog.io.MogFileNameBuilder;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.ReportService;
 import org.copperforge.mog.reporting.writer.ReportWriter;
@@ -26,7 +26,7 @@ public class ReportingCommand {
         log.trace("report def = " + definition);
         ReportWriter builder = ReportWriterService.instance().builder(definition.getType());
         builder.build(definition);
-        String filename = FileNameBuilder.build(definition.getFilename());
+        String filename = MogFileNameBuilder.build(definition.getFilename());
         builder.save(filename);
         log.info("Report can be found at '" + filename + "' ...");
     }
