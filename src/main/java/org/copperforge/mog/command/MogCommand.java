@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true, defaultImpl = MogShellCommand.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = MogShellCommand.class, name = "shell"),
         @JsonSubTypes.Type(value = MogScriptCommand.class, name = "script"),
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public class MogCommand {
 
-    private MogCommandType type;
+    private MogCommandType type = MogCommandType.SHELL;
 
     private String name;
 

@@ -151,14 +151,15 @@ public class MogArchiver {
         return response;
     }
 
+    @SuppressWarnings("resource")
     @MogCommand(name = "inflate", description = "Inflate the given archive set")
     public MogCommandResponse inflate() {
         MogCommandResponse response = new MogCommandResponse();
         String archiveName = "archive.zip";
 
         try {
-            byte[] buffer = new byte[1024];
             ZipInputStream zis = new ZipInputStream(new FileInputStream(archiveName));
+            byte[] buffer = new byte[1024];
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
                 File newFile = new File(zipEntry.getName());
