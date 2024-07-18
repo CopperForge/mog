@@ -10,11 +10,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogFinder;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.annotations.MogService;
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
+import org.copperforge.mog.io.MogFileFinder;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reflection.MogAnnotationFilter;
 import org.copperforge.mog.reflection.MogClassScanner;
@@ -84,27 +86,18 @@ public class MogCommandService {
     }
 
     protected List<? extends MogCommand> findCommandMogs() throws MogException {
-        MogReader<MogCommand> commandReader = new MogReader<MogCommand>(MogCommand.class);
-        List<MogCommand> commands = new ArrayList<MogCommand>();
+        MogFinder<MogCommand, MogReader<MogCommand>> finder = new MogFinder<>(new MogReader<MogCommand>(MogCommand.class));
+        List<MogCommand> commands = new ArrayList<>();
 
         for (String path : config.getSearchPaths().getCommands()) {
             path = environmentService.envsubst(path);
             log.debug("path = " + path);
 
-            File p = new File(path);
-            if (p.exists() && p.isDirectory()) {
-                List<File> files = Stream.of(new File(path).listFiles())
-                        .filter(f -> f.getName().matches(".*\\.command\\.mog")).collect(Collectors.toList());
-                for (File file : files) {
-                    commands.add(commandReader.read(file));
-                }
-            } else if (p.exists() && p.isFile()) {
-                commands.add(commandReader.read(p));
-            } else if (!p.exists()) {
-                // throw new MogException("Resource " + path + " does not exist");
-                log.warn("Resource " + path + " does not exist");
+            if (new File(path).exists()) {
+                commands.addAll(finder.find(path, "*.command.mog"));
+            } else {
+                log.warn("Path '" + path + "' does not exist.");
             }
-
         }
 
         return commands;
