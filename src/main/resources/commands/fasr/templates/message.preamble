@@ -1,0 +1,17 @@
+ <Worksheet ss:Name="Messages">
+  <Table x:FullColumns="1"
+   x:FullRows="1" ss:StyleID="sDefault">
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="148.5"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="158.25"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="86.25"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="116.25"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="116.25"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="330.75"/>
+   <Column ss:StyleID="sDefault" ss:Width="50.25"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="330.75"/>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sDefault"><Data ss:Type="String">Report</Data></Cell>
+    <Cell ss:StyleID="sDefaultBold"><Data ss:Type="String">Conversion Message Summary</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0"/>
+   <Row ss:AutoFitHeight="0"/>

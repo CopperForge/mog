@@ -1,0 +1,8 @@
+{
+    "name": "convert",
+    "description": "Runs the conversion for the current project",
+    "usage": "${MOG_COMMAND_HOME}/convert.command.usage.txt",
+    "script": "cnvj",
+    "requiredParameters": [ "--runid" ],
+    "optionalParameters": [ "--subdir" ]
+}

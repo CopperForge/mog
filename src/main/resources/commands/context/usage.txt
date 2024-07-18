@@ -1,0 +1,6 @@
+mog context [--get=<context name or alias>] [--switch=<context name or alias>]  [--list]
+
+    --get     :: Show the config for the given context
+    --switch  :: Actively switch configuration from current context to specified context (if it exists)
+    --list    :: List the currently configured contexts
+    --help    :: displays this

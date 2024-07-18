@@ -1,0 +1,8 @@
+{
+    "name": "project",
+    "description": "Maintains the project ecosystem",
+    "usage": "${MOG_COMMAND_HOME}/project/usage.txt",
+    "script": ". ${MOG_HOME}/commands/project/project.command.sh",
+    "requiredParameters": [],
+    "optionalParameters": []
+}

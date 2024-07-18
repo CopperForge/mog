@@ -1,0 +1,8 @@
+{
+    "name": "context",
+    "description": "Manages mog contexts",
+    "usage": "${MOG_COMMAND_HOME}/context/usage.txt",
+    "script": ". ${MOG_COMMAND_HOME}/context/context.command.sh",
+    "requiredParameters": [],
+    "optionalParameters": []
+}

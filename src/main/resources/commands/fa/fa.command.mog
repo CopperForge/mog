@@ -1,0 +1,8 @@
+{
+    "name": "fa",
+    "description": "Manages mog Functional Areas",
+    "usage": "",
+    "script": ". ${MOG_COMMAND_HOME}/fa/fa.command.sh",
+    "requiredParameters": [],
+    "optionalParameters": []
+}

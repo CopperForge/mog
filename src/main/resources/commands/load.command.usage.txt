@@ -1,0 +1,13 @@
+mog load --runid=<runid> --env=<database env> [--subdir=<sub-directory>] (*)
+cnvl --runid=<runid> --env=<database env> [--subdir=<sub-directory>] (*)
+
+Loads the conversion program results for the RUNID to the target environment for the current project directory.
+
+    --runid              :: The runid for the conversion run
+    --env                :: The target database environment
+    --subdir (optional)  :: A sub-directory used to identify correct input folder and output folder
+    --help               :: displays this
+
+
+* - Must be run from a subdirectory within the project folder (i.e. bin, sysin, src)
+

@@ -1,0 +1,8 @@
+{
+    "name": "dialects",
+    "description": "Manages mog dialects",
+    "usage": "",
+    "script": "${MOG_COMMAND_HOME}/dialects/dialects.command.sh",
+    "requiredParameters": [],
+    "optionalParameters": []
+}

@@ -1,0 +1,8 @@
+{
+    "name": "source",
+    "description": "Exports the current projects datasets based on control file",
+    "usage": "${MOG_COMMAND_HOME}/source.command.usage.txt",
+    "script": "cnvs",
+    "requiredParameters": [],
+    "optionalParameters": []
+}

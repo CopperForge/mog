@@ -1,0 +1,8 @@
+{
+    "name": "fasr",
+    "description": "Manages mog FASR reporting",
+    "usage": "",
+    "script": ". ${MOG_COMMAND_HOME}/fasr/fasr.command.sh",
+    "requiredParameters": [ ],
+    "optionalParameters": [ ]
+}

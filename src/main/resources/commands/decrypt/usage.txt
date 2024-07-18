@@ -1,0 +1,8 @@
+mog decrypt [--pass=<encryption password>] --value=<value to encrypt>
+
+    --pass (optional)   :: the password to use while encrpyting the value
+    --value             :: the value to encrypt
+    --help              :: displays this
+
+Outputs the encrypted string.
+

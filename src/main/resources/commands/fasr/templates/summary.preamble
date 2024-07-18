@@ -1,0 +1,66 @@
+ <Worksheet ss:Name="Conversion Summary">
+  <Table x:FullColumns="1"
+   x:FullRows="1" ss:StyleID="sDefault">
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="148.5"/>
+   <Column ss:StyleID="sDefault" ss:AutoFitWidth="0" ss:Width="116.25" ss:Span="3"/>
+   <Row AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Functional Area</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@FUNCTIONAL_AREA@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Conversion Manager</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@CONVERSION_MANAGER@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="1">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Conversion Resource(s)</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@CONVERSION_RESOURCE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Report Creation Date</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@REPORT_DATE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Source Data Retrieval Date</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@SOURCE_DATE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Conversion Run Date</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@CONVERSION_DATE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Run ID</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@RUN_ID@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Target Database</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@TARGET_DATABASE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Target Database Population Date</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3"><Data ss:Type="String">@CONVERSION_DATE@</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0" ss:Height="187.5">
+    <Cell ss:StyleID="sRowLabel"><Data ss:Type="String">Overall FA Status</Data></Cell>
+    <Cell ss:StyleID="sSCellString" ss:MergeAcross="3" ><Data ss:Type="String">@OVERALL_FA_STATUS@&#10;
+&#10;
+Summarize the overall functional area run result with items such as&#10;
+&#10;
+- Total run time&#10;
+- Total records to be converted&#10;
+- Total records with errors&#10;
+- Total records converted &#10;
+- Overall % converted&#10;
+&#10;
+For now, create these stats manually
+</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0"/>
+
+   <Row ss:AutoFitHeight="0" ss:Height="25">
+    <Cell ss:StyleID="sColumnLabel"><Data ss:Type="String">Program</Data></Cell>
+    <Cell ss:StyleID="sColumnLabel"><Data ss:Type="String">Run ID</Data></Cell>
+    <Cell ss:StyleID="sColumnLabel"><Data ss:Type="String">Start Time</Data></Cell>
+    <Cell ss:StyleID="sColumnLabel"><Data ss:Type="String">End Time</Data></Cell>
+    <Cell ss:StyleID="sColumnLabel"><Data ss:Type="String">Total Run Time</Data></Cell>
+   </Row>
+
