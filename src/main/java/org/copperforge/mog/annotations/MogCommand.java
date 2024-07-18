@@ -11,6 +11,8 @@ public @interface MogCommand {
 
     String name();
 
-    String description();
+    String description() default "";
+
+    String usage() default "";
 
 }
