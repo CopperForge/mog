@@ -1,20 +1,33 @@
 package org.copperforge.mog.data;
 
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MogRestDataSource extends MogDataSource {
 
+    private final Logger log = LoggerFactory.getLogger(MogRestDataSource.class);
     private final ObjectMapper mapper = new ObjectMapper();
 
     private String url;
@@ -29,7 +42,10 @@ public class MogRestDataSource extends MogDataSource {
     public List<MogFetchable> fetch(int offset, int limit) {
         try {
             // create client
-            HttpClient client = HttpClient.newHttpClient();
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[] { mogTrustManager }, new SecureRandom());
+
+            HttpClient client = HttpClient.newBuilder().sslContext(sslContext).build();
 
             // create request
             HttpRequest request = HttpRequest.newBuilder()
@@ -37,11 +53,16 @@ public class MogRestDataSource extends MogDataSource {
                     .uri(URI.create(getUrl()))
                     .build();
 
+            log.debug("HttpRequest = " + request);
             HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
+            log.debug("HttpResponse = " + resp);
             TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {
             };
+            String body = resp.body().toString();
+            log.trace("body = " + body);
+            List<Map<String, Object>> response = mapper.readValue(body, typeRef);
+            // log.info("fetchable = " + response);
 
-            List<Map<String, Object>> response = mapper.readValue(resp.body().toString(), typeRef);
             return response.stream().map(MogFetchable::new).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,4 +158,40 @@ public class MogRestDataSource extends MogDataSource {
         return true;
     }
 
+    protected static final TrustManager mogTrustManager = new X509ExtendedTrustManager() {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[0];
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
+        }
+
+    };
 }

@@ -130,7 +130,7 @@ public class MogJdbcDataSource extends MogDataSource {
             String username = getUser(); // credentials
             String password = getPassword(); // TODO encryption
             String query = getQuery(); // query to be run
-            Class.forName(getJdbcClass()); // Driver name
+            if (getJdbcClass() != null && !getJdbcClass().isEmpty()) Class.forName(getJdbcClass()); // Driver name
             Connection con = DriverManager.getConnection(
                     url, username, password);
             Statement st = con.createStatement();
@@ -145,6 +145,10 @@ public class MogJdbcDataSource extends MogDataSource {
 
             ResultSet rs = st.executeQuery(query); // Execute query
             ResultSetMetaData meta = rs.getMetaData();
+
+            for (int i = 1; i <= meta.getColumnCount(); i++) {
+                System.out.println("got column " + meta.getColumnLabel(i));   
+            }
             
             String columnName;
             Object value;

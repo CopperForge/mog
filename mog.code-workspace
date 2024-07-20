@@ -1,8 +1,11 @@
 {
     "folders": [
-		{
-			"path": "."
-		}
+        {
+            "path": "."
+        },
+        {
+            "path": "../../../../../../conv/local/mog"
+        }
     ],
     "settings": {
         "java.configuration.updateBuildConfiguration": "automatic",
