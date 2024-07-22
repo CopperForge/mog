@@ -41,6 +41,7 @@ dependencies {
     implementation 'com.gwt.conversion:dotout:0.0.1-SNAPSHOT'
     implementation 'com.h2database:h2:2.2.224'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
+    implementation 'com.oracle:ojdbc8:21.11'
 
     implementation 'io.undertow:undertow-core:2.3.14.Final'
     implementation 'io.undertow:undertow-servlet:2.3.14.Final'

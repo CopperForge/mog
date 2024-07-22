@@ -24,21 +24,21 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {
-        log.debug("Writing element " + element);
+        log.info("Writing element " + element);
         Table tableElement = (Table) element;
 
         // get the data
         List<MogFetchable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().fetch() : null;
         List<Column> columns = tableElement.getColumns();
-        int rowCount = (data != null) ? data.size() : 1;
+        int rowCount = (data != null && data.size() > 0) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;
 
-        AreaReference reference = workbook().getCreationHelper()
-                .createAreaReference(new CellReference(tableElement.getUpperLeft().getRow(),
-                        tableElement.getUpperLeft().getCol()),
-                        new CellReference(tableElement.getUpperLeft().getRow() + rowCount,
-                                tableElement.getUpperLeft().getCol() +
-                                        columnCount - 1));
+        log.info("rowCount = " + rowCount + ", columnCount = " + columnCount);
+        
+        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(), tableElement.getUpperLeft().getCol());
+        CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount, 
+                                                        tableElement.getUpperLeft().getCol() + columnCount - 1);
+        AreaReference reference = workbook().getCreationHelper().createAreaReference(topLeft,bottomRight);
 
         // Create
         XSSFTable table = sheet().createTable(reference);
@@ -73,7 +73,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     sheet().setColumnWidth(colNum + tableElement.getUpperLeft().getCol(), columnDef.getWidth() * 256);
                 }
 
-                log.debug("table.getColumns() = " + table.getColumnCount());
+                log.debug("table.getColumns() = " + table.getColumnCount() + "; colNum = " + colNum);
                 column = table.getColumns().get(colNum);
                 column.setName(columnDef.getTitle());
                 cell = row.createCell(colNum++);

@@ -146,9 +146,9 @@ public class MogJdbcDataSource extends MogDataSource {
             ResultSet rs = st.executeQuery(query); // Execute query
             ResultSetMetaData meta = rs.getMetaData();
 
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                System.out.println("got column " + meta.getColumnLabel(i));   
-            }
+            // for (int i = 1; i <= meta.getColumnCount(); i++) {
+            //     System.out.println("got column " + meta.getColumnLabel(i));   
+            // }
             
             String columnName;
             Object value;
