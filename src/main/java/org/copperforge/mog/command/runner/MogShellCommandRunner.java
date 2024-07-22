@@ -1,6 +1,7 @@
 package org.copperforge.mog.command.runner;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,12 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
             commands.addAll(shellCommand.getCommands());
             commands.addAll(suffixes());
             builder.command(commands);
+
+            if (options.getWorkingDirectory() != null) {
+                builder.directory(new File(options.getWorkingDirectory()));
+            } else {
+                builder.directory(new File(shellCommand.getWorkingDirectory()));
+            }
 
             Process process = builder.start();
             response.setResponse(process.getInputStream());

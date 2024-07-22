@@ -18,6 +18,9 @@ public class MogOptions {
     @Option(names = "--config", description = "specify MOG config file (defaults to ${MOG_HOME}/config.mog)")
     private String configFile = "${MOG_HOME}/config.mog";
 
+    @Option(names = "--working-dir", description = "specify the working dir to execute the command")
+    private String workingDirectory = null;
+
     @Parameters(paramLabel = "COMMANDS", description = "mog commands")
     private final List<String> commands = new ArrayList<>();
 
@@ -54,12 +57,6 @@ public class MogOptions {
         return commands.size() > 0 ? commands.subList(1, commands.size()) : null;
     }
 
-    @Override
-    public String toString() {
-        return "MogCommandOptions [helpRequested=" + helpRequested + ", configFile=" + configFile + ", commands="
-                + commands + "]";
-    }
-
     public List<String> rawArgs() {
         return rawArgs;
     }
@@ -72,4 +69,65 @@ public class MogOptions {
                 .parseArgs(args);
         return options;
     }
+
+    public String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
+
+    @Override
+    public String toString() {
+        return "MogOptions [rawArgs=" + rawArgs + ", helpRequested=" + helpRequested + ", configFile=" + configFile
+                + ", workingDirectory=" + workingDirectory + ", commands=" + commands + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((rawArgs == null) ? 0 : rawArgs.hashCode());
+        result = prime * result + (helpRequested ? 1231 : 1237);
+        result = prime * result + ((configFile == null) ? 0 : configFile.hashCode());
+        result = prime * result + ((workingDirectory == null) ? 0 : workingDirectory.hashCode());
+        result = prime * result + ((commands == null) ? 0 : commands.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MogOptions other = (MogOptions) obj;
+        if (rawArgs == null) {
+            if (other.rawArgs != null)
+                return false;
+        } else if (!rawArgs.equals(other.rawArgs))
+            return false;
+        if (helpRequested != other.helpRequested)
+            return false;
+        if (configFile == null) {
+            if (other.configFile != null)
+                return false;
+        } else if (!configFile.equals(other.configFile))
+            return false;
+        if (workingDirectory == null) {
+            if (other.workingDirectory != null)
+                return false;
+        } else if (!workingDirectory.equals(other.workingDirectory))
+            return false;
+        if (commands == null) {
+            if (other.commands != null)
+                return false;
+        } else if (!commands.equals(other.commands))
+            return false;
+        return true;
+    }
+    
 }
