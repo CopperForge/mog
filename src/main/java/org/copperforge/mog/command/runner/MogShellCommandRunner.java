@@ -21,8 +21,6 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
 
     private final ProcessBuilder builder;
     private Logger log = LoggerFactory.getLogger(MogShellCommandRunner.class);
-    private final List<String> prefixes = new ArrayList<>();
-    private final List<String> suffixes = new ArrayList<>();
 
     public MogShellCommandRunner() {
         builder = new ProcessBuilder().redirectErrorStream(true);
@@ -37,14 +35,15 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
     @Override
     public MogCommandResponse run(MogCommand command, MogOptions options, String... args) throws MogException {
         log.trace("Running " + command + "(" + args + ")");
+
         MogCommandResponse response = new MogCommandResponse();
         try {
             if (command.getCommand() == null)
                 throw new NullMogCommandException();
             List<String> commands = new ArrayList<>();
-            commands.addAll(prefixes);
+            commands.addAll(prefixes());
             commands.addAll(Arrays.asList(command.getCommand()));
-            commands.addAll(suffixes);
+            commands.addAll(suffixes());
             builder.command(commands);
 
             Process process = builder.start();
@@ -56,6 +55,26 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
             response.setResponse(new ByteArrayInputStream(e.getMessage().getBytes()));
         }
         return response;
+    }
+
+    private boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().startsWith("windows");
+    }
+
+    protected List<String> prefixes() {
+        List<String> prefixes = new ArrayList<>();
+        if (isWindows()) {
+            prefixes.add("cmd.exe");
+            prefixes.add("/c");
+        } else { // for now, assume unix
+            prefixes.add("/bin/sh");
+            prefixes.add("-c");
+        }
+        return prefixes;
+    }
+
+    protected List<String> suffixes() {
+        return new ArrayList<>();
     }
 
 }
