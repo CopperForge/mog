@@ -35,10 +35,6 @@ public class MogCommand {
         this.description = description;
     }
 
-    public String getCommand() {
-        return null;
-    }
-
     public MogCommandType getType() {
         return type;
     }

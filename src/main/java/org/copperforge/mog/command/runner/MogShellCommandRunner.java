@@ -3,11 +3,10 @@ package org.copperforge.mog.command.runner;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogRunner;
 import org.copperforge.mog.command.MogCommand;
 import org.copperforge.mog.command.MogCommandResponse;
@@ -35,14 +34,18 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
     @Override
     public MogCommandResponse run(MogCommand command, MogOptions options, String... args) throws MogException {
         log.trace("Running " + command + "(" + args + ")");
+        MogShellCommand shellCommand = (MogShellCommand) command;
 
         MogCommandResponse response = new MogCommandResponse();
         try {
-            if (command.getCommand() == null)
+            log.info("shell command = " + command);
+
+            if (shellCommand.getCommands() == null || shellCommand.getCommands().isEmpty())
                 throw new NullMogCommandException();
+
             List<String> commands = new ArrayList<>();
             commands.addAll(prefixes());
-            commands.addAll(Arrays.asList(command.getCommand()));
+            commands.addAll(shellCommand.getCommands());
             commands.addAll(suffixes());
             builder.command(commands);
 

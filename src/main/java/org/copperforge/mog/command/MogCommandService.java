@@ -55,7 +55,7 @@ public class MogCommandService {
         // search annotations for @MogCommand
         commands.addAll(findAnnotated());
 
-        log.info("Found commands :: " + commands);
+        log.debug("Found commands :: " + commands);
         return commands;
     }
 

@@ -2,8 +2,15 @@ package org.copperforge.mog.command;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MogShellCommand extends MogCommand {
 
+    @JsonProperty("script")
+    @JsonAlias({ "command", "commands" })
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> commands;
 
     private String workingDirectory = System.getProperty("user.dir");
@@ -58,8 +65,7 @@ public class MogShellCommand extends MogCommand {
     @Override
     public String toString() {
         return "MogShellCommand [commands=" + commands + ", workingDirectory=" + workingDirectory + ", getName()="
-                + getName() + ", getDescription()=" + getDescription() + ", getCommand()=" + getCommand()
-                + ", getType()=" + getType() + "]";
+                + getName() + ", getDescription()=" + getDescription() + ", getType()=" + getType() + "]";
     }
 
 }

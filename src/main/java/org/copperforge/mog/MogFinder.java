@@ -23,7 +23,7 @@ public class MogFinder<T, R extends MogReader<T>> {
 
         List<File> files = new MogFileFinder().listFiles(mogPath, mogPattern);
         for (File file : files) {
-            log.info("Found file '" + file.getAbsolutePath() + "'");
+            log.debug("Found file '" + file.getAbsolutePath() + "'");
             mogs.add(reader.read(file));
         }
 

@@ -1,7 +1,12 @@
 package org.copperforge.mog;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
+
 import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.command.MogCommand;
+import org.copperforge.mog.command.MogCommandResponse;
 import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
@@ -36,11 +41,22 @@ public class Mog {
             mog = new Mog();
             MogOptions options = MogOptions.parse(args);
             log.debug("options = " + options);
-
             mog.initialize(options);
+
+            if (options.isHelpRequested()) {
+                mog.listCommands();
+                System.exit(0);
+            }
+
             mog.run(options);
         } catch (MogException e) {
             log.error("Exception occurred:" , e);
+        }
+    }
+
+    private void listCommands() throws MogException {
+        for (MogCommand command : commandService.list()) {
+            log.info(command.getName() + " : " + command.getDescription());
         }
     }
 
@@ -52,7 +68,8 @@ public class Mog {
             log.debug("command = " + cmd);
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
             log.debug("runner = " + runner);
-            runner.run(cmd, options);
+            MogCommandResponse response = runner.run(cmd, options);
+            System.out.println(new BufferedReader(new InputStreamReader(response.getResponse())).lines().collect(Collectors.joining("\n")));
         }
 
     }
