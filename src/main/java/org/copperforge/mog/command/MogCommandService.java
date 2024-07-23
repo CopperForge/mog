@@ -1,6 +1,7 @@
 package org.copperforge.mog.command;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,6 @@ public class MogCommandService {
 
     private final List<MogCommand> commands = new ArrayList<>();
     private final Map<String, Object> runners = new HashMap<>();
-
 
     @Moglet
     MogConfig config;
@@ -69,22 +69,47 @@ public class MogCommandService {
     }
 
     protected List<? extends MogCommand> findAnnotated() throws MogException {
-        return new MogClassScanner()
+        List<Class<?>> mogCommandClasses = new MogClassScanner()
                 .filter(MogAnnotationFilter.filter(org.copperforge.mog.annotations.MogCommand.class))
-                .scan().stream().map(c -> {
-                    org.copperforge.mog.annotations.MogCommand annotation = c
-                            .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
-                    MogAnnotatedCommand command = new MogAnnotatedCommand();
-                    command.setClassName(c.getName());
-                    command.setDescription(annotation.description());
-                    command.setName(annotation.name());
-                    return command;
-                }).collect(Collectors.toList());
+                .scan().stream().collect(Collectors.toList());
 
+        List<MogCommand> commands = new ArrayList<>();
+
+        for (Class<?> mogCommandClass : mogCommandClasses) {
+            org.copperforge.mog.annotations.MogCommand annotation = mogCommandClass
+                    .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
+
+            if (annotation.name().isEmpty()) {
+                // find all methods annotated with MogCommand
+                Method[] methods = mogCommandClass.getDeclaredMethods();
+                for (Method method : methods) {
+                    annotation = method.getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
+                    if (annotation != null) {
+                        MogAnnotatedCommand command = new MogAnnotatedCommand();
+                        command.setClassName(mogCommandClass.getName());
+                        command.setMethodName(method.getName());
+                        command.setDescription(annotation.description());
+                        command.setName(annotation.name());
+                        commands.add(command);
+                    }
+                }
+
+            } else {
+                MogAnnotatedCommand command = new MogAnnotatedCommand();
+                command.setClassName(mogCommandClass.getName());
+                command.setMethodName(annotation.method());
+                command.setDescription(annotation.description());
+                command.setName(annotation.name());
+                commands.add(command);
+            }
+        }
+
+        return commands;
     }
 
     protected List<? extends MogCommand> findCommandMogs() throws MogException {
-        MogFinder<MogCommand, MogReader<MogCommand>> finder = new MogFinder<>(new MogReader<MogCommand>(MogCommand.class));
+        MogFinder<MogCommand, MogReader<MogCommand>> finder = new MogFinder<>(
+                new MogReader<MogCommand>(MogCommand.class));
         List<MogCommand> commands = new ArrayList<>();
 
         for (String path : config.getSearchPaths().getCommands()) {
@@ -109,7 +134,7 @@ public class MogCommandService {
             log.debug("Finding MogRunners ...");
             Set<Class<?>> runnerClasses = scanner.filter(MogAnnotationFilter.filter(MogRunner.class)).scan();
             log.debug("Found classes = " + runnerClasses);
-            
+
             Set<Class<? extends MogCommandRunner<?>>> mogRunners = runnerClasses.stream()
                     .map(c -> (Class<? extends MogCommandRunner<?>>) c).collect(Collectors.toSet());
 

@@ -9,10 +9,12 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 public @interface MogCommand {
 
-    String name();
+    String name() default "";
 
     String description() default "";
 
     String usage() default "";
 
+    String method() default "";
+    
 }

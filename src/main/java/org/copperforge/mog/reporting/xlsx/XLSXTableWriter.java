@@ -24,7 +24,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {
-        log.info("Writing element " + element);
+        log.debug("Writing element " + element);
         Table tableElement = (Table) element;
 
         // get the data
@@ -33,7 +33,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         int rowCount = (data != null && data.size() > 0) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;
 
-        log.info("rowCount = " + rowCount + ", columnCount = " + columnCount);
+        log.debug("rowCount = " + rowCount + ", columnCount = " + columnCount);
         
         CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(), tableElement.getUpperLeft().getCol());
         CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount, 

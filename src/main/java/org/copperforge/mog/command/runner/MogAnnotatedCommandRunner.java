@@ -38,32 +38,51 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
             String subcommand = options.getSubCommands().stream().findFirst().orElse(null);
             log.debug("Looking for subcommand: " + subcommand);
 
-            Object commandObject = commandClass.getConstructor().newInstance();
-            for (Method method : commandClass.getDeclaredMethods()) {
-                org.copperforge.mog.annotations.MogCommand annotation = method
-                        .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
-                if (annotation != null && annotation.name().equals(subcommand)) {
-                    log.debug("Annotated method = " + method + ", " + annotation.name() + ", "
-                            + annotation.description());
+            Method method = null;
+            if (subcommand == null) {
+                // run the command method
+                if (cmd.getMethodName() == null || cmd.getMethodName().isEmpty())
+                    throw new MogException("Unable to determine execution method for command '" + cmd.getName()
+                            + "' in class '" + cmd.getClassName() + "'");
 
-                    Object invokeResp;
-                    if (method.getParameterCount() == 1
-                            && method.getParameters()[0].getType().equals(MogOptions.class)) {
-                        invokeResp = method.invoke(commandObject, options);
-                    } else {
-                        invokeResp = method.invoke(commandObject);
-                    }
+                method = commandClass.getDeclaredMethod(cmd.getMethodName());
+            } else {
+                // look for the method driving the subcommand
+                for (Method m : commandClass.getDeclaredMethods()) {
+                    org.copperforge.mog.annotations.MogCommand annotation = m
+                            .getAnnotation(org.copperforge.mog.annotations.MogCommand.class);
 
-                    if (invokeResp instanceof MogCommandResponse) {
-                        return (MogCommandResponse) invokeResp;
-                    } else {
-                        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-                        ObjectOutputStream oos = new ObjectOutputStream(byteOut);
-                        oos.writeObject(invokeResp);
+                    if (annotation != null && annotation.name().equals(subcommand)) {
+                        log.debug("Annotated method = " + m + ", " + annotation.name() + ", "
+                                + annotation.description());
 
-                        response.setResponse(new ByteArrayInputStream(byteOut.toByteArray()));
+                        method = m;
+                        break;
                     }
                 }
+            }
+
+            Object commandObject = commandClass.getConstructor().newInstance();
+            Object invokeResp;
+            if (method == null)
+                throw new MogException("Unable to determine execution method for command '" + cmd.getName()
+                        + "' in class '" + cmd.getClassName() + "'");
+
+            if (method.getParameterCount() == 1
+                    && method.getParameters()[0].getType().equals(MogOptions.class)) {
+                invokeResp = method.invoke(commandObject, options);
+            } else {
+                invokeResp = method.invoke(commandObject);
+            }
+
+            if (invokeResp instanceof MogCommandResponse) {
+                return (MogCommandResponse) invokeResp;
+            } else {
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(byteOut);
+                oos.writeObject(invokeResp);
+
+                response.setResponse(new ByteArrayInputStream(byteOut.toByteArray()));
             }
 
         } catch (Exception e) {
