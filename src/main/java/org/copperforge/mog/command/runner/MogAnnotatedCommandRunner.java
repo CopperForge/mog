@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 
+import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogRunner;
@@ -45,7 +46,12 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
                     throw new MogException("Unable to determine execution method for command '" + cmd.getName()
                             + "' in class '" + cmd.getClassName() + "'");
 
-                method = commandClass.getDeclaredMethod(cmd.getMethodName());
+                for (Method m : commandClass.getDeclaredMethods()) {
+                    if (m.getName().equals(cmd.getMethodName())) {
+                        method = m;
+                        break;
+                    }
+                }
             } else {
                 // look for the method driving the subcommand
                 for (Method m : commandClass.getDeclaredMethods()) {
@@ -63,6 +69,7 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
             }
 
             Object commandObject = commandClass.getConstructor().newInstance();
+            Mog.mog().mogrifier().mogrify(commandObject);
             Object invokeResp;
             if (method == null)
                 throw new MogException("Unable to determine execution method for command '" + cmd.getName()
@@ -77,6 +84,8 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
 
             if (invokeResp instanceof MogCommandResponse) {
                 return (MogCommandResponse) invokeResp;
+            } else if (invokeResp instanceof String) {
+                response.setResponse(new ByteArrayInputStream(((String) invokeResp).getBytes()));
             } else {
                 ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(byteOut);

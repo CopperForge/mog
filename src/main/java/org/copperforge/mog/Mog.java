@@ -21,6 +21,7 @@ public class Mog {
     private static Logger log = LoggerFactory.getLogger(Mog.class);
     private static Mog mog;
     private MogConfig config;
+    private Mogrifier mogrifier;
 
     @Moglet
     VariableService environmentService;
@@ -33,7 +34,11 @@ public class Mog {
     }
 
     public MogConfig config() {
-        return config;
+        return this.config;
+    }
+
+    public Mogrifier mogrifier() {
+        return this.mogrifier;
     }
 
     public static void main(String[] args) {
@@ -60,6 +65,7 @@ public class Mog {
         }
     }
 
+    @SuppressWarnings("resource")
     public void run(MogOptions options) throws MogException {
         // big todo
         if (options.getCommand() != null) {
@@ -86,7 +92,7 @@ public class Mog {
         log.trace("config = " + config);
 
         // mogrify this guy
-        Mogrifier mogrifier = new Mogrifier().config(config);
+        mogrifier = new Mogrifier().config(config);
         mogrifier.mogrify(this);
 
         for (Object service : manager.services()) {

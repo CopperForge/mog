@@ -1,8 +1,0 @@
-{
-    "name": "encrypt",
-    "description": "Encrypts a given string",
-    "usage": "",
-    "script": "${MOG_COMMAND_HOME}/encrypt/encrypt.command.sh",
-    "requiredParameters": [],
-    "optionalParameters": []
-}

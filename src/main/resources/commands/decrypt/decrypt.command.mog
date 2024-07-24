@@ -1,8 +1,0 @@
-{
-    "name": "decrypt",
-    "description": "Decrypts a given string",
-    "usage": "${MOG_COMMAND_HOME}/decrypt/usage.txt",
-    "script": ". ${MOG_COMMAND_HOME}/decrypt/decrypt.command.sh",
-    "requiredParameters": [],
-    "optionalParameters": []
-}
