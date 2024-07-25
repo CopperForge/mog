@@ -69,12 +69,11 @@
                         }
                     ],
                     "dataSource": {
-                        "type": "jdbc",
-                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                        "user": "h2",
-                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
-                        "query": "select * from t_ccr_changelog order by change_date desc",
-                        "jdbcClass": "org.h2.Driver"
+                        "name": "reporting",
+                        "filter": {
+                            "type": "query",
+                            "query": "select * from t_ccr_changelog order by change_date desc"
+                        }
                     }
                 }
             ]
@@ -187,7 +186,14 @@
                             "key": "info_record_count",
                             "width": 31
                         }
-                    ]
+                    ],
+                    "dataSource": {
+                        "name": "reporting",
+                        "filter": {
+                            "type": "query",
+                            "query": "select * from t_ccr_summary"
+                        }
+                    }
                 }
             ]
         },
@@ -276,12 +282,11 @@
                         }
                     ],
                     "dataSource": {
-                        "type": "jdbc",
-                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                        "user": "h2",
-                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
-                        "query": "select * from t_ccr_source_summary",
-                        "jdbcClass": "org.h2.Driver"
+                        "name": "reporting",
+                        "filter": {
+                            "type": "query",
+                            "query": "select * from t_ccr_source_summary"
+                        }
                     }
                 }
             ]
@@ -374,12 +379,11 @@
                         }
                     ],
                     "dataSource": {
-                        "type": "jdbc",
-                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                        "user": "h2",
-                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
-                        "query": "select * from t_ccr_target_summary",
-                        "jdbcClass": "org.h2.Driver"
+                        "name": "reporting",
+                        "filter": {
+                            "type": "query",
+                            "query": "select * from t_ccr_target_summary"
+                        }
                     }
                 }
             ]
@@ -518,12 +522,11 @@
                         }
                     ],
                     "dataSource": {
-                        "type": "jdbc",
-                        "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
-                        "user": "h2",
-                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
-                        "query": "select * from t_ccr_message_summary",
-                        "jdbcClass": "org.h2.Driver"
+                        "name": "reporting",
+                        "filter": {
+                            "type": "query",
+                            "query": "select * from t_ccr_message_summary"
+                        }
                     }
                 }
             ]

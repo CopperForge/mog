@@ -9,8 +9,11 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
+import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.MogFetchable;
+import org.copperforge.mog.reporting.ReportDataSource;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.ReportElement;
@@ -24,21 +27,31 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {
-        log.debug("Writing element " + element);
+        log.info("Writing element " + element);
         Table tableElement = (Table) element;
 
         // get the data
-        List<MogFetchable> data = (tableElement.getDataSource() != null) ? tableElement.getDataSource().fetch() : null;
+        ReportDataSource reportDataSource = tableElement.getDataSource();
+        log.info("reportDataSource = " + reportDataSource);
+        log.info("mogDtaSources = " + Mog.mog().config().getDataSources());
+        MogDataSource mogDataSource = Mog.mog().config().getDataSources().stream()
+                .filter(d -> d.getName().equals(reportDataSource.getName())).findFirst()
+                .orElseThrow(() -> new MogException("Unable to find datasource"));
+
+        List<MogFetchable> data = (mogDataSource != null) ? mogDataSource.fetch(reportDataSource.getFilter())
+                : null;
+                
         List<Column> columns = tableElement.getColumns();
         int rowCount = (data != null && data.size() > 0) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;
 
         log.debug("rowCount = " + rowCount + ", columnCount = " + columnCount);
-        
-        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(), tableElement.getUpperLeft().getCol());
-        CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount, 
-                                                        tableElement.getUpperLeft().getCol() + columnCount - 1);
-        AreaReference reference = workbook().getCreationHelper().createAreaReference(topLeft,bottomRight);
+
+        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(),
+                tableElement.getUpperLeft().getCol());
+        CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount,
+                tableElement.getUpperLeft().getCol() + columnCount - 1);
+        AreaReference reference = workbook().getCreationHelper().createAreaReference(topLeft, bottomRight);
 
         // Create
         XSSFTable table = sheet().createTable(reference);

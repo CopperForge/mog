@@ -1,14 +1,12 @@
 package org.copperforge.mog.reporting;
 
+import org.copperforge.mog.data.filter.MogDataFilter;
+
 public class ReportDataSource {
 
     private String name;
 
-    private String query;
-
-    private Integer offset = 0;
-
-    private Integer limit = -1;
+    private MogDataFilter filter = null;
 
     public String getName() {
         return name;
@@ -18,33 +16,17 @@ public class ReportDataSource {
         this.name = name;
     }
 
-    public String getQuery() {
-        return query;
+    public MogDataFilter getFilter() {
+        return filter;
     }
 
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public Integer getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Integer offset) {
-        this.offset = offset;
-    }
-
-    public Integer getLimit() {
-        return limit;
-    }
-
-    public void setLimit(Integer limit) {
-        this.limit = limit;
+    public void setFilter(MogDataFilter filter) {
+        this.filter = filter;
     }
 
     @Override
     public String toString() {
-        return "ReportDataSource [name=" + name + ", query=" + query + ", offset=" + offset + ", limit=" + limit + "]";
+        return "ReportDataSource [name=" + name + ", filter=" + filter + "]";
     }
 
     @Override
@@ -52,9 +34,7 @@ public class ReportDataSource {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((query == null) ? 0 : query.hashCode());
-        result = prime * result + ((offset == null) ? 0 : offset.hashCode());
-        result = prime * result + ((limit == null) ? 0 : limit.hashCode());
+        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
         return result;
     }
 
@@ -72,20 +52,10 @@ public class ReportDataSource {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (query == null) {
-            if (other.query != null)
+        if (filter == null) {
+            if (other.filter != null)
                 return false;
-        } else if (!query.equals(other.query))
-            return false;
-        if (offset == null) {
-            if (other.offset != null)
-                return false;
-        } else if (!offset.equals(other.offset))
-            return false;
-        if (limit == null) {
-            if (other.limit != null)
-                return false;
-        } else if (!limit.equals(other.limit))
+        } else if (!filter.equals(other.filter))
             return false;
         return true;
     }

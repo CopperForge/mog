@@ -2,10 +2,12 @@ package org.copperforge.mog.reporting.element.table;
 
 import java.util.List;
 
-import org.copperforge.mog.data.MogDataSource;
+import org.copperforge.mog.reporting.ReportDataSource;
 import org.copperforge.mog.reporting.definition.CellReference;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.element.ReportElement;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class Table extends ReportElement {
 
@@ -14,7 +16,8 @@ public class Table extends ReportElement {
     private String style;
     private List<Column> columns;
     private CellReference upperLeft;
-    private MogDataSource dataSource;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+    private ReportDataSource dataSource;
     private Boolean enableFilters = true;
 
     public List<Column> getColumns() {
@@ -57,11 +60,11 @@ public class Table extends ReportElement {
         this.upperLeft = upperLeft;
     }
 
-    public MogDataSource getDataSource() {
+    public ReportDataSource getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(MogDataSource dataSource) {
+    public void setDataSource(ReportDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogServiceManager;
+import org.copperforge.mog.data.filter.MogDataFilter;
+import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.copperforge.mog.security.MogSecurityService;
 import org.copperforge.mog.var.MogVariableService;
 import org.copperforge.mog.var.VariableService;
@@ -26,8 +28,6 @@ public class MogJdbcDataSource extends MogDataSource {
 
     private String password;
 
-    private String query;
-
     private String jdbcClass;
 
     public String getUrl() {
@@ -36,14 +36,6 @@ public class MogJdbcDataSource extends MogDataSource {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
     }
 
     public String getUser() {
@@ -72,8 +64,7 @@ public class MogJdbcDataSource extends MogDataSource {
 
     @Override
     public String toString() {
-        return "MogJdbcDataSource [url=" + url + ", user=" + user + ", password=*, query=" + query
-                + ", jdbcClass=" + jdbcClass + "]";
+        return "MogJdbcDataSource [url=" + url + ", user=" + user + ", password=*, jdbcClass=" + jdbcClass + "]";
     }
 
     @Override
@@ -83,7 +74,6 @@ public class MogJdbcDataSource extends MogDataSource {
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((user == null) ? 0 : user.hashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
-        result = prime * result + ((query == null) ? 0 : query.hashCode());
         result = prime * result + ((jdbcClass == null) ? 0 : jdbcClass.hashCode());
         return result;
     }
@@ -112,11 +102,6 @@ public class MogJdbcDataSource extends MogDataSource {
                 return false;
         } else if (!password.equals(other.password))
             return false;
-        if (query == null) {
-            if (other.query != null)
-                return false;
-        } else if (!query.equals(other.query))
-            return false;
         if (jdbcClass == null) {
             if (other.jdbcClass != null)
                 return false;
@@ -126,8 +111,12 @@ public class MogJdbcDataSource extends MogDataSource {
     }
 
     @Override
-    public List<MogFetchable> fetch(int offset, int limit) throws MogException {
-        MogSecurityService securityService = (MogSecurityService) MogServiceManager.instance().get(MogSecurityService.class);
+    public List<MogFetchable> fetch(MogDataFilter filter) throws MogException {
+        MogSecurityService securityService = (MogSecurityService) MogServiceManager.instance()
+                .get(MogSecurityService.class);
+
+        MogQueryFilter queryFilter = (MogQueryFilter) filter;
+
         log.info("securityService = " + securityService);
         List<MogFetchable> data = new ArrayList<>();
         MogServiceManager manager = MogServiceManager.instance();
@@ -135,34 +124,31 @@ public class MogJdbcDataSource extends MogDataSource {
         try {
             String url = environmentService.envsubst(getUrl()); // url
             String username = getUser(); // credentials
-            String password = securityService.decryptor().decrypt(getPassword()); // TODO encryption
-            String query = getQuery(); // query to be run
-            if (getJdbcClass() != null && !getJdbcClass().isEmpty()) Class.forName(getJdbcClass()); // Driver name
+            String password = securityService.decryptor().decrypt(getPassword());
+            String query = queryFilter.getQuery(); // query to be run
+            if (getJdbcClass() != null && !getJdbcClass().isEmpty())
+                Class.forName(getJdbcClass()); // Driver name
             Connection con = DriverManager.getConnection(
                     url, username, password);
             Statement st = con.createStatement();
-            
-            if (offset > 0) {
-                query = addOffset(query, offset);
+
+            if (filter.getOffset() > 0) {
+                query = addOffset(query, filter.getOffset().intValue());
             }
 
-            if (limit > 0) {
-                query = addLimit(query, limit);
+            if (filter.getLimit() > 0) {
+                query = addLimit(query, filter.getLimit().intValue());
             }
 
             ResultSet rs = st.executeQuery(query); // Execute query
             ResultSetMetaData meta = rs.getMetaData();
 
-            // for (int i = 1; i <= meta.getColumnCount(); i++) {
-            //     System.out.println("got column " + meta.getColumnLabel(i));   
-            // }
-            
             String columnName;
             Object value;
             while (rs.next()) {
                 MogFetchable reportable = new MogFetchable();
 
-                for (int colidx = 1 ; colidx <= meta.getColumnCount(); colidx++) {
+                for (int colidx = 1; colidx <= meta.getColumnCount(); colidx++) {
                     columnName = meta.getColumnName(colidx);
                     value = rs.getObject(colidx);
                     reportable.set(columnName.toLowerCase(), value);
@@ -187,5 +173,4 @@ public class MogJdbcDataSource extends MogDataSource {
         return query + " OFFSET " + offset + " ROWS";
     }
 
-  
 }

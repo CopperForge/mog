@@ -19,6 +19,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedTrustManager;
 
+import org.copperforge.mog.data.filter.MogDataFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class MogRestDataSource extends MogDataSource {
     private String method;
 
     @Override
-    public List<MogFetchable> fetch(int offset, int limit) {
+    public List<MogFetchable> fetch(MogDataFilter filter) {
         try {
             // create client
             SSLContext sslContext = SSLContext.getInstance("SSL");
