@@ -1,6 +1,7 @@
 package org.copperforge.mog;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.copperforge.mog.command.MogCommandResponse;
 import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
+import org.copperforge.mog.config.Mogf;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.var.MogVariableService;
 import org.copperforge.mog.var.VariableService;
@@ -22,6 +24,9 @@ public class Mog {
     private static Mog mog;
     private MogConfig config;
     private Mogrifier mogrifier;
+    private static MogOptions options;
+    private Mogf mogf;
+    
 
     @Moglet
     VariableService environmentService;
@@ -41,10 +46,18 @@ public class Mog {
         return this.mogrifier;
     }
 
+    public MogOptions options() {
+        return options;
+    }
+
+    public Mogf mogf() {
+        return mogf;
+    }
+
     public static void main(String[] args) {
         try {
             mog = new Mog();
-            MogOptions options = MogOptions.parse(args);
+            options = MogOptions.parse(args);
             log.debug("options = " + options);
             mog.initialize(options);
 
@@ -81,15 +94,27 @@ public class Mog {
     }
 
     private void initialize(MogOptions options) throws MogException {
-        // initalize the service manager
-        MogServiceManager manager = MogServiceManager.instance();
-        environmentService = (VariableService) manager.get(MogVariableService.class);
-
+        
         log.debug("configFile = " + options.getConfigFile());
-        String configFile = environmentService.envsubst(options.getConfigFile());
+        String configFile = new MogVariableService().envsubst(options.getConfigFile());
         log.debug("configFile (after) = " + configFile);
         config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
         log.trace("config = " + config);
+
+        // get mogf
+        File mogFile = new File(Mog.mog().config().userHome() + "/.mog");
+        if (!mogFile.isFile()) {
+            mogFile = new File(Mog.mog().config().mogHome() + "/.mog");
+            if (!mogFile.isFile()) mogFile = null;
+        }
+        log.info("Using mogf of " + mogFile);
+
+        if (mogFile != null) mogf = new MogReader<Mogf>(Mogf.class).read(mogFile);
+        else mogf = new Mogf();
+
+        // initalize the service manager
+        MogServiceManager manager = MogServiceManager.instance();
+        environmentService = (VariableService) manager.get(MogVariableService.class);
 
         // mogrify this guy
         mogrifier = new Mogrifier().config(config);

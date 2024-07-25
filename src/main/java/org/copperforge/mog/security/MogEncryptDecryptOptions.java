@@ -5,16 +5,16 @@ import org.copperforge.mog.MogOptions;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
-public class MogEncryptOptions extends MogOptions {
+public class MogEncryptDecryptOptions extends MogOptions {
 
-    @Option(names = "--value", description = "the value to encrypt")
+    @Option(names = "--value", description = "the value to encrypt/decrypt")
     private String value;
 
     @Option(names = "--password", description = "the password to use during encryption")
     private String password;
 
-    public static MogEncryptOptions parse(MogOptions options) {
-        MogEncryptOptions encryptOptions = new MogEncryptOptions();
+    public static MogEncryptDecryptOptions parse(MogOptions options) {
+        MogEncryptDecryptOptions encryptOptions = new MogEncryptDecryptOptions();
         new CommandLine(encryptOptions).parseArgs(options.rawArgs().toArray(new String[0]));
         return encryptOptions;
     }

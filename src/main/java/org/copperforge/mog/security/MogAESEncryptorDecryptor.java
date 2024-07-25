@@ -3,9 +3,7 @@ package org.copperforge.mog.security;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
@@ -26,16 +24,6 @@ public class MogAESEncryptorDecryptor implements MogDecryptor, MogEncryptor {
     private Logger log = LoggerFactory.getLogger(MogAESEncryptorDecryptor.class);
     private final String password;
 
-    public static SecretKey getKeyFromPassword(String password, String salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);
-        SecretKey secret = new SecretKeySpec(factory.generateSecret(spec)
-                .getEncoded(), "AES");
-        return secret;
-    }
-
     public MogAESEncryptorDecryptor(String password) throws MogException {
         try {
             this.password = password;
@@ -55,7 +43,11 @@ public class MogAESEncryptorDecryptor implements MogDecryptor, MogEncryptor {
             byte[] passAndSalt = concat(password.getBytes(), salt);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] key = md.digest(passAndSalt);
-            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 256);
+            // SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+            SecretKey secretKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
 
             // Derive IV
             md.reset();
@@ -84,6 +76,7 @@ public class MogAESEncryptorDecryptor implements MogDecryptor, MogEncryptor {
             log.info("Decrypting '" + value + "'");
             // Parse cipher text
             byte[] cipherBytes = Base64.getDecoder().decode(value);
+            //byte[] cipherBytes = value.getBytes();
             byte[] salt = Arrays.copyOfRange(cipherBytes, 8, 16);
             cipherBytes = Arrays.copyOfRange(
                     cipherBytes, 16, cipherBytes.length);
@@ -92,14 +85,18 @@ public class MogAESEncryptorDecryptor implements MogDecryptor, MogEncryptor {
             byte[] passAndSalt = concat(password.getBytes(), salt);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] key = md.digest(passAndSalt);
-            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 256);
+            // SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+            SecretKey secretKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
 
             // Derive IV
             md.reset();
             byte[] iv = Arrays.copyOfRange(
                     md.digest(concat(key, passAndSalt)), 0, 16);
             // Decrypt
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey,
                     new IvParameterSpec(iv));
             String clearText = new String(cipher.doFinal(cipherBytes));

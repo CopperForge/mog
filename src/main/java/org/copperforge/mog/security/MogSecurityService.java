@@ -1,15 +1,30 @@
 package org.copperforge.mog.security;
 
+import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.annotations.MogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@MogService(name="securityService")
+@MogService(name = "securityService")
 public class MogSecurityService {
+
+    private Logger log = LoggerFactory.getLogger(MogSecurityService.class);
 
     final MogAESEncryptorDecryptor encryptorDecryptor;
 
     public MogSecurityService() throws MogException {
-        encryptorDecryptor = new MogAESEncryptorDecryptor("ickyicky");
+        MogEncryptDecryptOptions options = MogEncryptDecryptOptions.parse(Mog.mog().options());
+        log.info("options = " + options);
+
+        if (options.getPassword() != null)
+            encryptorDecryptor = new MogAESEncryptorDecryptor(options.getPassword());
+        else if (Mog.mog().mogf().getEncryptionPassword() != null)
+            encryptorDecryptor = new MogAESEncryptorDecryptor(Mog.mog().mogf().getEncryptionPassword());
+        else {
+            encryptorDecryptor = null;
+            throw new MogException("Unable to determine encryption key");
+        }
     }
 
     public MogDecryptor decryptor() {
@@ -21,3 +36,4 @@ public class MogSecurityService {
     }
 
 }
+

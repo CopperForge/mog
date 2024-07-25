@@ -111,6 +111,14 @@ public class MogConfig implements MogObject {
         this.archiveSets = archiveSets;
     }
 
+    public String userHome() {
+        return System.getProperty("user.home");
+    }
+
+    public String mogHome() {
+        return System.getenv("MOG_HOME");
+    }
+
     @Override
     public String toString() {
         return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
