@@ -72,7 +72,7 @@
                         "type": "jdbc",
                         "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                         "user": "h2",
-                        "password": "password",
+                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
                         "query": "select * from t_ccr_changelog order by change_date desc",
                         "jdbcClass": "org.h2.Driver"
                     }
@@ -279,7 +279,7 @@
                         "type": "jdbc",
                         "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                         "user": "h2",
-                        "password": "password",
+                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
                         "query": "select * from t_ccr_source_summary",
                         "jdbcClass": "org.h2.Driver"
                     }
@@ -377,7 +377,7 @@
                         "type": "jdbc",
                         "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                         "user": "h2",
-                        "password": "password",
+                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
                         "query": "select * from t_ccr_target_summary",
                         "jdbcClass": "org.h2.Driver"
                     }
@@ -521,7 +521,7 @@
                         "type": "jdbc",
                         "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
                         "user": "h2",
-                        "password": "password",
+                        "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
                         "query": "select * from t_ccr_message_summary",
                         "jdbcClass": "org.h2.Driver"
                     }

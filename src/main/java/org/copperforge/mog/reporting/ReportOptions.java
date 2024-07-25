@@ -26,8 +26,8 @@ public class ReportOptions extends MogOptions {
 
     public static ReportOptions parse(MogOptions options) {
         ReportOptions reportOptions = new ReportOptions();
-        new CommandLine(reportOptions).parseArgs(options.rawArgs().toArray(new String[0]));
+        new CommandLine(reportOptions).setUnmatchedArgumentsAllowed(true)
+                .parseArgs(options.rawArgs().toArray(new String[0]));
         return reportOptions;
     }
 }
-

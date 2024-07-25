@@ -10,10 +10,15 @@ import java.util.List;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogServiceManager;
+import org.copperforge.mog.security.MogSecurityService;
 import org.copperforge.mog.var.MogVariableService;
 import org.copperforge.mog.var.VariableService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MogJdbcDataSource extends MogDataSource {
+
+    private Logger log = LoggerFactory.getLogger(MogJdbcDataSource.class);
 
     private String url;
 
@@ -122,13 +127,15 @@ public class MogJdbcDataSource extends MogDataSource {
 
     @Override
     public List<MogFetchable> fetch(int offset, int limit) throws MogException {
+        MogSecurityService securityService = (MogSecurityService) MogServiceManager.instance().get(MogSecurityService.class);
+        log.info("securityService = " + securityService);
         List<MogFetchable> data = new ArrayList<>();
         MogServiceManager manager = MogServiceManager.instance();
         VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
         try {
             String url = environmentService.envsubst(getUrl()); // url
             String username = getUser(); // credentials
-            String password = getPassword(); // TODO encryption
+            String password = securityService.decryptor().decrypt(getPassword()); // TODO encryption
             String query = getQuery(); // query to be run
             if (getJdbcClass() != null && !getJdbcClass().isEmpty()) Class.forName(getJdbcClass()); // Driver name
             Connection con = DriverManager.getConnection(

@@ -15,7 +15,8 @@ public class MogEncryptDecryptOptions extends MogOptions {
 
     public static MogEncryptDecryptOptions parse(MogOptions options) {
         MogEncryptDecryptOptions encryptOptions = new MogEncryptDecryptOptions();
-        new CommandLine(encryptOptions).parseArgs(options.rawArgs().toArray(new String[0]));
+        new CommandLine(encryptOptions).setUnmatchedArgumentsAllowed(true)
+                .parseArgs(options.rawArgs().toArray(new String[0]));
         return encryptOptions;
     }
 

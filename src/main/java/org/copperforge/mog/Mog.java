@@ -127,8 +127,6 @@ public class Mog {
         // loads the available commands
         log.debug("commands = " + commandService.find());
 
-        // TODO mogrify all moggables
-
     }
 
 }
