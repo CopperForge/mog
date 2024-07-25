@@ -7,6 +7,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.reporting.xlsx.XLSXReport;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -21,6 +23,8 @@ public class Report implements Serializable {
     private String type;
 
     private final List<Sheet> sheets = new ArrayList<>();
+
+    private final List<MogDataSource> dataSources = new ArrayList<>();
 
     private String filename;
 
@@ -58,6 +62,15 @@ public class Report implements Serializable {
         this.filename = filename;
     }
 
+    public List<MogDataSource> getDataSources() {
+        return dataSources;
+    }
+
+    public void setDataSources(List<MogDataSource> dataSources) {
+        this.dataSources.clear();
+        this.dataSources.addAll(dataSources);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -65,6 +78,7 @@ public class Report implements Serializable {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + ((sheets == null) ? 0 : sheets.hashCode());
+        result = prime * result + ((dataSources == null) ? 0 : dataSources.hashCode());
         result = prime * result + ((filename == null) ? 0 : filename.hashCode());
         return result;
     }
@@ -93,6 +107,11 @@ public class Report implements Serializable {
                 return false;
         } else if (!sheets.equals(other.sheets))
             return false;
+        if (dataSources == null) {
+            if (other.dataSources != null)
+                return false;
+        } else if (!dataSources.equals(other.dataSources))
+            return false;
         if (filename == null) {
             if (other.filename != null)
                 return false;
@@ -103,7 +122,8 @@ public class Report implements Serializable {
 
     @Override
     public String toString() {
-        return "Report [name=" + name + ", type=" + type + ", sheets=" + sheets + ", filename=" + filename + "]";
+        return "Report [name=" + name + ", type=" + type + ", sheets=" + sheets + ", dataSources=" + dataSources
+                + ", filename=" + filename + "]";
     }
-
+   
 }

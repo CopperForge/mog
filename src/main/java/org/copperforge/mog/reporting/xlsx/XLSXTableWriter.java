@@ -34,13 +34,20 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         ReportDataSource reportDataSource = tableElement.getDataSource();
         log.trace("reportDataSource = " + reportDataSource);
         log.trace("mogDtaSources = " + Mog.mog().config().getDataSources());
-        MogDataSource mogDataSource = Mog.mog().config().getDataSources().stream()
-                .filter(d -> d.getName().equals(reportDataSource.getName())).findFirst()
-                .orElseThrow(() -> new MogException("Unable to find datasource"));
+
+        MogDataSource mogDataSource = report.getDataSources().stream()
+                .filter(d -> d.getName() != null && d.getName().equals(reportDataSource.getName())).findFirst()
+                .orElse(null);
+
+        if (mogDataSource == null) {
+            mogDataSource = Mog.mog().config().getDataSources().stream()
+                    .filter(d -> d.getName() != null && d.getName().equals(reportDataSource.getName())).findFirst()
+                    .orElseThrow(() -> new MogException("Unable to find datasource"));
+        }
 
         List<MogFetchable> data = (mogDataSource != null) ? mogDataSource.fetch(reportDataSource.getFilter())
                 : null;
-                
+
         List<Column> columns = tableElement.getColumns();
         int rowCount = (data != null && data.size() > 0) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;

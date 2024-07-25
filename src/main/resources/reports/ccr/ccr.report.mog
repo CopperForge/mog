@@ -18,6 +18,16 @@
             "verticalAlginment": "top"
         }
     ],
+    "dataSources": [
+        {
+            "name": "ccr-example",
+            "type": "jdbc",
+            "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+            "user": "h2",
+            "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
+            "jdbcClass": "org.h2.Driver"
+        }
+    ],
     "sheets": [
         {
             "name": "information",
@@ -69,7 +79,7 @@
                         }
                     ],
                     "dataSource": {
-                        "name": "reporting",
+                        "name": "ccr-example",
                         "filter": {
                             "type": "query",
                             "query": "select * from t_ccr_changelog order by change_date desc"

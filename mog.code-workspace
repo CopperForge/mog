@@ -4,7 +4,7 @@
             "path": "."
         },
         {
-            "path": "../../../../../../conv/local/mog"
+            "path": "../../../opt/mog"
         }
     ],
     "settings": {
