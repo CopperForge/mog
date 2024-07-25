@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,8 +25,9 @@ import org.copperforge.mog.data.filter.MogJsonFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 
 public class MogRestDataSource extends MogDataSource {
 
@@ -57,19 +59,18 @@ public class MogRestDataSource extends MogDataSource {
             HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
             log.info("HttpResponse = " + resp);
 
-            log.info("body = " + resp.body().toString());
+            DocumentContext jsonContext = JsonPath.parse(resp.body().toString());
 
-
-
-
-            TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {
-            };
-            String body = resp.body().toString();
-            log.trace("body = " + body);
-            List<Map<String, Object>> response = mapper.readValue(body, typeRef);
-            // log.info("fetchable = " + response);
-
-            return response.stream().map(MogFetchable::new).collect(Collectors.toList());
+            JsonPath path = JsonPath.compile(jsonFilter.getJsonPath());
+            if (path.isDefinite()) {
+                Object value = jsonContext.read(path);
+                log.info("value = " + value.getClass().getCanonicalName());
+                return Arrays.asList(new MogFetchable(value));
+            } else {
+                List<Map<String, Object>> values = jsonContext.read(path);
+                log.info("values = " + values);
+                return values.stream().map(MogFetchable::new).collect(Collectors.toList());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +133,7 @@ public class MogRestDataSource extends MogDataSource {
                 return false;
         } else if (!token.equals(other.token))
             return false;
-       return true;
+        return true;
     }
 
     protected static final TrustManager mogTrustManager = new X509ExtendedTrustManager() {
