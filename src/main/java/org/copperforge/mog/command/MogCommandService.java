@@ -70,8 +70,8 @@ public class MogCommandService {
 
     protected List<? extends MogCommand> findAnnotated() throws MogException {
         List<Class<?>> mogCommandClasses = new MogClassScanner()
-                .filter(MogAnnotationFilter.filter(org.copperforge.mog.annotations.MogCommand.class))
-                .scan().stream().collect(Collectors.toList());
+                .scan(new MogAnnotationFilter(org.copperforge.mog.annotations.MogCommand.class)).stream()
+                .collect(Collectors.toList());
 
         List<MogCommand> commands = new ArrayList<>();
 
@@ -132,7 +132,7 @@ public class MogCommandService {
         try {
             MogClassScanner scanner = new MogClassScanner();
             log.debug("Finding MogRunners ...");
-            Set<Class<?>> runnerClasses = scanner.filter(MogAnnotationFilter.filter(MogRunner.class)).scan();
+            Set<Class<?>> runnerClasses = scanner.scan(new MogAnnotationFilter(MogRunner.class));
             log.debug("Found classes = " + runnerClasses);
 
             Set<Class<? extends MogCommandRunner<?>>> mogRunners = runnerClasses.stream()

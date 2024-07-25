@@ -4,20 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MogAnnotationFilter implements MogClassFilter {
+public class MogAnnotationFilter extends MogSimpleClassFilter {
 
-    private Class<?> annotationClazz;
-
-    public static MogClassFilter filter(Class<?> clazz) {
-        MogAnnotationFilter filter = new MogAnnotationFilter();
-        filter.annotationClazz = clazz;
-        return filter;
+    public MogAnnotationFilter(Class<?> clazz) {
+        super(clazz);
     }
 
     @Override
-    public boolean matches(Class<?> clazz) {
+    public boolean test(Class<?> clazz) {
         List<Class<?>> annotations = Arrays.asList(clazz.getAnnotations()).stream().map(a -> a.annotationType()).collect(Collectors.toList());
-        return annotations.contains(annotationClazz);
+        return annotations.contains(matchClass);
     }
 
 }

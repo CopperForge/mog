@@ -22,7 +22,7 @@ public class MogServiceManager {
         // discover all the services available and put them in the service map
         try {
             MogClassScanner scanner = new MogClassScanner();
-            Set<Class<?>> mogServices = scanner.filter(MogAnnotationFilter.filter(MogService.class)).scan();
+            Set<Class<?>> mogServices = scanner.scan(new MogAnnotationFilter(MogService.class));
 
             MogService serviceAnnotation;
             Object instance;

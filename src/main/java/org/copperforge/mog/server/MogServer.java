@@ -48,7 +48,8 @@ public class MogServer {
         for (String path : endpoints.keySet()) {
             MogEndpoint endpoint = endpoints.get(path);
             log.info("Adding endpoint '" + path + "' as " + endpoint);
-            routingHandler.add(new HttpString(endpoint.getHttpMethod()), endpoint.getPath(), new MogEndpointHandler(endpoint));
+            routingHandler.add(new HttpString(endpoint.getHttpMethod()), endpoint.getPath(),
+                    new MogEndpointHandler(endpoint));
         }
 
         server = Undertow.builder().addHttpListener(port, host).setHandler(new BlockingHandler(routingHandler))
@@ -60,8 +61,7 @@ public class MogServer {
     protected Map<String, MogEndpoint> findAnnotatedEndpoints() throws MogException {
         try {
             Set<Class<?>> controllerClasses = new MogClassScanner()
-                    .filter(MogAnnotationFilter.filter(MogController.class))
-                    .scan();
+                    .scan(new MogAnnotationFilter(MogController.class));
             endpoints.clear();
 
             for (Class<?> c : controllerClasses) {

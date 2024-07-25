@@ -1,18 +1,20 @@
 package org.copperforge.mog.reflection;
 
-public class MogPackageFilter implements MogClassFilter {
+import java.util.function.Predicate;
 
-    private String packageName;
+public class MogPackageFilter implements Predicate<String> {
 
-    public static MogClassFilter filter(String packageName) {
-        MogPackageFilter filter = new MogPackageFilter();
-        filter.packageName = packageName;
-        return filter;
+    private String matchPackage;
+
+    public MogPackageFilter(String matchPackage) {
+        this.matchPackage = matchPackage;
     }
 
     @Override
-    public boolean matches(Class<?> clazz) {
-        return clazz.getPackageName().startsWith(packageName);
+    public boolean test(String t) {
+        if (t == null && matchPackage == null) return true;
+        if (t != null) return t.equals(matchPackage);
+        else return false;
     }
 
 }

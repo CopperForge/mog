@@ -1,7 +1,7 @@
 package org.copperforge.mog.reflection;
 
-public interface MogClassFilter {
+import java.util.function.Predicate;
 
-    boolean matches(Class<?> clazz);
-    
+public interface MogClassFilter extends Predicate<Class<?>> {
+
 }

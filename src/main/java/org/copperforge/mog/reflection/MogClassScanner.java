@@ -11,14 +11,10 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 
 public class MogClassScanner {
 
-    private final Set<MogClassFilter> filters = new HashSet<>();
-
-    public MogClassScanner filter(MogClassFilter filter) {
-        filters.add(filter);
-        return this;
+    public MogClassScanner() {
     }
 
-    public Set<Class<?>> scan() throws MogException {
+    public Set<Class<?>> scan(MogClassFilter filter) throws MogException {
         try {
             Set<Class<?>> matches = new HashSet<>();
 
@@ -27,9 +23,10 @@ public class MogClassScanner {
                 try {
                     Class<?> clazz = info.load();
 
-                    if (filters.stream().anyMatch(f -> f.matches(clazz))) {
+                    if (filter.test(clazz)) {
                         matches.add(clazz);
                     }
+
                 } catch (NoClassDefFoundError cnfe) {
                     // eat it, but log it
                 }
