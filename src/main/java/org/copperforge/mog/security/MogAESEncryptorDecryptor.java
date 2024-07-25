@@ -73,7 +73,7 @@ public class MogAESEncryptorDecryptor implements MogDecryptor, MogEncryptor {
     @Override
     public String decrypt(String value) throws MogException {
         try {
-            log.info("Decrypting '" + value + "'");
+            log.trace("Decrypting '" + value + "'");
             // Parse cipher text
             byte[] cipherBytes = Base64.getDecoder().decode(value);
             //byte[] cipherBytes = value.getBytes();

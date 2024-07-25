@@ -112,12 +112,11 @@ public class MogJdbcDataSource extends MogDataSource {
 
     @Override
     public List<MogFetchable> fetch(MogDataFilter filter) throws MogException {
+        log.trace("Fetching using " + filter);
         MogSecurityService securityService = (MogSecurityService) MogServiceManager.instance()
                 .get(MogSecurityService.class);
-
         MogQueryFilter queryFilter = (MogQueryFilter) filter;
 
-        log.info("securityService = " + securityService);
         List<MogFetchable> data = new ArrayList<>();
         MogServiceManager manager = MogServiceManager.instance();
         VariableService environmentService = (VariableService) manager.get(MogVariableService.class);

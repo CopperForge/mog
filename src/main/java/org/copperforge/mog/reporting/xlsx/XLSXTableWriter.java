@@ -27,13 +27,13 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {
-        log.info("Writing element " + element);
+        log.debug("Writing element " + element);
         Table tableElement = (Table) element;
 
         // get the data
         ReportDataSource reportDataSource = tableElement.getDataSource();
-        log.info("reportDataSource = " + reportDataSource);
-        log.info("mogDtaSources = " + Mog.mog().config().getDataSources());
+        log.trace("reportDataSource = " + reportDataSource);
+        log.trace("mogDtaSources = " + Mog.mog().config().getDataSources());
         MogDataSource mogDataSource = Mog.mog().config().getDataSources().stream()
                 .filter(d -> d.getName().equals(reportDataSource.getName())).findFirst()
                 .orElseThrow(() -> new MogException("Unable to find datasource"));

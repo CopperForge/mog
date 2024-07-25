@@ -191,7 +191,7 @@
                         "name": "reporting",
                         "filter": {
                             "type": "query",
-                            "query": "select * from t_ccr_summary"
+                            "query": "select * from t_ccr_cycle_summary"
                         }
                     }
                 }
