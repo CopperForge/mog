@@ -20,6 +20,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.copperforge.mog.data.filter.MogDataFilter;
+import org.copperforge.mog.data.filter.MogJsonFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +36,11 @@ public class MogRestDataSource extends MogDataSource {
 
     private String token;
 
-    private String keyPath;
-
-    private String method;
-
     @Override
     public List<MogFetchable> fetch(MogDataFilter filter) {
         try {
+            MogJsonFilter jsonFilter = (MogJsonFilter) filter;
+
             // create client
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[] { mogTrustManager }, new SecureRandom());
@@ -51,12 +50,18 @@ public class MogRestDataSource extends MogDataSource {
             // create request
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", "Bearer " + getToken())
-                    .uri(URI.create(getUrl()))
+                    .uri(URI.create(getUrl() + jsonFilter.getSuburl()))
                     .build();
 
-            log.debug("HttpRequest = " + request);
+            log.info("HttpRequest = " + request);
             HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
-            log.debug("HttpResponse = " + resp);
+            log.info("HttpResponse = " + resp);
+
+            log.info("body = " + resp.body().toString());
+
+
+
+
             TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {
             };
             String body = resp.body().toString();
@@ -88,26 +93,9 @@ public class MogRestDataSource extends MogDataSource {
         this.token = token;
     }
 
-    public String getKeyPath() {
-        return keyPath;
-    }
-
-    public void setKeyPath(String keyPath) {
-        this.keyPath = keyPath;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
     @Override
     public String toString() {
-        return "MogRestDataSource [url=" + url + ", token=" + token + ", keyPath=" + keyPath + ", method=" + method
-                + "]";
+        return "MogRestDataSource [mapper=" + mapper + ", url=" + url + ", token=" + token + "]";
     }
 
     @Override
@@ -117,8 +105,6 @@ public class MogRestDataSource extends MogDataSource {
         result = prime * result + ((mapper == null) ? 0 : mapper.hashCode());
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
-        result = prime * result + ((keyPath == null) ? 0 : keyPath.hashCode());
-        result = prime * result + ((method == null) ? 0 : method.hashCode());
         return result;
     }
 
@@ -146,17 +132,7 @@ public class MogRestDataSource extends MogDataSource {
                 return false;
         } else if (!token.equals(other.token))
             return false;
-        if (keyPath == null) {
-            if (other.keyPath != null)
-                return false;
-        } else if (!keyPath.equals(other.keyPath))
-            return false;
-        if (method == null) {
-            if (other.method != null)
-                return false;
-        } else if (!method.equals(other.method))
-            return false;
-        return true;
+       return true;
     }
 
     protected static final TrustManager mogTrustManager = new X509ExtendedTrustManager() {
