@@ -1,0 +1,10 @@
+check_sak          at  0 for 4 type INTEGER      NOTNULL
+num_check          at  4 for 9 type CHAR(9)      NOTNULL
+cde_pay_type       at 13 for 1 type CHAR(1)      NOTNULL
+total_amt_paid     at 14 for 8 type DOUBLE(11,2) NOTNULL
+cde_payee_type     at 22 for 1 type CHAR(1)      NOTNULL
+sak_payee          at 23 for 4 type INTEGER      NOTNULL
+dte_issue          at 27 for 4 type INTEGER      NOTNULL
+cde_status1        at 31 for 1 type CHAR(1)      NOTNULL
+sak_fin_sched      at 32 for 4 type INTEGER      NOTNULL
+dte_cycle          at 36 for 4 type INTEGER      NOTNULL

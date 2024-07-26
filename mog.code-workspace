@@ -5,6 +5,9 @@
         },
         {
             "path": "../../../opt/mog"
+        },
+        {
+            "path": "../../convforge/dotout"
         }
     ],
     "settings": {

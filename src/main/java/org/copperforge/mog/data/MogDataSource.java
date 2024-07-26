@@ -14,7 +14,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = MogJdbcDataSource.class, name = "jdbc"),
         @JsonSubTypes.Type(value = MogRestDataSource.class, name = "api"),
-        @JsonSubTypes.Type(value = MogRestDataSource.class, name = "rest")
+        @JsonSubTypes.Type(value = MogRestDataSource.class, name = "rest"),
+        @JsonSubTypes.Type(value = MogDotOutDataSource.class, name = "dotout"),
+        @JsonSubTypes.Type(value = MogDotOutDataSource.class, name = "binary")
 })
 public abstract class MogDataSource {
 
@@ -37,7 +39,7 @@ public abstract class MogDataSource {
         this.type = type;
     }
 
-    public abstract List<MogFetchable> fetch(MogDataFilter filter) throws MogException;
+    public abstract List<? extends MogFetchable> fetch(MogDataFilter filter) throws MogException;
 
     @Override
     public String toString() {

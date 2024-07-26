@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class MogFetchable {
 
     private final Logger log = LoggerFactory.getLogger(MogFetchable.class);
-    private final Map<String, Object> fields = new HashMap<>();
+    protected final Map<String, Object> fields = new HashMap<>();
     private final String arrayPatternText = "(.+)\\[(\\d?)\\]\\.?(.*)";
     private final Pattern arrayPattern;
 
@@ -123,6 +123,11 @@ public class MogFetchable {
         if (fields.containsKey(key))
             fields.remove(key);
         fields.put(key, value);
+    }
+
+    @Override
+    public String toString() {
+        return "MogFetchable [fields=" + fields + "]";
     }
 
 }

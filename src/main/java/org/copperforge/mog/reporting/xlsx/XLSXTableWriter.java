@@ -45,7 +45,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     .orElseThrow(() -> new MogException("Unable to find datasource"));
         }
 
-        List<MogFetchable> data = (mogDataSource != null) ? mogDataSource.fetch(reportDataSource.getFilter())
+        List<? extends MogFetchable> data = (mogDataSource != null) ? mogDataSource.fetch(reportDataSource.getFilter())
                 : null;
 
         List<Column> columns = tableElement.getColumns();

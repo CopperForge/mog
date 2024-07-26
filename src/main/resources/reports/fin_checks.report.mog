@@ -1,0 +1,101 @@
+{
+    "name": "Gitea Report",
+    "type": "xlsx",
+    "filename": "${MOG_HOME}/fin_checks_${timestamp}.xlsx",
+    "styles": [
+        {
+            "type": "table",
+            "name": "TableStyleLight12",
+            "showFirstColumn": false,
+            "showLastColumn": false,
+            "showRowStripes": true,
+            "showColumnStripes": true
+        },
+        {
+            "type": "cell",
+            "name": "TopWrap",
+            "wrapText": true,
+            "verticalAlginment": "top"
+        }
+    ],
+    "dataSources": [
+        {
+            "name": "fin_checks",
+            "type": "dotout",
+            "file": "src/test/resources/cycles/fin03/t_check.dat",
+            "format": "src/test/resources/cycles/fin03/t_check.out"
+        }        
+    ],
+    "sheets": [
+        {
+            "name": "checks",
+            "title": "Checks",
+            "elements": [
+                {
+                    "type": "table",
+                    "name": "checks_table",
+                    "title": "checks_table",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "SAK",
+                            "key": "check_sak",
+                            "width": 15
+                        },
+                        {
+                            "title": "Check #",
+                            "key": "num_check",
+                            "width": 15
+                        },
+                        {
+                            "title": "Pay Type",
+                            "key": "cde_pay_type",
+                            "width": 15
+                        },
+                        {
+                            "title": "Total Amount Paid",
+                            "key": "total_amt_paid",
+                            "width": 25
+                        },
+                        {
+                            "title": "Payee Type",
+                            "key": "cde_payee_type",
+                            "width": 15
+                        },
+                        {
+                            "title": "Issue Date",
+                            "key": "dte_issue",
+                            "width": 15
+                        },
+                        {
+                            "title": "Status Code",
+                            "key": "cde_status1",
+                            "width": 15
+                        },
+                        {
+                            "title": "Financial Schedule SAK",
+                            "key": "sak_fin_sched",
+                            "width": 25
+                        },
+                        {
+                            "title": "Cycle Date",
+                            "key": "dte_cycle",
+                            "width": 15
+                        }
+                    ],
+                    "dataSource": {
+                        "name": "fin_checks",
+                        "filter": {
+                            "type": "query",
+                            "query": "check_sak = 2 or check_sak >= 5"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
