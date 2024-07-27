@@ -1,7 +1,8 @@
-package org.copperforge.mog.data;
+package org.copperforge.mog.data.dotout;
 
 import java.util.Stack;
 
+import org.copperforge.mog.data.MogFetchable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

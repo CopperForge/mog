@@ -1,9 +1,11 @@
-package org.copperforge.mog.data;
+package org.copperforge.mog.data.dotout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.data.MogDataSource;
+import org.copperforge.mog.data.MogFetchable;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.slf4j.Logger;
@@ -14,7 +16,6 @@ import com.gwt.conversion.dotout.DOParser;
 import com.gwt.conversion.dotout.DOReader;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 
 public class MogDotOutDataSource extends MogDataSource {
 
@@ -31,8 +32,7 @@ public class MogDotOutDataSource extends MogDataSource {
         try {
             Expression where = null;
             if (filter != null && filter instanceof MogQueryFilter) {
-                MogQueryFilter queryFilter = (MogQueryFilter) filter;
-                where = (Expression) CCJSqlParserUtil.parseExpression(queryFilter.getQuery(), true);
+                where = ((MogQueryFilter) filter).where();
             }
 
             MogDotOutFetchable fetchable;

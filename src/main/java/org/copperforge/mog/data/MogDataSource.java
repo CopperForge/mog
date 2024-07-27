@@ -3,6 +3,7 @@ package org.copperforge.mog.data;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.data.dotout.MogDotOutDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

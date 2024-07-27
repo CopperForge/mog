@@ -1,6 +1,8 @@
 package org.copperforge.mog.data;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,7 +12,6 @@ import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogOptions;
 import org.copperforge.mog.annotations.MogCommand;
 import org.copperforge.mog.command.MogCommandResponse;
-import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +43,14 @@ public class MogDataCommands {
         MogDataSource dataSource = Mog.mog().config().getDataSources().stream()
                 .filter(d -> d.getName().equals(dataSourceName)).findFirst().orElse(null);
 
-        MogDataFilter filter = null;
-        if (where != null) filter = new MogQueryFilter(where);
+        MogQueryFilter filter = null;
+        final List<String> columns = new ArrayList<>(Arrays.asList("*"));
+        if (where != null) {
+            filter = new MogQueryFilter(where);
+            log.info("columns = " + filter.columns());
+            columns.clear();
+            columns.addAll(filter.columns());
+        }
         List<? extends MogFetchable> fetched = dataSource.fetch(filter);
         log.debug("fetched = " + fetched);
 
@@ -52,12 +59,16 @@ public class MogDataCommands {
             Set<String> fieldNames = record.keys();
             if (i == 1) {
                 // print the header
-                System.out.println(String.join(",", fieldNames));
+                System.out.println(fieldNames.stream().filter(f -> columns.contains(f) || columns.contains("*"))
+                        .map(f -> "\"" + f + "\"")
+                        .collect(Collectors.joining(",")));
             }
 
             // print the row
-            String value = fieldNames.stream().map(f -> "\"" + record.get(f).toString() + "\"").collect(Collectors.joining(","));
-            System.out.println(i + " :: " + value);
+            System.out.println(i + " :: "
+                    + fieldNames.stream().filter(f -> columns.contains(f) || columns.contains("*"))
+                            .map(f -> "\"" + record.get(f).toString() + "\"")
+                            .collect(Collectors.joining(",")));
 
             i++;
         }

@@ -1,11 +1,30 @@
 package org.copperforge.mog.data.filter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.copperforge.mog.MogException;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MogQueryFilter extends MogDataFilter {
 
     private String query;
+
+    private PlainSelect statement;
+
+    private Expression where;
+
+    private List<String> columns = new ArrayList<>(Arrays.asList("*"));
 
     @Override
     public int hashCode() {
@@ -40,15 +59,41 @@ public class MogQueryFilter extends MogDataFilter {
     public MogQueryFilter() {
     }
 
-    public MogQueryFilter(String query) {
-        this.query = query;
+    public MogQueryFilter(String query) throws MogException {
+        setQuery(query);
     }
 
     public String getQuery() {
         return query;
     }
 
-    public void setQuery(String query) {
-        this.query = query;
+    public Expression where() {
+        return where;
+    }
+
+    public Statement statement() {
+        return statement;
+    }
+
+    public List<String> columns() {
+        return columns;
+    }
+
+    public void setQuery(String query) throws MogException {
+        try {
+            this.query = query;
+            try {
+                where = CCJSqlParserUtil.parseExpression(query);
+            } catch (JSQLParserException e) {
+                // not a where, check for select
+                statement = (PlainSelect) CCJSqlParserUtil.parse(query);
+                where = statement.getWhere();
+                columns = statement.getSelectItems().stream().map(s -> s.toString())
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            throw new MogException("Unable to parse query", e);
+        }
+
     }
 }
