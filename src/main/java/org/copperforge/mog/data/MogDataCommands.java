@@ -24,29 +24,29 @@ public class MogDataCommands {
 
     private Logger log = LoggerFactory.getLogger(MogDataCommands.class);
 
-    @Option(names = { "--where" })
-    private String where = null;
+    @Option(names = { "--where", "--query" })
+    private String query = null;
 
     @Option(names = { "--datasource" })
     private String dataSourceName;
 
     @MogCommand(name = "query")
     public MogCommandResponse query(MogOptions options) throws MogException {
-        log.info("query = " + options);
+        log.info("options = " + options);
 
         new CommandLine(this).setUnmatchedArgumentsAllowed(true)
                 .parseArgs(options.rawArgs().toArray(new String[0]));
 
         log.info("dataSourceName = " + dataSourceName);
-        log.info("where = " + where);
+        log.info("query = " + query);
 
         MogDataSource dataSource = Mog.mog().config().getDataSources().stream()
                 .filter(d -> d.getName().equals(dataSourceName)).findFirst().orElse(null);
 
         MogQueryFilter filter = null;
         final List<String> columns = new ArrayList<>(Arrays.asList("*"));
-        if (where != null) {
-            filter = new MogQueryFilter(where);
+        if (query != null) {
+            filter = new MogQueryFilter(query);
             log.info("columns = " + filter.columns());
             columns.clear();
             columns.addAll(filter.columns());
