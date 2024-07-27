@@ -57,16 +57,20 @@ public class MogDataCommands {
         int i = 1;
         for (MogFetchable record : fetched) {
             Set<String> fieldNames = record.keys();
+            if (columns.contains("*")) {
+                columns.clear();
+                columns.addAll(fieldNames);
+            }
             if (i == 1) {
                 // print the header
-                System.out.println(fieldNames.stream().filter(f -> columns.contains(f) || columns.contains("*"))
+                System.out.println(columns.stream()
                         .map(f -> "\"" + f + "\"")
                         .collect(Collectors.joining(",")));
             }
 
             // print the row
             System.out.println(i + " :: "
-                    + fieldNames.stream().filter(f -> columns.contains(f) || columns.contains("*"))
+                    + columns.stream()
                             .map(f -> "\"" + record.get(f).toString() + "\"")
                             .collect(Collectors.joining(",")));
 
