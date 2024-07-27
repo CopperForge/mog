@@ -6,10 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gwt.conversion.dotout.DOLong;
+import com.gwt.conversion.dotout.DOString;
 import com.gwt.conversion.dotout.DOValue;
 
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
@@ -37,12 +39,16 @@ public class DotOutExpressionVisitorAdaptor extends ExpressionVisitorAdapter<Mog
         log.debug("EqualsTo :: expr = " + expr);
         super.visit(expr, context);
 
+        log.debug("EqualsTo :: left expr = " + expr.getLeftExpression());
+        log.debug("EqualsTo :: right expr = " + expr.getRightExpression());
+
         DOValue<?> right = values.pop();
         DOValue<?> left = values.pop();
-        log.debug("EqualsTo :: left expr = " + left);
-        log.debug("EqualsTo :: right expr = " + right);
 
-        accepted = (right.value().toString().equals(left.value().toString()));
+        log.debug("EqualsTo :: left value = " + left);
+        log.debug("EqualsTo :: right value = " + expr.getRightExpression());
+
+        accepted = (right.value().toString().trim().equals(left.value().toString().trim()));
         return (MogFetchable) context;
     }
 
@@ -162,6 +168,15 @@ public class DotOutExpressionVisitorAdaptor extends ExpressionVisitorAdapter<Mog
         log.debug("LongValue :: expr (" + expr.getClass().getName() + ") = " + expr);
 
         values.push(new DOLong(expr.getValue()));
+        return (MogFetchable) context;
+    }
+
+    @Override
+    public <S> MogFetchable visit(StringValue expr, S context) {
+        log.debug("LongValue :: context = " + context);
+        log.debug("LongValue :: expr (" + expr.getClass().getName() + ") = " + expr);
+
+        values.push(new DOString(null, expr.getValue().getBytes()));
         return (MogFetchable) context;
     }
 

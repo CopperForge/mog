@@ -14,21 +14,13 @@ public class MogEncryptCommand {
     @MogCommand(name="encrypt", description = "encrypt the given value")
     public String encrypt(MogOptions mogOptions) throws MogException {
         MogEncryptDecryptOptions options = MogEncryptDecryptOptions.parse(mogOptions);
-
-        String encryptedText = securityService.encryptor().encrypt(options.getValue());
-        System.out.println("encrypted = '" + encryptedText + "'");
-
-        return encryptedText;
+        return securityService.encryptor().encrypt(options.getValue());
     }
 
     @MogCommand(name="decrypt", description = "decrypt the given value")
     public String decrypt(MogOptions mogOptions) throws MogException {
         MogEncryptDecryptOptions options = MogEncryptDecryptOptions.parse(mogOptions);
-
-        String decryptedText = securityService.decryptor().decrypt(options.getValue());
-        System.out.println("decrypted = '" + decryptedText + "'");
-
-        return decryptedText;
+        return securityService.decryptor().decrypt(options.getValue());
     }
 
 

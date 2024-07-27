@@ -55,20 +55,20 @@ public class MogRestDataSource extends MogDataSource {
                     .uri(URI.create(getUrl() + jsonFilter.getSuburl()))
                     .build();
 
-            log.info("HttpRequest = " + request);
+            log.debug("HttpRequest = " + request);
             HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
-            log.info("HttpResponse = " + resp);
+            log.debug("HttpResponse = " + resp);
 
             DocumentContext jsonContext = JsonPath.parse(resp.body().toString());
 
             JsonPath path = JsonPath.compile(jsonFilter.getJsonPath());
             if (path.isDefinite()) {
                 Object value = jsonContext.read(path);
-                log.info("value = " + value.getClass().getCanonicalName());
+                log.debug("value = " + value.getClass().getCanonicalName());
                 return Arrays.asList(new MogFetchable(value));
             } else {
                 List<Map<String, Object>> values = jsonContext.read(path);
-                log.info("values = " + values);
+                log.debug("values = " + values);
                 return values.stream().map(MogFetchable::new).collect(Collectors.toList());
             }
         } catch (Exception e) {

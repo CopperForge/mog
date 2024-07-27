@@ -30,7 +30,7 @@ public class MogDotOutDataSource extends MogDataSource {
 
         try {
             Expression where = null;
-            if (filter instanceof MogQueryFilter) {
+            if (filter != null && filter instanceof MogQueryFilter) {
                 MogQueryFilter queryFilter = (MogQueryFilter) filter;
                 where = (Expression) CCJSqlParserUtil.parseExpression(queryFilter.getQuery(), true);
             }
@@ -49,6 +49,8 @@ public class MogDotOutDataSource extends MogDataSource {
                     where.accept(dotOutVisitor, fetchable);
                     if (dotOutVisitor.accepted())
                         fetchables.add(fetchable);
+                } else {
+                    fetchables.add(fetchable);
                 }
             }
 

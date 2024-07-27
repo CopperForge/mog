@@ -82,13 +82,16 @@ public class Mog {
     public void run(MogOptions options) throws MogException {
         // big todo
         if (options.getCommand() != null) {
-            log.debug("Finding command " + options.getCommand());
+            
+            log.trace("Finding command " + options.getCommand());
             MogCommand cmd = commandService.get(options.getCommand());
-            log.debug("command = " + cmd);
+            if (cmd == null) throw new MogException("Unable to find command '" + options.getCommand() + "'");
+
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
-            log.debug("runner = " + runner);
+
+            log.debug("Running command '" + cmd.getName() + "' with '" + runner.getClass().getCanonicalName() + "'");
             MogCommandResponse response = runner.run(cmd, options);
-            System.out.println(new BufferedReader(new InputStreamReader(response.getResponse())).lines().collect(Collectors.joining("\n")));
+            log.debug("Command response = " + new BufferedReader(new InputStreamReader(response.getResponse())).lines().collect(Collectors.joining("\n")));
         }
 
     }
@@ -107,7 +110,7 @@ public class Mog {
             mogFile = new File(Mog.mog().config().mogHome() + "/.mog");
             if (!mogFile.isFile()) mogFile = null;
         }
-        log.info("Using mogf of " + mogFile);
+        log.debug("Using mogf of " + mogFile);
 
         if (mogFile != null) mogf = new MogReader<Mogf>(Mogf.class).read(mogFile);
         else mogf = new Mogf();

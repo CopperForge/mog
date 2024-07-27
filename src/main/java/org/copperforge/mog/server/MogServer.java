@@ -36,9 +36,9 @@ public class MogServer {
     @MogCommand(name = "start", description = "start MOG server")
     public void start(MogOptions options) {
         MogServerConfig config = Mog.mog().config().getServerConfig();
-        log.info("serverConfig = " + config);
+        log.debug("serverConfig = " + config);
         MogServerOptions serverOpts = (MogServerOptions) MogServerOptions.parse(options);
-        log.info("serverOpts = " + serverOpts);
+        log.debug("serverOpts = " + serverOpts);
 
         int port = serverOpts.getPort() != null ? serverOpts.getPort() : config.getPort();
         String host = serverOpts.getHost() != null ? serverOpts.getHost() : config.getHost();

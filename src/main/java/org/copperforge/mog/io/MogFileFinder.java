@@ -37,7 +37,7 @@ public class MogFileFinder {
         for (File asset : files) {
             matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
             if (matcher.matches(asset.toPath())) {
-                log.info("File '" + asset.getAbsolutePath() + "' matches pattern '" + pattern + "'");
+                log.debug("File '" + asset.getAbsolutePath() + "' matches pattern '" + pattern + "'");
                 matches.add(asset);
             }
         }

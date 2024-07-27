@@ -40,6 +40,10 @@ public class MogQueryFilter extends MogDataFilter {
     public MogQueryFilter() {
     }
 
+    public MogQueryFilter(String query) {
+        this.query = query;
+    }
+
     public String getQuery() {
         return query;
     }

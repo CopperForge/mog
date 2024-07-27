@@ -1,0 +1,101 @@
+{
+    "name": "Gitea Report",
+    "type": "xlsx",
+    "filename": "${MOG_HOME}/messages_${timestamp}.xlsx",
+    "styles": [
+        {
+            "type": "table",
+            "name": "TableStyleLight12",
+            "showFirstColumn": false,
+            "showLastColumn": false,
+            "showRowStripes": true,
+            "showColumnStripes": true
+        },
+        {
+            "type": "cell",
+            "name": "TopWrap",
+            "wrapText": true,
+            "verticalAlginment": "top"
+        }
+    ],
+    "dataSources": [
+        {
+            "name": "messages",
+            "type": "dotout",
+            "file": "src/test/resources/cycles/fin03/t_cnv_fin_msg2.dat",
+            "format": "src/test/resources/cycles/fin03/t_cnv_msg2.out"
+        }        
+    ],
+    "sheets": [
+        {
+            "name": "messages",
+            "title": "messages",
+            "elements": [
+                {
+                    "type": "table",
+                    "name": "messages_table",
+                    "title": "messages_table",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "SAK",
+                            "key": "check_sak",
+                            "width": 15
+                        },
+                        {
+                            "title": "Check #",
+                            "key": "num_check",
+                            "width": 15
+                        },
+                        {
+                            "title": "Pay Type",
+                            "key": "cde_pay_type",
+                            "width": 15
+                        },
+                        {
+                            "title": "Total Amount Paid",
+                            "key": "total_amt_paid",
+                            "width": 25
+                        },
+                        {
+                            "title": "Payee Type",
+                            "key": "cde_payee_type",
+                            "width": 15
+                        },
+                        {
+                            "title": "Issue Date",
+                            "key": "dte_issue",
+                            "width": 15
+                        },
+                        {
+                            "title": "Status Code",
+                            "key": "cde_status1",
+                            "width": 15
+                        },
+                        {
+                            "title": "Financial Schedule SAK",
+                            "key": "sak_fin_sched",
+                            "width": 25
+                        },
+                        {
+                            "title": "Cycle Date",
+                            "key": "dte_cycle",
+                            "width": 15
+                        }
+                    ],
+                    "dataSource": {
+                        "name": "messages",
+                        "filter": {
+                            "type": "query",
+                            "query": "1 = 1"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

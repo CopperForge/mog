@@ -39,7 +39,7 @@ public class MogShellCommandRunner implements MogCommandRunner<MogShellCommand> 
 
         MogCommandResponse response = new MogCommandResponse();
         try {
-            log.info("shell command = " + command);
+            log.debug("shell command = " + command);
 
             if (shellCommand.getCommands() == null || shellCommand.getCommands().isEmpty())
                 throw new NullMogCommandException();
