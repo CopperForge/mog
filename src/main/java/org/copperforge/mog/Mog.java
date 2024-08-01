@@ -12,6 +12,8 @@ import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
+import org.copperforge.mog.gitea.models.GiteaOrganization;
+import org.copperforge.mog.gitea.services.GiteaOrganizationService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.var.MogVariableService;
 import org.copperforge.mog.var.VariableService;
@@ -67,6 +69,11 @@ public class Mog {
             }
 
             mog.run(options);
+
+            GiteaOrganizationService t = new GiteaOrganizationService();
+            for (GiteaOrganization org : t.list()) {
+                log.info(org.getName());
+            }
         } catch (MogException e) {
             log.error("Exception occurred:" , e);
         }
