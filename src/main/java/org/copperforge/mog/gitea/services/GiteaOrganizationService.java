@@ -11,9 +11,15 @@ import org.copperforge.mog.gitea.models.GiteaRepository;
 import org.copperforge.mog.http.MogHttpMethod;
 import org.copperforge.mog.http.MogHttpRequest;
 import org.copperforge.mog.http.MogHttpResponse;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
+import org.eclipse.jgit.transport.sshd.SshdSessionFactoryBuilder;
+import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +74,35 @@ public class GiteaOrganizationService extends GiteaService {
     public Collection<GiteaRepository> clone(String orgName, String cloneTo) throws MogException {
         try {
             Collection<GiteaRepository> repos = repos(orgName);
+            File sshDir = new File("c:/users/brian", "/.ssh"); // TODO
+            log.info("sshDir = " + sshDir.getAbsolutePath());
+            SshdSessionFactory sshSessionFactory = new SshdSessionFactoryBuilder()
+                    .setPreferredAuthentications("publickey")
+                    .setHomeDirectory(FS.DETECTED.userHome())
+                    .setSshDirectory(sshDir)
+                    .build(null);
+            log.info("sshSessionFactory = " + sshSessionFactory);
+
             for (GiteaRepository repo : repos(orgName)) {
-                log.info(repo.getName() + " : " + repo.getSshCloneUrl());
-                Git.cloneRepository()
-                        .setURI(repo.getCloneUrl())
-                        .setDirectory(new File(cloneTo + File.separator + orgName + File.separator + repo.getName())) // TODO
-                        .setCredentialsProvider(new UsernamePasswordCredentialsProvider("beldridge2", "empire1981!")) // TODO
-                        .call();
-            } 
+                File target = new File(cloneTo + File.separator + orgName + File.separator + repo.getName());
+                log.info(repo.getName() + " cloning from " + repo.getSshCloneUrl() + " to " + target.getAbsolutePath());
+                CloneCommand command = Git.cloneRepository()
+                        .setURI(repo.getSshCloneUrl())
+                        .setDirectory(target);
+
+                if (sshSessionFactory != null) {
+                    command.setTransportConfigCallback(new TransportConfigCallback() {
+                        @Override
+                        public void configure(Transport transport) {
+                            ((SshTransport) transport).setSshSessionFactory(sshSessionFactory);
+                        }
+                    });
+                }
+
+                // command.setCredentialsProvider(new
+                // UsernamePasswordCredentialsProvider("beldridge2", "empire1981!")); // TODO
+                command.call();
+            }
             return repos;
         } catch (GitAPIException e) {
             throw new MogException(e);

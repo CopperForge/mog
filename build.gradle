@@ -47,6 +47,7 @@ dependencies {
     implementation 'com.github.jsqlparser:jsqlparser:5.0'
 
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.apache:6.10.0.202406032230-r'
  
     implementation 'io.undertow:undertow-core:2.3.15.Final'
     implementation 'io.undertow:undertow-servlet:2.3.15.Final'
