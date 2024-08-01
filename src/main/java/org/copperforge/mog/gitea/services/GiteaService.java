@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 public class GiteaService {
 
     private final Logger log = LoggerFactory.getLogger(GiteaService.class);
-    protected final String token = "cea8a5bde4a1e65b4619932ce30a730c285d5333";
-    protected final String baseUrl = "http://192.168.50.29/git/api/v1";
+    protected final String token = "cea8a5bde4a1e65b4619932ce30a730c285d5333"; // TODO
+    protected final String baseUrl = "http://192.168.50.29/git/api/v1"; // TODO
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected MogHttpResponse<?> performRequest(MogHttpRequest request) throws MogException {

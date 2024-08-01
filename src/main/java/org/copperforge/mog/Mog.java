@@ -12,7 +12,6 @@ import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
-import org.copperforge.mog.gitea.models.GiteaOrganization;
 import org.copperforge.mog.gitea.services.GiteaOrganizationService;
 import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.var.MogVariableService;
@@ -28,7 +27,6 @@ public class Mog {
     private Mogrifier mogrifier;
     private static MogOptions options;
     private Mogf mogf;
-    
 
     @Moglet
     VariableService environmentService;
@@ -71,9 +69,10 @@ public class Mog {
             mog.run(options);
 
             GiteaOrganizationService t = new GiteaOrganizationService();
-            log.info("" + t.get("mog"));
+            t.clone("core", "D:\\tmp\\repos");
+
         } catch (MogException e) {
-            log.error("Exception occurred:" , e);
+            log.error("Exception occurred:", e);
         }
     }
 
@@ -87,22 +86,24 @@ public class Mog {
     public void run(MogOptions options) throws MogException {
         // big todo
         if (options.getCommand() != null) {
-            
+
             log.trace("Finding command " + options.getCommand());
             MogCommand cmd = commandService.get(options.getCommand());
-            if (cmd == null) throw new MogException("Unable to find command '" + options.getCommand() + "'");
+            if (cmd == null)
+                throw new MogException("Unable to find command '" + options.getCommand() + "'");
 
             MogCommandRunner<?> runner = commandService.runner(cmd.getClass());
 
             log.debug("Running command '" + cmd.getName() + "' with '" + runner.getClass().getCanonicalName() + "'");
             MogCommandResponse response = runner.run(cmd, options);
-            log.debug("Command response = " + new BufferedReader(new InputStreamReader(response.getResponse())).lines().collect(Collectors.joining("\n")));
+            log.debug("Command response = " + new BufferedReader(new InputStreamReader(response.getResponse())).lines()
+                    .collect(Collectors.joining("\n")));
         }
 
     }
 
     private void initialize(MogOptions options) throws MogException {
-        
+
         log.debug("configFile = " + options.getConfigFile());
         String configFile = new MogVariableService().envsubst(options.getConfigFile());
         log.debug("configFile (after) = " + configFile);
@@ -113,12 +114,15 @@ public class Mog {
         File mogFile = new File(Mog.mog().config().userHome() + "/.mog");
         if (!mogFile.isFile()) {
             mogFile = new File(Mog.mog().config().mogHome() + "/.mog");
-            if (!mogFile.isFile()) mogFile = null;
+            if (!mogFile.isFile())
+                mogFile = null;
         }
         log.debug("Using mogf of " + mogFile);
 
-        if (mogFile != null) mogf = new MogReader<Mogf>(Mogf.class).read(mogFile);
-        else mogf = new Mogf();
+        if (mogFile != null)
+            mogf = new MogReader<Mogf>(Mogf.class).read(mogFile);
+        else
+            mogf = new Mogf();
 
         // initalize the service manager
         MogServiceManager manager = MogServiceManager.instance();

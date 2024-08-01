@@ -45,14 +45,15 @@ public class MogHttpResponse<T extends MogBean> {
         try {
             this.httpResponse = httpResponse;
             log.debug("accepts = " + accepts);
-            DocumentContext jsonContext = JsonPath.parse(httpResponse.body());
+            String respBody = httpResponse.body();
+            DocumentContext jsonContext = JsonPath.parse(respBody);
             JsonPath path = JsonPath.compile(jsonPath);
             Object value = jsonContext.read(path);
             if (!path.isDefinite() || value instanceof Collection) {
-                collection = mapper.readValue(jsonContext.jsonString(),
+                collection = mapper.readValue(respBody,
                         typeFactory.constructCollectionType(ArrayList.class, accepts));
             } else {
-                singleton = (T) jsonContext.read(jsonPath, accepts);
+                singleton = (T) mapper.readValue(respBody, accepts);
             }
         } catch (Exception e) {
             throw new MogException(e);
