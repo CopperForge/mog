@@ -71,9 +71,7 @@ public class Mog {
             mog.run(options);
 
             GiteaOrganizationService t = new GiteaOrganizationService();
-            for (GiteaOrganization org : t.list()) {
-                log.info(org.getName());
-            }
+            log.info("" + t.get("mog"));
         } catch (MogException e) {
             log.error("Exception occurred:" , e);
         }
