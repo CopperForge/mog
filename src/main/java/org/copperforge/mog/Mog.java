@@ -3,7 +3,6 @@ package org.copperforge.mog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.copperforge.mog.annotations.Moglet;
@@ -13,9 +12,7 @@ import org.copperforge.mog.command.MogCommandService;
 import org.copperforge.mog.command.runner.MogCommandRunner;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
-import org.copperforge.mog.gitea.services.GiteaOrganizationService;
 import org.copperforge.mog.reader.MogReader;
-import org.copperforge.mog.scm.MogScm;
 import org.copperforge.mog.var.MogVariableService;
 import org.copperforge.mog.var.VariableService;
 import org.slf4j.Logger;
@@ -68,10 +65,10 @@ public class Mog {
                 System.exit(0);
             }
 
-            MogScm sandbox = mog.config().getDevops().getScms().stream().filter(s -> s.getName().equals("sandbox")).findFirst().orElse(null);
+            // MogScm sandbox = mog.config().getDevops().getScms().stream().filter(s -> s.getName().equals("sandbox")).findFirst().orElse(null);
 
-            GiteaOrganizationService t = new GiteaOrganizationService();
-            t.cloneAll(sandbox, "core", "D:\\tmp\\repos");
+            // GiteaOrganizationService t = new GiteaOrganizationService();
+            // t.cloneAll(sandbox, "core", "D:\\tmp\\repos");
 
             mog.run(options);
 
