@@ -1,5 +1,7 @@
 package org.copperforge.mog.scm;
 
+import java.io.Serializable;
+
 import org.copperforge.mog.git.MogGitConfig;
 import org.copperforge.mog.gitea.MogGitea;
 
@@ -13,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = MogGitConfig.class, name = "git"),
         @JsonSubTypes.Type(value = MogGitea.class, name = "gitea")
 })
-public class MogScm {
+public class MogScm implements Serializable {
 
     private String type;
 

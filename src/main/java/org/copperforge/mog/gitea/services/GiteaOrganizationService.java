@@ -51,7 +51,7 @@ public class GiteaOrganizationService extends GiteaService {
 
     @SuppressWarnings("unchecked")
     public Collection<GiteaRepository> repos(MogScm scm, String orgName) throws MogException {
-        String url = "/orgs/" + orgName + "/repos?limit=-1";
+        String url = "/orgs/" + orgName + "/repos?limit=255";
 
         MogHttpRequest request = new MogHttpRequest()
                 .accepts(GiteaRepository.class).url(url).method(MogHttpMethod.GET);
@@ -63,7 +63,7 @@ public class GiteaOrganizationService extends GiteaService {
         return repos;
     }
 
-    public Collection<GiteaRepository> cloneAll(MogScm scm, String orgName, String cloneTo) throws MogException {
+    public Collection<GiteaRepository> cloneOrganization(MogScm scm, String orgName, String cloneTo) throws MogException {
         Collection<GiteaRepository> repos = repos(scm, orgName);
         for (GiteaRepository repo : repos) {
             clone(repo.getSshCloneUrl(), cloneTo + File.separator + orgName + File.separator + repo.getName());

@@ -2,10 +2,19 @@ package org.copperforge.mog.gitea;
 
 import org.copperforge.mog.git.MogGitConfig;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MogGitea extends MogGitConfig {
 
+    @JsonProperty("siteUrl")
+    @JsonAlias("site")
     private String siteUrl;
 
+    @JsonProperty("apiUrl")
+    @JsonAlias("api")
     private String apiUrl;
 
     private String token;

@@ -29,13 +29,13 @@ public class MogGitService {
         try {
             File sshDir = new File(FS.DETECTED.userHome(), "/.ssh"); // TODO, allow for override through switches or
                                                                      // config
-            log.info("sshDir = " + sshDir.getAbsolutePath());
+            log.trace("sshDir = " + sshDir.getAbsolutePath());
             SshdSessionFactory sshSessionFactory = builder
                     .setSshDirectory(sshDir)
                     .build(null);
 
             File target = new File(destination);
-            log.debug("Cloning from " + url + " to " + target.getAbsolutePath());
+            log.info("Cloning from " + url + " to " + target.getAbsolutePath());
             CloneCommand command = Git.cloneRepository()
                     .setURI(url)
                     .setDirectory(target);

@@ -1,5 +1,6 @@
 package org.copperforge.mog.gitea;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,12 +13,16 @@ import org.copperforge.mog.annotations.Moglet;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.gitea.models.GiteaOrganization;
 import org.copperforge.mog.gitea.services.GiteaOrganizationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
 @MogCommand(name = "gitea", method = "list")
 public class MogGiteaCommand {
+
+    private Logger log = LoggerFactory.getLogger(MogGiteaCommand.class);
 
     @Moglet
     private GiteaOrganizationService giteaService;
@@ -44,7 +49,6 @@ public class MogGiteaCommand {
             parseOptions(options);
         List<MogGitea> giteas = config.getDevops().getScms().stream().filter(s -> s.getType().equals("gitea"))
                 .map(MogGitea.class::cast).collect(Collectors.toList());
-        System.out.println("giteas = " + giteas);
         return giteas;
     }
 
@@ -63,18 +67,27 @@ public class MogGiteaCommand {
         }
 
         Optional<GiteaOrganization> org = giteaService.get(gitea(), organization);
-        System.out.println("org = " + org); // TODO
+        log.info("org = " + org); // TODO
 
     }
 
-    private void processCloneRequest() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'processCloneRequest'");
+    private void processCloneRequest() throws MogException {
+        List<GiteaOrganization> organizations = new ArrayList<>();
+        if (organization == null) {
+            organizations.addAll(giteaService.list(gitea()));
+        } else {
+            Optional<GiteaOrganization> org = giteaService.get(gitea(), organization);
+            if (org.isPresent()) organizations.add(org.get());
+        }
+
+        for (GiteaOrganization org : organizations) {
+            giteaService.cloneOrganization(gitea(), org.getName(), destination);
+        }
     }
 
     private void listOrganizations() throws MogException {
         for (GiteaOrganization org : giteaService.list(gitea())) {
-            System.out.println(org.getName()); // TODO
+            log.info(org.getName()); // TODO
         }
     }
 

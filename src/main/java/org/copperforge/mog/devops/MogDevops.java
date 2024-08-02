@@ -6,11 +6,15 @@ import java.util.List;
 import org.copperforge.mog.MogObject;
 import org.copperforge.mog.scm.MogScm;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MogDevops implements MogObject {
 
+    @JsonProperty("scms")
+    @JsonAlias("sourceControl")
     private List<MogScm> scms = new ArrayList<>();
 
     public List<MogScm> getScms() {
