@@ -7,6 +7,7 @@ import java.util.List;
 import org.copperforge.mog.MogObject;
 import org.copperforge.mog.archiving.MogArchiveSet;
 import org.copperforge.mog.data.MogDataSource;
+import org.copperforge.mog.devops.MogDevops;
 import org.copperforge.mog.server.MogServerConfig;
 import org.copperforge.mog.var.MogVariable;
 
@@ -34,6 +35,8 @@ public class MogConfig implements MogObject {
     private MogSearchPathsConfig searchPaths;
 
     private List<MogArchiveSet> archiveSets;
+
+    private MogDevops devops;
 
     private MogConfig() {
 
@@ -119,12 +122,20 @@ public class MogConfig implements MogObject {
         return System.getenv("MOG_HOME");
     }
 
+    public MogDevops getDevops() {
+        return devops;
+    }
+
+    public void setDevops(MogDevops devops) {
+        this.devops = devops;
+    }
+
     @Override
     public String toString() {
         return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
                 + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
                 + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + ", archiveSets=" + archiveSets
-                + "]";
+                + ", devops=" + devops + "]";
     }
 
 }

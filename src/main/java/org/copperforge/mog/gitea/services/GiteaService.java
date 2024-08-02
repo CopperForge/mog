@@ -15,26 +15,28 @@ import javax.net.ssl.TrustManager;
 
 import org.copperforge.mog.MogBean;
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.git.MogGitService;
+import org.copperforge.mog.gitea.MogGitea;
 import org.copperforge.mog.http.MogHttpRequest;
 import org.copperforge.mog.http.MogHttpResponse;
 import org.copperforge.mog.http.MogTokenAuthorization;
 import org.copperforge.mog.http.MogTrustManager;
+import org.copperforge.mog.scm.MogScm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GiteaService {
+public class GiteaService extends MogGitService {
 
     private final Logger log = LoggerFactory.getLogger(GiteaService.class);
-    protected final String token = "cea8a5bde4a1e65b4619932ce30a730c285d5333"; // TODO
-    protected final String baseUrl = "http://192.168.50.29/git/api/v1"; // TODO
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected MogHttpResponse<?> performRequest(MogHttpRequest request) throws MogException {
+    protected MogHttpResponse<?> performRequest(MogScm scm, MogHttpRequest request) throws MogException {
         try {
+            MogGitea gitea =  (MogGitea) scm;
 
             // add token auth if no auth present
             if (!request.hasAuthorizationHeader()) {
-                request.auth(MogTokenAuthorization.create(token));
+                request.auth(MogTokenAuthorization.create(gitea.getToken()));
             }
 
             // create client
@@ -50,7 +52,7 @@ public class GiteaService {
                 requestBuilder.header(key, request.getHeaders().get(key));
             }
 
-            HttpRequest httpRequest = requestBuilder.uri(URI.create(baseUrl + request.getUrl()))
+            HttpRequest httpRequest = requestBuilder.uri(URI.create(gitea.getApiUrl() + request.getUrl()))
                     .build();
 
             log.debug("HttpRequest = " + request);
