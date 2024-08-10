@@ -1,0 +1,84 @@
+{
+    "name": "CNVTOOLS Repository Report",
+    "type": "xlsx",
+    "filename": "${MOG_HOME}/cnvtools_repositories_${timestamp}.xlsx",
+    "styles": [
+        {
+            "type": "table",
+            "name": "TableStyleLight12",
+            "showFirstColumn": false,
+            "showLastColumn": false,
+            "showRowStripes": true,
+            "showColumnStripes": true
+        },
+        {
+            "type": "cell",
+            "name": "TopWrap",
+            "wrapText": true,
+            "verticalAlginment": "top"
+        }
+    ],
+    "dataSources": [
+        {
+            "name": "cnvtools_repos",
+            "type": "json",
+            "file": "D:\\develop\\copperforge\\mog\\src\\main\\resources\\reports\\repos_monolith.json"
+        }    
+    ],
+    "sheets": [
+        {
+            "name": "repositories",
+            "title": "Repositories",
+            "elements": [
+                {
+                    "type": "table",
+                    "name": "checks_table",
+                    "title": "checks_table",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Name",
+                            "key": "name",
+                            "width": 15
+                        },
+                        {
+                            "title": "Current Owner",
+                            "key": "owner.username",
+                            "width": 30
+                        },
+                        {
+                            "title": "# Open Issues",
+                            "key": "open_issues_count",
+                            "width": 15
+                        },
+                        {
+                            "title": "Last Updated",
+                            "key": "updated_at",
+                            "width": 20
+                        },
+                        {
+                            "title": "Archived?",
+                            "key": "archived",
+                            "width": 15
+                        },
+                        {
+                            "title": "Recommendation",
+                            "width": 75
+                        }
+                    ],
+                    "dataSource": {
+                        "name": "cnvtools_repos",
+                        "filter": {
+                            "type": "json",
+                            "jsonPath": "$.[*]"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

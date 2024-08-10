@@ -109,14 +109,19 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     colNum = tableElement.getUpperLeft().getCol();
                     for (Column columnDef : columns) {
                         cell = row.createCell(colNum++);
-                        value = reportable.get(columnDef.getKey());
 
-                        if (value instanceof Long) {
-                            cell.setCellValue((Long) value);
-                        } else if (value instanceof Integer) {
-                            cell.setCellValue((Integer) value);
+                        if (columnDef.getKey() == null) {
+                            value = "";
                         } else {
-                            cell.setCellValue(value != null ? value.toString() : "");
+                            value = reportable.get(columnDef.getKey());
+
+                            if (value instanceof Long) {
+                                cell.setCellValue((Long) value);
+                            } else if (value instanceof Integer) {
+                                cell.setCellValue((Integer) value);
+                            } else {
+                                cell.setCellValue(value != null ? value.toString() : "");
+                            }
                         }
                     }
                 }

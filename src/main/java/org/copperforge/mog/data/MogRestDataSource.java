@@ -1,31 +1,27 @@
 package org.copperforge.mog.data;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.copperforge.mog.data.filter.MogDataFilter;
+import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.filter.MogJsonFilter;
 import org.copperforge.mog.http.MogTrustManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 
-public class MogRestDataSource extends MogDataSource {
+public class MogRestDataSource extends MogJsonDataSource {
 
     private final Logger log = LoggerFactory.getLogger(MogRestDataSource.class);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -35,10 +31,8 @@ public class MogRestDataSource extends MogDataSource {
     private String token;
 
     @Override
-    public List<MogFetchable> fetch(MogDataFilter filter) {
+    protected String json(MogJsonFilter filter) throws MogException {
         try {
-            MogJsonFilter jsonFilter = (MogJsonFilter) filter;
-
             // create client
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[] { new MogTrustManager() }, new SecureRandom());
@@ -48,30 +42,17 @@ public class MogRestDataSource extends MogDataSource {
             // create request
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", "Bearer " + getToken())
-                    .uri(URI.create(getUrl() + jsonFilter.getSuburl()))
+                    .uri(URI.create(getUrl() + filter.getSuburl()))
                     .build();
 
             log.debug("HttpRequest = " + request);
             HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
             log.debug("HttpResponse = " + resp);
 
-            DocumentContext jsonContext = JsonPath.parse(resp.body().toString());
-
-            JsonPath path = JsonPath.compile(jsonFilter.getJsonPath());
-            if (path.isDefinite()) {
-                Object value = jsonContext.read(path);
-                log.debug("value = " + value.getClass().getCanonicalName());
-                return Arrays.asList(new MogFetchable(value));
-            } else {
-                List<Map<String, Object>> values = jsonContext.read(path);
-                log.debug("values = " + values);
-                return values.stream().map(MogFetchable::new).collect(Collectors.toList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return resp.body().toString();
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | InterruptedException e) {
+            throw new MogException(e);
         }
-
-        return new ArrayList<>();
     }
 
     public String getUrl() {

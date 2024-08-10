@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.MogFetchable;
+import org.copperforge.mog.data.MogFileDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.slf4j.Logger;
@@ -17,9 +17,7 @@ import com.gwt.conversion.dotout.DOReader;
 
 import net.sf.jsqlparser.expression.Expression;
 
-public class MogDotOutDataSource extends MogDataSource {
-
-    private String file;
+public class MogDotOutDataSource extends MogFileDataSource {
 
     private String format;
 
@@ -39,7 +37,7 @@ public class MogDotOutDataSource extends MogDataSource {
             DOParser parser = new DOParser();
             DOFileFormat doFormat = parser.parse(format);
             log.debug("format = " + doFormat);
-            DOReader reader = new DOReader(file, doFormat);
+            DOReader reader = new DOReader(getFile(), doFormat);
             log.debug("Reader count = " + reader.count());
             DotOutExpressionVisitorAdaptor dotOutVisitor = new DotOutExpressionVisitorAdaptor();
             while (reader.read()) {
@@ -62,20 +60,18 @@ public class MogDotOutDataSource extends MogDataSource {
         return fetchables;
     }
 
-    public String getFile() {
-        return file;
-    }
-
-    public void setFile(String file) {
-        this.file = file;
-    }
-
     public String getFormat() {
         return format;
     }
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    @Override
+    public String toString() {
+        return "MogDotOutDataSource [format=" + format + ", log=" + log + ", getFile()=" + getFile() + ", getName()="
+                + getName() + ", getType()=" + getType() + "]";
     }
 
 }

@@ -17,7 +17,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = MogRestDataSource.class, name = "api"),
         @JsonSubTypes.Type(value = MogRestDataSource.class, name = "rest"),
         @JsonSubTypes.Type(value = MogDotOutDataSource.class, name = "dotout"),
-        @JsonSubTypes.Type(value = MogDotOutDataSource.class, name = "binary")
+        @JsonSubTypes.Type(value = MogDotOutDataSource.class, name = "binary"),
+        @JsonSubTypes.Type(value = MogJsonDataSource.class, name = "json")
 })
 public abstract class MogDataSource {
 
