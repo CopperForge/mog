@@ -1,0 +1,1 @@
+java -jar $MOG_HOME/lib/mog.jar %*

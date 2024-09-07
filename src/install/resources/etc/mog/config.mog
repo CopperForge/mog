@@ -1,0 +1,38 @@
+{
+    "name": "mog-site-name",
+    "description": "Mog-Site-Description",
+    "group": "mog",
+    "user": "mog",
+    "environment": [
+
+    ],
+    "searchPaths": {
+        "commands": [
+            "${MOG_HOME}/etc/commands"
+        ],
+        "reports": [
+            "${MOG_HOME}/etc/reports"
+        ]
+    },
+    "datasources": [
+    ],
+    "server": {
+        
+    },
+    "archiveSets": [
+    ],
+    "devops": {
+        "scms": [
+            {
+                "type": "gitea",
+                "name": "sandbox",
+                "token": "cea8a5bde4a1e65b4619932ce30a730c285d5333",
+                "siteUrl": "http://192.168.50.29/git/",
+                "apiUrl": "http://192.168.50.29/git/api/v1"
+            }
+        ],
+        "builders": [
+
+        ]
+    }
+}

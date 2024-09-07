@@ -11,12 +11,13 @@ plugins {
 	id 'java'
     id 'maven-publish'
     id 'application'
+    id ("com.netflix.nebula.rpm") version "11.9.1"
 }
 
 apply plugin: 'org.liquibase.gradle'
 
 group = 'org.copperforge'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 repositories {
 	mavenCentral()
@@ -119,3 +120,43 @@ liquibase {
     }
 }
 
+task rpm(type: Rpm) {
+    dependsOn('build')
+    os LINUX
+    into "/opt/mog"
+    arch 'x86_64'
+    packageName project.name
+    release "alpha"
+
+    user "mog"
+    group "mog"
+    permissionGroup "mog"
+
+    from (fileTree(dir: ".", includes: [ "mog" ])) {
+        into "bin"
+        fileMode 0775
+    }
+
+    from (fileTree(dir: "build/libs/mog-0.0.1.jar")) {
+        into "lib"
+        fileMode 0664
+        rename "mog-0.0.1.jar", "mog.jar"
+    }
+
+    from (fileTree(dir: "src/main/resources/commands")) {
+        into "etc/commands"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/main/resources/reports")) {
+        into "etc/reports"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/install/resources/etc")) {
+        addParentDirs false
+        into "/etc"
+        fileMode 0664
+    }
+
+}

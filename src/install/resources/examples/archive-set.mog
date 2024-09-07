@@ -1,0 +1,17 @@
+{
+    "archiveSets": [
+        {
+            "name": "conversion-environment",
+            "assets": [
+                "d:/opt/mog",
+                "d:/etc",
+                "d:/tmp/zzz-conversion",
+                "d:/opt/bin/rufus*"
+            ],
+            "exclude": [
+                "**/.git",
+                "**.xlsx"
+            ]
+        }
+    ]
+}

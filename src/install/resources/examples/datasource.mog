@@ -1,0 +1,18 @@
+{
+    "datasources": [
+        {
+            "name": "reporting",
+            "type": "jdbc",
+            "url": "jdbc:h2:file:${MOG_HOME}/reporting.db",
+            "user": "h2",
+            "password": "U2FsdGVkX1+XQQ8FdUfEPdFfn5Jsgkvxet9PKkEwOXg=",
+            "jdbcClass": "org.h2.Driver"
+        },
+        {
+            "name": "cnvtools_repos",
+            "type": "api",
+            "url": "https://cnvtools.com/gitea/api/v1/",
+            "token": "5215dbf93c15e28f41673c6a5d8f68b2abd8855c"
+        }
+    ]
+}
