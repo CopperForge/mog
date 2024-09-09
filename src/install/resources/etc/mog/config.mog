@@ -34,5 +34,8 @@
         "builders": [
 
         ]
-    }
+    },
+    "includes": [
+        "/etc/mog/mog.d/*.mog"
+    ]
 }

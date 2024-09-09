@@ -76,7 +76,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'org.copperforge'
             artifactId = 'mog'
-            version = '0.0.1-SNAPSHOT'
+            version = '0.0.1'
 
             from components.java
 
@@ -127,6 +127,8 @@ task rpm(type: Rpm) {
     arch 'x86_64'
     packageName project.name
     release "alpha"
+    preInstall "src/install/scripts/pre-install.sh"
+    postInstall "src/install/scripts/post-install.sh"
 
     user "mog"
     group "mog"
