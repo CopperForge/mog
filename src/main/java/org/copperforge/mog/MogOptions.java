@@ -15,8 +15,8 @@ public class MogOptions {
     @Option(names = { "-h", "--help" }, description = "display help")
     private boolean helpRequested = false;
 
-    @Option(names = "--config", description = "specify MOG config file (defaults to ${MOG_HOME}/config.mog)")
-    private String configFile = "${MOG_HOME}/config.mog";
+    @Option(names = "--config", description = "specify MOG config file (defaults to ${MOG_HOME}/etc/config.mog)")
+    private String configFile = "${MOG_HOME}/etc/config.mog";
 
     @Option(names = "--working-dir", description = "specify the working dir to execute the command")
     private String workingDirectory = null;

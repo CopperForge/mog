@@ -79,19 +79,18 @@ publishing {
             version = '0.0.1'
 
             from components.java
-
         }
     }
 }
 
 application {
-    // Define the main class for the application.
     mainClass = 'org.copperforge.mog.Mog'
 }
 
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
 
     manifest {
         attributes 'Main-Class': 'org.copperforge.mog.Mog'
@@ -108,18 +107,6 @@ java {
     }
 }
 
-liquibase {
-    activities {
-        main {
-          changelogFile './src/main/resources/reports/ccr/ccr.changelog.xml'
-          url "jdbc:h2:file:${System.getenv('MOG_HOME')}/reporting.db"
-          username "h2"
-          password "password"
-          logLevel "info"
-        }
-    }
-}
-
 task rpm(type: Rpm) {
     dependsOn('build')
     os LINUX
@@ -127,8 +114,8 @@ task rpm(type: Rpm) {
     arch 'x86_64'
     packageName project.name
     release "alpha"
-    preInstall "src/install/scripts/pre-install.sh"
-    postInstall "src/install/scripts/post-install.sh"
+    preInstall file("src/install/scripts/pre-install.sh")
+    postInstall file("src/install/scripts/post-install.sh")
 
     user "mog"
     group "mog"
@@ -158,6 +145,11 @@ task rpm(type: Rpm) {
     from (fileTree(dir: "src/install/resources/etc")) {
         addParentDirs false
         into "/etc"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/install/resources", include: "config.mog")) {
+        into "etc"
         fileMode 0664
     }
 
