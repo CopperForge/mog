@@ -2,13 +2,12 @@ package org.copperforge.mog.data.dotout;
 
 import java.util.Stack;
 
+import org.copperforge.mog.conversion.dotout.DOLong;
+import org.copperforge.mog.conversion.dotout.DOString;
+import org.copperforge.mog.conversion.dotout.DOValue;
 import org.copperforge.mog.data.MogFetchable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.gwt.conversion.dotout.DOLong;
-import com.gwt.conversion.dotout.DOString;
-import com.gwt.conversion.dotout.DOValue;
 
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.LongValue;

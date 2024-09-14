@@ -11,7 +11,7 @@ plugins {
 	id 'java'
     id 'maven-publish'
     id 'application'
-    id ("com.netflix.nebula.rpm") version "11.9.1"
+    id "com.netflix.nebula.rpm" version "11.9.1"
 }
 
 apply plugin: 'org.liquibase.gradle'
@@ -40,7 +40,6 @@ dependencies {
     implementation 'org.json:json:20240303'
     implementation 'com.jayway.jsonpath:json-path:2.9.0'
 
-    implementation 'com.gwt.conversion:dotout:0.0.1-SNAPSHOT'
     implementation 'com.h2database:h2:2.2.224'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
     implementation 'com.oracle:ojdbc8:21.11'
@@ -79,7 +78,6 @@ publishing {
             version = '0.0.1'
 
             from components.java
-
         }
     }
 }
@@ -104,7 +102,7 @@ jar {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(22)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

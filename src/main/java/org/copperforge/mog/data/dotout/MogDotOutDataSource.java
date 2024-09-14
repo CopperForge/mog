@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.conversion.dotout.DOFileFormat;
+import org.copperforge.mog.conversion.dotout.DOParser;
+import org.copperforge.mog.conversion.dotout.DOReader;
 import org.copperforge.mog.data.MogFetchable;
 import org.copperforge.mog.data.MogFileDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.gwt.conversion.dotout.DOFileFormat;
-import com.gwt.conversion.dotout.DOParser;
-import com.gwt.conversion.dotout.DOReader;
 
 import net.sf.jsqlparser.expression.Expression;
 
