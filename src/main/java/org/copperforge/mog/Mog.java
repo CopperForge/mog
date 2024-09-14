@@ -65,13 +65,7 @@ public class Mog {
                 System.exit(0);
             }
 
-            // MogScm sandbox = mog.config().getDevops().getScms().stream().filter(s -> s.getName().equals("sandbox")).findFirst().orElse(null);
-
-            // GiteaOrganizationService t = new GiteaOrganizationService();
-            // t.cloneAll(sandbox, "core", "D:\\tmp\\repos");
-
             mog.run(options);
-
         } catch (MogException e) {
             log.error("Exception occurred:", e);
         }
