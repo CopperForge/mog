@@ -15,7 +15,7 @@ public class MogSecurityService {
 
     public MogSecurityService() throws MogException {
         MogEncryptDecryptOptions options = MogEncryptDecryptOptions.parse(Mog.mog().options());
-        log.trace("options = " + options);
+        log.info("options = " + options);
 
         if (options.getPassword() != null)
             encryptorDecryptor = new MogAESEncryptorDecryptor(options.getPassword());
