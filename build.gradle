@@ -77,7 +77,6 @@ dependencies {
 
     implementation 'com.h2database:h2:2.2.224'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
-    implementation 'com.oracle:ojdbc8:21.11'
 
     implementation 'com.github.jsqlparser:jsqlparser:5.0'
 
@@ -88,7 +87,6 @@ dependencies {
     implementation 'io.undertow:undertow-servlet:2.3.15.Final'
 
     implementation 'info.picocli:picocli:4.7.6'
-    // implementation 'info.picocli:picocli-shell-jline3:4.7.6'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
     liquibaseRuntime 'info.picocli:picocli:4.7.6'
 
