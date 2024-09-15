@@ -1,6 +1,5 @@
 package org.copperforge.mog;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;

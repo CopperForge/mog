@@ -53,6 +53,10 @@ public class Mog {
         return mogf;
     }
 
+    public String getVersion() {
+        return "0.0.1"; // BIG todo
+    }
+
     public static void main(String[] args) {
         try {
             mog = new Mog();
@@ -99,6 +103,9 @@ public class Mog {
     }
 
     private void initialize(MogOptions options) throws MogException {
+
+        log.info("MOG v" + getVersion());
+        log.info("");
 
         log.debug("configFile = " + options.getConfigFile());
         String configFile = new MogVariableService().envsubst(options.getConfigFile());

@@ -16,8 +16,33 @@ plugins {
 
 apply plugin: 'org.liquibase.gradle'
 
-group = 'org.copperforge'
-version = '0.0.1'
+
+class ApplicationVersion {
+   Integer major
+   Integer minor
+   Integer patch
+   Boolean release
+
+   ApplicationVersion(Integer major, Integer minor, Integer patch, Boolean release) {
+      this.major = major
+      this.minor = minor
+      this.patch = patch
+      this.release = release
+   }
+
+   private String getRelease() {
+    def date = new Date()
+
+    return this.release ? '' : '-' + date.format('yyyyMMddHHmmss')
+   }
+
+   String getVersion() {
+      return "$major.$minor.$patch" + this.getRelease()
+   }
+}
+
+group = 'org.copperforge.mog'
+version = new ApplicationVersion(0, 0, 1, false).getVersion();
 
 repositories {
 	mavenCentral()
@@ -93,6 +118,7 @@ jar {
 
     manifest {
         attributes 'Main-Class': 'org.copperforge.mog.Mog'
+        attributes "build-version": version
     }
 
     from {
