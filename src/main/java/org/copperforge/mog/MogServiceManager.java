@@ -1,5 +1,7 @@
 package org.copperforge.mog;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,9 +35,9 @@ public class MogServiceManager {
                 services.put(serviceAnnotation.name(), instance);
             }
             log.trace("Found :: " + services.toString());
-        } catch (Exception e) {
-            log.error("Unable to process MogServiceManager initialization", e);
-            throw new MogException(e);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            if (e.getCause() instanceof MogException) throw (MogException) e.getCause();
+            throw new MogException("Unable to initialize services; see log", e);
         }
 
     }

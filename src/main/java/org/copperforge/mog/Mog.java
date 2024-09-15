@@ -67,7 +67,8 @@ public class Mog {
 
             mog.run(options);
         } catch (MogException e) {
-            log.error("Exception occurred:", e);
+            log.info("ERROR: " + e.getLocalizedMessage());
+            // log.error("Exception occurred:", e);
         }
     }
 

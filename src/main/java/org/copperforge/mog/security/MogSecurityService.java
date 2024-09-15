@@ -23,7 +23,7 @@ public class MogSecurityService {
             encryptorDecryptor = new MogAESEncryptorDecryptor(Mog.mog().mogf().getEncryptionPassword());
         else {
             encryptorDecryptor = null;
-            throw new MogException("Unable to determine encryption key");
+            throw new MogException("Unable to determine encryption key; please check with your MOG administrator");
         }
     }
 
