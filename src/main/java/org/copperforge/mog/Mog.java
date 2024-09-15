@@ -106,7 +106,7 @@ public class Mog {
 
     private void initialize(MogOptions options) throws MogException {
 
-        log.info("MOG v" + getVersion());
+        log.info("mog v" + getVersion());
         log.info("");
 
         log.debug("configFile = " + options.getConfigFile());
