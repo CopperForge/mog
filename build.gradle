@@ -37,7 +37,7 @@ class ApplicationVersion {
 
    String getVersion() {
       def version = "$major.$minor.$patch"
-      if (this.getRelease() != '') version += "r" + this.getRelease()
+      if (this.getRelease() != '') version += "." + this.getRelease()
       return "$version"
    }
 }
@@ -45,6 +45,7 @@ class ApplicationVersion {
 ext {
     applicationVersion = new ApplicationVersion(0, 0, 1, false);
 }
+
 group = 'org.copperforge.mog'
 version = applicationVersion.getVersion();
 
@@ -158,15 +159,14 @@ task rpm(type: Rpm) {
     group "mog"
     permissionGroup "mog"
 
-    from (fileTree(dir: ".", includes: [ "mog" ])) {
+    from (fileTree(dir: "src/main/bin", include: "*")) {
         into "bin"
-        fileMode 0775
+        fileMode 0777
     }
 
-    from (fileTree(dir: "build/libs/mog-0.0.1.jar")) {
+    from (fileTree(dir: "build/libs", include: "*.jar")) {
         into "lib"
         fileMode 0664
-        rename "mog-0.0.1.jar", "mog.jar"
     }
 
     from (fileTree(dir: "src/main/resources/commands")) {
