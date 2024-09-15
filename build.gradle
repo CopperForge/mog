@@ -16,7 +16,6 @@ plugins {
 
 apply plugin: 'org.liquibase.gradle'
 
-
 class ApplicationVersion {
    Integer major
    Integer minor
@@ -33,16 +32,21 @@ class ApplicationVersion {
    private String getRelease() {
     def date = new Date()
 
-    return this.release ? '' : '-' + date.format('yyyyMMddHHmmss')
+    return this.release ? '' : date.format('yyyyMMddHHmmss')
    }
 
    String getVersion() {
-      return "$major.$minor.$patch" + this.getRelease()
+      def version = "$major.$minor.$patch"
+      if (this.getRelease() != '') version += "r" + this.getRelease()
+      return "$version"
    }
 }
 
+ext {
+    applicationVersion = new ApplicationVersion(0, 0, 1, false);
+}
 group = 'org.copperforge.mog'
-version = new ApplicationVersion(0, 0, 1, false).getVersion();
+version = applicationVersion.getVersion();
 
 repositories {
 	mavenCentral()
@@ -111,7 +115,6 @@ application {
     mainClass = 'org.copperforge.mog.Mog'
 }
 
-
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
@@ -147,7 +150,7 @@ task rpm(type: Rpm) {
     into "/opt/mog"
     arch 'x86_64'
     packageName project.name
-    release "alpha"
+    release applicationVersion.getRelease()
     preInstall file("src/install/scripts/pre-install.sh")
     postInstall file("src/install/scripts/post-install.sh")
 
