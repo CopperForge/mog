@@ -32,13 +32,13 @@ public class MogDataCommands {
 
     @MogCommand(name = "query")
     public MogCommandResponse query(MogOptions options) throws MogException {
-        log.info("options = " + options);
+        log.debug("options = " + options);
 
         new CommandLine(this).setUnmatchedArgumentsAllowed(true)
                 .parseArgs(options.rawArgs().toArray(new String[0]));
 
-        log.info("dataSourceName = " + dataSourceName);
-        log.info("query = " + query);
+        log.debug("dataSourceName = " + dataSourceName);
+        log.debug("query = " + query);
 
         MogDataSource dataSource = Mog.mog().config().getDataSources().stream()
                 .filter(d -> d.getName().equals(dataSourceName)).findFirst().orElse(null);
@@ -47,7 +47,7 @@ public class MogDataCommands {
         final List<String> columns = new ArrayList<>(Arrays.asList("*"));
         if (query != null) {
             filter = new MogQueryFilter(query);
-            log.info("columns = " + filter.columns());
+            log.debug("columns = " + filter.columns());
             columns.clear();
             columns.addAll(filter.columns());
         }

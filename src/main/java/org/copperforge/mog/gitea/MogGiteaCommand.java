@@ -67,7 +67,7 @@ public class MogGiteaCommand {
         }
 
         Optional<GiteaOrganization> org = giteaService.get(gitea(), organization);
-        log.info("org = " + org); // TODO
+        log.debug("org = " + org); // TODO
 
     }
 
@@ -87,7 +87,7 @@ public class MogGiteaCommand {
 
     private void listOrganizations() throws MogException {
         for (GiteaOrganization org : giteaService.list(gitea())) {
-            log.info(org.getName()); // TODO
+            log.info(" - " + org.getName()); // TODO
         }
     }
 
