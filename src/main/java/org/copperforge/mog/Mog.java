@@ -54,7 +54,7 @@ public class Mog {
     }
 
     public String getVersion() {
-        return "0.0.1"; // BIG todo
+        return getClass().getPackage().getImplementationVersion();
     }
 
     public static void main(String[] args) {
@@ -98,6 +98,8 @@ public class Mog {
             MogCommandResponse response = runner.run(cmd, options);
             log.debug("Command response = " + new BufferedReader(new InputStreamReader(response.getResponse())).lines()
                     .collect(Collectors.joining("\n")));
+        } else {
+            listCommands();
         }
 
     }

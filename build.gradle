@@ -116,9 +116,13 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
 
+    archiveFileName = "mog.jar"
     manifest {
-        attributes 'Main-Class': 'org.copperforge.mog.Mog'
-        attributes "build-version": version
+        attributes(
+            'Main-Class': 'org.copperforge.mog.Mog',
+            'Implementation-Title': 'MOG - It is what you make it',
+            'Implementation-Version': "${version}"
+        )
     }
 
     from {
