@@ -37,6 +37,11 @@ class ApplicationVersion {
 
    String getVersion() {
       def version = "$major.$minor.$patch"
+      return "$version"
+   }
+
+   String getReleaseVersion() {
+      def version = this.getVersion()
       if (this.getRelease() != '') version += "." + this.getRelease()
       return "$version"
    }
@@ -47,7 +52,7 @@ ext {
 }
 
 group = 'org.copperforge.mog'
-version = applicationVersion.getVersion();
+version = applicationVersion.getReleaseVersion();
 
 repositories {
 	mavenCentral()
@@ -105,7 +110,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'org.copperforge'
             artifactId = 'mog'
-            version = '0.0.1'
+            version = applicationVersion.getVersion()
 
             from components.java
         }
@@ -151,9 +156,10 @@ task rpm(type: Rpm) {
     into "/opt/mog"
     arch 'x86_64'
     packageName project.name
-    release applicationVersion.getRelease()
     preInstall file("src/install/scripts/pre-install.sh")
     postInstall file("src/install/scripts/post-install.sh")
+    version applicationVersion.getVersion()
+    release applicationVersion.getRelease()
 
     user "mog"
     group "mog"

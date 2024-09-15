@@ -95,6 +95,7 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
             }
 
         } catch (Exception e) {
+            if (e.getCause() instanceof MogException) throw (MogException) e.getCause();
             log.error("Error running command: ", e);
             response.setReturnCode(-1);
             response.setResponse(

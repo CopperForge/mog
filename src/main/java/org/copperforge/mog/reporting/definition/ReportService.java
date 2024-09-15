@@ -8,12 +8,16 @@ import java.util.List;
 import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.xlsx.XLSXReportWriter;
+import org.copperforge.mog.var.MogVariableService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReportService {
 
     private static ReportService _instance = null;
+    private final Logger log = LoggerFactory.getLogger(ReportService.class);
 
     private ReportService() {
         new XLSXReportWriter().register();
@@ -28,8 +32,11 @@ public class ReportService {
     public Report parse(final String filename) throws MogException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+            log.info("parsing " + filename);
+
             File file = new File(filename);
             if (file.isAbsolute()) {
+                log.info("File is absolute");
                 InputStream in = new FileInputStream(file);
                 return objectMapper.readValue(in, Report.class);
             } else {
@@ -42,6 +49,8 @@ public class ReportService {
                     } else {
                         fullpath += "/" + filename;
                     }
+                    fullpath = new MogVariableService().envsubst(fullpath);
+                    
                     file = new File(fullpath);
                     if (file.exists()) {
                         InputStream in = new FileInputStream(file);

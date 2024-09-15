@@ -11,10 +11,15 @@ import org.copperforge.mog.reporting.writer.ReportWriterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@MogCommand(name = "report", description = "Manage report definitions")
+@MogCommand(name = "report", description = "Manage report definitions", method = "usage")
 public class ReportingCommand {
 
     private Logger log = LoggerFactory.getLogger(ReportingCommand.class);
+
+    public void usage(MogOptions options) throws MogException {
+        log.info("mog Reporting");
+        log.info("  Usage: mog report generate --report=<report-name>");
+    }
 
     @MogCommand(name = "generate", description = "generate report")
     public void generate(MogOptions options) throws MogException {

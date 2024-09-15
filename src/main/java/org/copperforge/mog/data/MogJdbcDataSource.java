@@ -123,7 +123,7 @@ public class MogJdbcDataSource extends MogDataSource {
         try {
             String url = environmentService.envsubst(getUrl()); // url
             String username = getUser(); // credentials
-            String password = securityService.decryptor().decrypt(getPassword());
+            String password = (getPassword() != null) && (!getPassword().isBlank()) ? securityService.decryptor().decrypt(getPassword()) : "";
             String query = queryFilter.getQuery(); // query to be run
             if (getJdbcClass() != null && !getJdbcClass().isEmpty())
                 Class.forName(getJdbcClass()); // Driver name
