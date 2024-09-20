@@ -83,9 +83,6 @@ dependencies {
     implementation 'org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r'
     implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.0.0.202409031743-r'
  
-    implementation 'io.undertow:undertow-core:2.3.15.Final'
-    implementation 'io.undertow:undertow-servlet:2.3.15.Final'
-
     implementation 'info.picocli:picocli:4.7.6'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
     liquibaseRuntime 'info.picocli:picocli:4.7.6'

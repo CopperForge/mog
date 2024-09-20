@@ -8,17 +8,12 @@ import org.copperforge.mog.MogObject;
 import org.copperforge.mog.archiving.MogArchiveSet;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.devops.MogDevops;
-import org.copperforge.mog.server.MogServerConfig;
 import org.copperforge.mog.var.MogVariable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MogConfig implements MogObject {
-
-    @JsonProperty("server")
-    private MogServerConfig serverConfig;
 
     private MogVariable environment[];
 
@@ -90,14 +85,6 @@ public class MogConfig implements MogObject {
         this.dataSources = dataSources;
     }
 
-    public MogServerConfig getServerConfig() {
-        return serverConfig;
-    }
-
-    public void setServerConfig(MogServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
-    }
-
     public MogSearchPathsConfig getSearchPaths() {
         return searchPaths;
     }
@@ -132,7 +119,7 @@ public class MogConfig implements MogObject {
 
     @Override
     public String toString() {
-        return "MogConfig [serverConfig=" + serverConfig + ", environment=" + Arrays.toString(environment)
+        return "MogConfig [environment=" + Arrays.toString(environment)
                 + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
                 + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + ", archiveSets=" + archiveSets
                 + ", devops=" + devops + "]";
