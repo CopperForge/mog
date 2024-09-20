@@ -37,6 +37,11 @@ class ApplicationVersion {
 
    String getVersion() {
       def version = "$major.$minor.$patch"
+      return "$version"
+   }
+
+   String getReleaseVersion() {
+      def version = this.getVersion()
       if (this.getRelease() != '') version += "." + this.getRelease()
       return "$version"
    }
@@ -47,7 +52,7 @@ ext {
 }
 
 group = 'org.copperforge.mog'
-version = applicationVersion.getVersion();
+version = applicationVersion.getReleaseVersion();
 
 repositories {
 	mavenCentral()
@@ -72,7 +77,6 @@ dependencies {
 
     implementation 'com.h2database:h2:2.2.224'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
-    implementation 'com.oracle:ojdbc8:21.11'
 
     implementation 'com.github.jsqlparser:jsqlparser:5.0'
 
@@ -83,7 +87,6 @@ dependencies {
     implementation 'io.undertow:undertow-servlet:2.3.15.Final'
 
     implementation 'info.picocli:picocli:4.7.6'
-    // implementation 'info.picocli:picocli-shell-jline3:4.7.6'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
     liquibaseRuntime 'info.picocli:picocli:4.7.6'
 
@@ -105,7 +108,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'org.copperforge'
             artifactId = 'mog'
-            version = '0.0.1'
+            version = applicationVersion.getVersion()
 
             from components.java
         }
@@ -151,9 +154,10 @@ task rpm(type: Rpm) {
     into "/opt/mog"
     arch 'x86_64'
     packageName project.name
-    release applicationVersion.getRelease()
     preInstall file("src/install/scripts/pre-install.sh")
     postInstall file("src/install/scripts/post-install.sh")
+    version applicationVersion.getVersion()
+    release applicationVersion.getRelease()
 
     user "mog"
     group "mog"
