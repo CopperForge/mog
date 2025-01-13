@@ -61,16 +61,16 @@ repositories {
 
 dependencies {
     implementation "org.slf4j:slf4j-api:2.+"
-    implementation "ch.qos.logback:logback-core:1.5.+"
-    implementation "ch.qos.logback:logback-classic:1.5.+"
+    implementation "ch.qos.logback:logback-core:1.+"
+    implementation "ch.qos.logback:logback-classic:1.+"
 
     implementation "com.google.guava:guava:33.2.1-jre"    
 
-    implementation "org.bouncycastle:bcprov-jdk18on:1.78.+"
-    implementation "org.bouncycastle:bcpkix-jdk18on:1.78.+"
+    implementation "org.bouncycastle:bcprov-jdk18on:1.+"
+    implementation "org.bouncycastle:bcpkix-jdk18on:1.+"
 
-    implementation "commons-io:commons-io:2.17.+"
-    implementation "org.apache.commons:commons-compress:1.27.+"
+    implementation "commons-io:commons-io:2.+"
+    implementation "org.apache.commons:commons-compress:1.+"
     implementation "org.apache.poi:poi:5.+" 
     implementation "org.apache.poi:poi-ooxml:5.+" 
 
@@ -79,7 +79,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:2.+"
 
     implementation "org.json:json:+"
-    implementation "com.jayway.jsonpath:json-path:2.9.+"
+    implementation "com.jayway.jsonpath:json-path:2.+"
 
     implementation "com.h2database:h2:2.+"
     implementation "org.xerial:sqlite-jdbc:3.+"
