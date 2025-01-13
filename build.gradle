@@ -48,7 +48,7 @@ class ApplicationVersion {
 }
 
 ext {
-    applicationVersion = new ApplicationVersion(1, 0, 0, true);
+    applicationVersion = new ApplicationVersion(1, 0, 0, false);
 }
 
 group = 'org.copperforge.mog'
