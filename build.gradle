@@ -48,7 +48,7 @@ class ApplicationVersion {
 }
 
 ext {
-    applicationVersion = new ApplicationVersion(1, 0, 0, false);
+    applicationVersion = new ApplicationVersion(1, 0, 0, true);
 }
 
 group = 'org.copperforge.mog'
@@ -74,9 +74,9 @@ dependencies {
     implementation "org.apache.poi:poi:5.+" 
     implementation "org.apache.poi:poi-ooxml:5.+" 
 
-    implementation "com.fasterxml.jackson.core:jackson-core:2.+"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.+"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.+"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.17.+"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.17.+"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.17.+"
 
     implementation "org.json:json:+"
     implementation "com.jayway.jsonpath:json-path:2.+"
