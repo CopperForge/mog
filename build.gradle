@@ -32,7 +32,7 @@ class ApplicationVersion {
    private String getRelease() {
     def date = new Date()
 
-    return this.release ? '0' : date.format('yyyyMMddHHmmss')
+    return this.release ? 'beta' : date.format('yyyyMMddHHmmss')
    }
 
    String getVersion() {
