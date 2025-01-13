@@ -84,7 +84,6 @@ public class Mog {
 
     @SuppressWarnings("resource")
     public void run(MogOptions options) throws MogException {
-        // big todo
         if (options.getCommand() != null) {
 
             log.trace("Finding command " + options.getCommand());
@@ -96,8 +95,9 @@ public class Mog {
 
             log.debug("Running command '" + cmd.getName() + "' with '" + runner.getClass().getCanonicalName() + "'");
             MogCommandResponse response = runner.run(cmd, options);
-            log.debug("Command response = " + new BufferedReader(new InputStreamReader(response.getResponse())).lines()
+            if (log.isInfoEnabled()) log.info(new BufferedReader(new InputStreamReader(response.getResponse())).lines()
                     .collect(Collectors.joining("\n")));
+
         } else {
             listCommands();
         }

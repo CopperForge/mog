@@ -102,6 +102,7 @@ public class MogAnnotatedCommandRunner implements MogCommandRunner<MogAnnotatedC
                     new ByteArrayInputStream(e.getLocalizedMessage() != null ? e.getLocalizedMessage().getBytes()
                             : new String("Error running command").getBytes()));
         }
+        if (log.isTraceEnabled()) log.trace(String.format("Returning response '%s'", response.toString()));
         return response;
     }
 
