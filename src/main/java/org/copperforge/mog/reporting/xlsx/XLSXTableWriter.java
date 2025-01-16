@@ -111,16 +111,20 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                         if (columnDef.getKey() != null) {
                             value = reportable.get(columnDef.getKey());
 
-                            switch (value) {
-                                case Long longValue -> {
-                                    cell.setCellValue(longValue);
+                            if (value != null) {
+                                switch (value) {
+                                    case Long longValue -> {
+                                        cell.setCellValue(longValue);
+                                    }
+                                    case Integer intValue -> {
+                                        cell.setCellValue(intValue);
+                                    }
+                                    default -> {
+                                        cell.setCellValue(value != null ? value.toString() : "");
+                                    }
                                 }
-                                case Integer intValue -> {
-                                    cell.setCellValue(intValue);
-                                }
-                                default -> {
-                                    cell.setCellValue(value != null ? value.toString() : "");
-                                }
+                            } else {
+                                cell.setCellValue("");
                             }
                         }
                     }
