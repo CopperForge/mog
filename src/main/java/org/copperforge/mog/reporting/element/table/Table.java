@@ -18,7 +18,7 @@ public class Table extends ReportElement {
     private CellReference upperLeft;
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
     private ReportDataSource dataSource;
-    private Boolean enableFilters = true;
+    private boolean enableFilters = true;
 
     public List<Column> getColumns() {
         return columns;
@@ -68,7 +68,7 @@ public class Table extends ReportElement {
         this.dataSource = dataSource;
     }
 
-    public Boolean getEnableFilters() {
+    public boolean getEnableFilters() {
         return enableFilters;
     }
 

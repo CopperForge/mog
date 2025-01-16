@@ -9,7 +9,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.MogFetchable;
@@ -27,32 +26,29 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {
-        log.debug("Writing element " + element);
+        if (log.isDebugEnabled())
+            log.debug(String.format("Writing element %s", element));
+
         Table tableElement = (Table) element;
 
         // get the data
-        ReportDataSource reportDataSource = tableElement.getDataSource();
-        log.trace("reportDataSource = " + reportDataSource);
-        log.trace("mogDtaSources = " + Mog.mog().config().getDataSources());
-
-        MogDataSource mogDataSource = report.getDataSources().stream()
-                .filter(d -> d.getName() != null && d.getName().equals(reportDataSource.getName())).findFirst()
-                .orElse(null);
-
+        MogDataSource mogDataSource = getDataSource(report, tableElement);
         if (mogDataSource == null) {
-            mogDataSource = Mog.mog().config().getDataSources().stream()
-                    .filter(d -> d.getName() != null && d.getName().equals(reportDataSource.getName())).findFirst()
-                    .orElseThrow(() -> new MogException("Unable to find datasource"));
+            if (log.isWarnEnabled())
+                log.warn(String.format("Unable to determine datasource for table '%s'", tableElement.getName()));
+            return;
         }
 
-        List<? extends MogFetchable> data = (mogDataSource != null) ? mogDataSource.fetch(reportDataSource.getFilter())
+        List<? extends MogFetchable> data = (mogDataSource != null)
+                ? mogDataSource.fetch(tableElement.getDataSource().getFilter())
                 : null;
 
         List<Column> columns = tableElement.getColumns();
-        int rowCount = (data != null && data.size() > 0) ? data.size() : 1;
+        int rowCount = (data != null && !data.isEmpty()) ? data.size() : 1;
         int columnCount = columns != null ? columns.size() : 0;
 
-        log.debug("rowCount = " + rowCount + ", columnCount = " + columnCount);
+        if (log.isDebugEnabled())
+            log.debug(String.format("rowCount = %d, columnCount = %d", rowCount, columnCount));
 
         CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(),
                 tableElement.getUpperLeft().getCol());
@@ -93,7 +89,9 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     sheet().setColumnWidth(colNum + tableElement.getUpperLeft().getCol(), columnDef.getWidth() * 256);
                 }
 
-                log.debug("table.getColumns() = " + table.getColumnCount() + "; colNum = " + colNum);
+                if (log.isDebugEnabled())
+                    log.debug(String.format("table.getColumns() = %d; colNum = %d", table.getColumnCount(), colNum));
+
                 column = table.getColumns().get(colNum);
                 column.setName(columnDef.getTitle());
                 cell = row.createCell(colNum++);
@@ -110,23 +108,25 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
                     for (Column columnDef : columns) {
                         cell = row.createCell(colNum++);
 
-                        if (columnDef.getKey() == null) {
-                            value = "";
-                        } else {
+                        if (columnDef.getKey() != null) {
                             value = reportable.get(columnDef.getKey());
 
-                            if (value instanceof Long) {
-                                cell.setCellValue((Long) value);
-                            } else if (value instanceof Integer) {
-                                cell.setCellValue((Integer) value);
-                            } else {
-                                cell.setCellValue(value != null ? value.toString() : "");
+                            switch (value) {
+                                case Long longValue -> {
+                                    cell.setCellValue(longValue);
+                                }
+                                case Integer intValue -> {
+                                    cell.setCellValue(intValue);
+                                }
+                                default -> {
+                                    cell.setCellValue(value != null ? value.toString() : "");
+                                }
                             }
                         }
                     }
                 }
             } else {
-                row = sheet().createRow(rowNum++);
+                row = sheet().createRow(rowNum);
                 for (colNum = 0; colNum <= columnCount; colNum++) {
                     cell = row.createCell(colNum);
                     cell.setCellValue("");
@@ -136,6 +136,25 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
         if (tableElement.getEnableFilters())
             table.getCTTable().addNewAutoFilter().setRef(reference.formatAsString());
+    }
+
+    /**
+     * 
+     * @param report
+     * @param tableElement
+     * @return
+     */
+    MogDataSource getDataSource(Report report, Table tableElement) {
+        ReportDataSource reportDataSource = tableElement.getDataSource();
+        if (reportDataSource == null)
+            return null;
+
+        if (log.isTraceEnabled())
+            log.trace(String.format("reportDataSource = %s", reportDataSource));
+
+        return report.getDataSources().stream()
+                .filter(d -> d.getName() != null && d.getName().equals(reportDataSource.getName())).findFirst()
+                .orElse(null);
     }
 
 }
