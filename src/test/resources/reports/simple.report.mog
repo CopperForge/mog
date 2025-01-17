@@ -1,0 +1,49 @@
+{
+    "name": "Simple Report",
+    "type": "xlsx",
+    "filename": "./simple_report.xlsx",
+    "styles": [
+        {
+            "type": "table",
+            "name": "TableStyleLight12",
+            "showFirstColumn": false,
+            "showLastColumn": false,
+            "showRowStripes": true,
+            "showColumnStripes": true
+        },
+        {
+            "type": "cell",
+            "name": "TopWrap",
+            "wrapText": true,
+            "verticalAlignment": "top"
+        }
+    ],
+    "sheets": [
+        {
+            "name": "simple_sheet",
+            "title": "Simple Sheet",
+            "elements": [
+                {
+                    "type": "table",
+                    "name": "simple_table",
+                    "title": "simple_table",
+                    "style": "TableStyleLight12",
+                    "upperLeft": {
+                        "row": 0,
+                        "col": 0
+                    },
+                    "columns": [
+                        {
+                            "title": "Column A",
+                            "width": 35
+                        },
+                        {
+                            "title": "Column B",
+                            "width": 65
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
