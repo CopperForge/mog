@@ -2,11 +2,9 @@ package org.copperforge.mog.security;
 
 import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.annotations.MogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@MogService(name = "securityService")
 public class MogSecurityService {
 
     private Logger log = LoggerFactory.getLogger(MogSecurityService.class);

@@ -7,11 +7,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.copperforge.mog.annotations.MogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@MogService(name = "environmentService")
 public class MogVariableService implements VariableService {
 
     private Logger log = LoggerFactory.getLogger(MogVariableService.class);

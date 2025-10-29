@@ -1,67 +1,30 @@
 package org.copperforge.mog;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.copperforge.mog.annotations.MogService;
-import org.copperforge.mog.reflection.MogAnnotationFilter;
-import org.copperforge.mog.reflection.MogClassScanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MogServiceManager {
 
-    private static MogServiceManager _instance;
-    private Logger log = LoggerFactory.getLogger(Mog.class);
-    private final Map<String, Object> services = new HashMap<>();
+    private static MogServiceManager instance = new MogServiceManager();
 
-    private MogServiceManager() throws MogException {
-        // discover all the services available and put them in the service map
-        try {
-            MogClassScanner scanner = new MogClassScanner();
-            Set<Class<?>> mogServices = scanner.scan(new MogAnnotationFilter(MogService.class));
+    private final ConcurrentHashMap<Class<?>, Object> services = new ConcurrentHashMap<>();
 
-            MogService serviceAnnotation;
-            Object instance;
-            log.trace("Finding MogServices ...");
-            for (Class<?> service : mogServices) {
-                serviceAnnotation = service.getAnnotation(MogService.class);
-                instance = service.getDeclaredConstructor().newInstance();
-                services.put(serviceAnnotation.name(), instance);
+    public static MogServiceManager instance() {
+        return instance;
+    }
+
+    public Object get(Class<?> serviceClass) throws MogException {
+        Object service = services.get(serviceClass);
+        if (service == null) {
+            try {
+                service = serviceClass.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                throw new MogException("Unable to instantiate service: " + serviceClass.getName(), e);
             }
-            log.trace("Found :: " + services.toString());
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            if (e.getCause() instanceof MogException) throw (MogException) e.getCause();
-            throw new MogException("Unable to initialize services; see log", e);
         }
-
+        return service;
     }
 
-    public static final MogServiceManager instance() throws MogException {
-        if (_instance == null)
-            _instance = new MogServiceManager();
-
-        return _instance;
+    public void register(Class<?> serviceClass, Object service) {
+        services.put(serviceClass, service);
     }
-
-    public Object get(String serviceName) throws MogException {
-        Object service = services.get(serviceName);
-        if (service == null) throw new MogException("Unable to find service by name " + serviceName);
-        return services.get(serviceName);
-    }
-
-    public Object get(Class<?> serviceType) throws MogException {
-        Optional<Object> service = services.values().stream().filter(s -> serviceType.isInstance(s)).findFirst();
-        if (service.isEmpty()) throw new MogException("Unable to find service by type " + serviceType.getName());
-        return service.get();
-    }
-
-    public Collection<Object> services() {
-        return services.values();
-    }
-
 }

@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.copperforge.mog.MogObject;
-import org.copperforge.mog.archiving.MogArchiveSet;
 import org.copperforge.mog.data.MogDataSource;
-import org.copperforge.mog.devops.MogDevops;
 import org.copperforge.mog.var.MogVariable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,10 +26,6 @@ public class MogConfig implements MogObject {
     private List<MogDataSource> dataSources = new ArrayList<>();
 
     private MogSearchPathsConfig searchPaths;
-
-    private List<MogArchiveSet> archiveSets;
-
-    private MogDevops devops;
 
     private MogConfig() {
 
@@ -93,14 +87,6 @@ public class MogConfig implements MogObject {
         this.searchPaths = searchPaths;
     }
 
-    public List<MogArchiveSet> getArchiveSets() {
-        return archiveSets;
-    }
-
-    public void setArchiveSets(List<MogArchiveSet> archiveSets) {
-        this.archiveSets = archiveSets;
-    }
-
     public String userHome() {
         return System.getProperty("user.home");
     }
@@ -109,20 +95,11 @@ public class MogConfig implements MogObject {
         return System.getenv("MOG_HOME");
     }
 
-    public MogDevops getDevops() {
-        return devops;
-    }
-
-    public void setDevops(MogDevops devops) {
-        this.devops = devops;
-    }
-
     @Override
     public String toString() {
         return "MogConfig [environment=" + Arrays.toString(environment)
                 + ", mogUser=" + mogUser + ", mogGroup=" + mogGroup + ", name=" + name + ", description=" + description
-                + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + ", archiveSets=" + archiveSets
-                + ", devops=" + devops + "]";
+                + ", dataSources=" + dataSources + ", searchPaths=" + searchPaths + "]";
     }
 
 }
