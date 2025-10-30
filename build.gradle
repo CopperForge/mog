@@ -64,10 +64,8 @@ dependencies {
     implementation "ch.qos.logback:logback-core:1.+"
     implementation "ch.qos.logback:logback-classic:1.+"
 
-    implementation "com.google.guava:guava:33.2.1-jre"    
-
-    implementation "org.bouncycastle:bcprov-jdk18on:1.+"
-    implementation "org.bouncycastle:bcpkix-jdk18on:1.+"
+    // removed: guava (only used by reflection utilities we dropped)
+    // removed: bouncycastle (unused)
 
     implementation "commons-io:commons-io:2.+"
     implementation "org.apache.commons:commons-compress:1.+"
@@ -87,8 +85,7 @@ dependencies {
 
     implementation "com.github.jsqlparser:jsqlparser:5.+"
 
-    implementation "org.eclipse.jgit:org.eclipse.jgit:7.+"
-    implementation "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.+"
+    // removed: jgit (unused)
  
     implementation "info.picocli:picocli:4.+"
     annotationProcessor "info.picocli:picocli-codegen:4.+"
@@ -177,10 +174,7 @@ task rpm(type: Rpm) {
         fileMode 0664
     }
 
-    from (fileTree(dir: "src/main/resources/commands")) {
-        into "etc/commands"
-        fileMode 0664
-    }
+    // removed legacy commands packaging; Picocli subcommands replace these
 
     from (fileTree(dir: "src/main/resources/reports")) {
         into "etc/reports"

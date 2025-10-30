@@ -1,8 +1,0 @@
-{
-    "name": "environment",
-    "description": "Manages MOG environment",
-    "usage": "",
-    "script": ". ${MOG_COMMAND_HOME}/environment/environment.command.sh",
-    "requiredParameters": [],
-    "optionalParameters": []
-}

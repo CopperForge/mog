@@ -1,8 +1,0 @@
-{
-    "name": "export",
-    "description": "Exports the configured databases using cnvs",
-    "usage": "",
-    "script": "export.sh",
-    "requiredParameters": [],
-    "optionalParameters": []
-}

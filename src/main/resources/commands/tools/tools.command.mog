@@ -1,8 +1,0 @@
-{
-    "name": "tools",
-    "description": "Connects to the conversion tools repositories",
-    "usage": "${MOG_COMMAND_HOME}/tools/usage.txt",
-    "script": ". ${MOG_HOME}/commands/tools/tools.command.sh",
-    "requiredParameters": [],
-    "optionalParameters": []
-}

@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-@Command(name = "encrypt", description = "Encrypt a value")
-public class MogEncryptCommand implements Runnable {
+@Command(name = "decrypt", description = "Decrypt a value")
+public class MogDecryptCommand implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(MogEncryptCommand.class);
+    private static final Logger log = LoggerFactory.getLogger(MogDecryptCommand.class);
 
     private MogSecurityService securityService;
 
@@ -27,16 +27,17 @@ public class MogEncryptCommand implements Runnable {
             if (parsedOptions.getValue() != null) options.setValue(parsedOptions.getValue());
 
             if (options.getValue() == null) {
-                log.info("Usage: mog encrypt --value=<text> [--password=<pwd>]");
+                log.info("Usage: mog decrypt --value=<text> [--password=<pwd>]");
                 return;
             }
 
             securityService = new MogSecurityService();
-            String encrypted = securityService.encryptor().encrypt(options.getValue());
-            if (log.isTraceEnabled()) log.trace(String.format("encrypted = '%s'", encrypted));
-            System.out.println(encrypted);
+            String decrypted = securityService.decryptor().decrypt(options.getValue());
+            if (log.isTraceEnabled()) log.trace(String.format("decrypted = '%s'", decrypted));
+            System.out.println(decrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);
         }
     }
 }
+

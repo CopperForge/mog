@@ -5,11 +5,27 @@ import java.io.File;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
 import org.copperforge.mog.reader.MogReader;
+import org.copperforge.mog.reporting.ReportingCommand;
+import org.copperforge.mog.security.MogDecryptCommand;
+import org.copperforge.mog.security.MogEncryptCommand;
 import org.copperforge.mog.var.MogVariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Mog {
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+
+@Command(
+    name = "mog",
+    description = "MOG - It is what you make it",
+    mixinStandardHelpOptions = true,
+    subcommands = {
+        ReportingCommand.class,
+        MogEncryptCommand.class,
+        MogDecryptCommand.class
+    }
+)
+public class Mog implements Runnable {
 
     private static Logger log = LoggerFactory.getLogger(Mog.class);
     private static Mog mog;
@@ -44,12 +60,22 @@ public class Mog {
             log.debug("options = " + options);
             mog.initialize(options);
 
-            // todo run command
+            // hand off to picocli subcommands
+            int exitCode = new CommandLine(new Mog()).execute(args);
+            if (exitCode != 0) {
+                System.exit(exitCode);
+            }
 
         } catch (MogException e) {
             log.info("ERROR: " + e.getLocalizedMessage());
             // log.error("Exception occurred:", e);
         }
+    }
+
+    @Override
+    public void run() {
+        // Root command; if no subcommand provided, show usage header
+        new CommandLine(this).usage(System.out);
     }
 
     private void initialize(MogOptions options) throws MogException {
