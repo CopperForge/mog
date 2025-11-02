@@ -27,7 +27,9 @@ public class MogReader<T> {
 
     public T read(final String filename) throws MogException {
         try {
-            return read(new FileInputStream(filename));
+            try (FileInputStream in = new FileInputStream(filename)) {
+                return read(in);
+            }
         } catch (Exception e) {
             throw new MogException("Unable to load MOG file :: " + filename, e);
         }
@@ -35,7 +37,9 @@ public class MogReader<T> {
 
     public T read(final File file) throws MogException {
         try {
-            return read(new FileInputStream(file));
+            try (FileInputStream in = new FileInputStream(file)) {
+                return read(in);
+            }
         } catch (Exception e) {
             throw new MogException("Unable to load MOG file :: " + file.getAbsolutePath(), e);
         }

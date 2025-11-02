@@ -127,9 +127,6 @@ public class MogJdbcDataSource extends MogDataSource {
             String query = queryFilter.getQuery(); // query to be run
             if (getJdbcClass() != null && !getJdbcClass().isEmpty())
                 Class.forName(getJdbcClass()); // Driver name
-            Connection con = DriverManager.getConnection(
-                    url, username, password);
-            Statement st = con.createStatement();
 
             if (filter.getOffset() > 0) {
                 query = addOffset(query, filter.getOffset().intValue());
@@ -139,26 +136,23 @@ public class MogJdbcDataSource extends MogDataSource {
                 query = addLimit(query, filter.getLimit().intValue());
             }
 
-            ResultSet rs = st.executeQuery(query); // Execute query
-            ResultSetMetaData meta = rs.getMetaData();
-
-            String columnName;
-            Object value;
-            while (rs.next()) {
-                MogFetchable reportable = new MogFetchable();
-
-                for (int colidx = 1; colidx <= meta.getColumnCount(); colidx++) {
-                    columnName = meta.getColumnName(colidx);
-                    value = rs.getObject(colidx);
-                    reportable.set(columnName.toLowerCase(), value);
+            try (Connection con = DriverManager.getConnection(url, username, password);
+                 Statement st = con.createStatement()) {
+                try (ResultSet rs = st.executeQuery(query)) { // Execute query
+                    ResultSetMetaData meta = rs.getMetaData();
+                    while (rs.next()) {
+                        MogFetchable reportable = new MogFetchable();
+                        for (int colidx = 1; colidx <= meta.getColumnCount(); colidx++) {
+                            String columnName = meta.getColumnLabel(colidx);
+                            Object value = rs.getObject(colidx);
+                            reportable.set(columnName.toLowerCase(), value);
+                        }
+                        data.add(reportable);
+                    }
                 }
-                data.add(reportable);
             }
-
-            st.close(); // close statement
-            con.close(); // close connection
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new MogException(e);
         }
 
         return data;

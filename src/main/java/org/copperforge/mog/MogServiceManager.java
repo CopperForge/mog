@@ -17,6 +17,7 @@ public class MogServiceManager {
         if (service == null) {
             try {
                 service = serviceClass.getDeclaredConstructor().newInstance();
+                services.put(serviceClass, service);
             } catch (Exception e) {
                 throw new MogException("Unable to instantiate service: " + serviceClass.getName(), e);
             }
