@@ -1,16 +1,17 @@
 package org.copperforge.mog.reporting.xlsx;
 
+import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xddf.usermodel.XDDFChart;
-import org.apache.poi.xddf.usermodel.XDDFChartLegend;
-import org.apache.poi.xddf.usermodel.XDDFLegendPosition;
-import org.apache.poi.xddf.usermodel.XDDFCategoryAxis;
-import org.apache.poi.xddf.usermodel.XDDFValueAxis;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFChart;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartLegend;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryAxis;
+import org.apache.poi.xddf.usermodel.chart.XDDFValueAxis;
 import org.apache.poi.xddf.usermodel.chart.AxisPosition;
 import org.apache.poi.xddf.usermodel.chart.ChartTypes;
 import org.apache.poi.xddf.usermodel.chart.LegendPosition;
 import org.apache.poi.xddf.usermodel.chart.XDDFBarChartData;
-import org.apache.poi.xddf.usermodel.chart.XDDFBarDirection;
+import org.apache.poi.xddf.usermodel.chart.BarDirection;
 import org.apache.poi.xddf.usermodel.chart.XDDFChartData;
 import org.apache.poi.xddf.usermodel.chart.XDDFDataSource;
 import org.apache.poi.xddf.usermodel.chart.XDDFNumericalDataSource;
@@ -50,17 +51,18 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         anchor.setCol2(col2);
         anchor.setRow2(row2);
 
-        XDDFChart chart = drawing.createChart(anchor);
+        XSSFChart chart = drawing.createChart(anchor);
         if (chartDef.getTitle() != null && !chartDef.getTitle().isBlank()) {
             chart.setTitleText(chartDef.getTitle());
             chart.setTitleOverlay(false);
         }
 
-        XDDFChartLegend legend = chart.getOrAddLegend();
-        legend.setPosition(LegendPosition.TOP);
-        legend.setOverlay(false);
         if (!chartDef.isShowLegend()) {
-            legend.setPosition(LegendPosition.NONE);
+            chart.getCTChart().unsetLegend();
+        } else {
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.TOP);
+            legend.setOverlay(false);
         }
 
         String type = chartDef.getChartType() != null ? chartDef.getChartType().toLowerCase() : "bar";
@@ -74,12 +76,12 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         }
     }
 
-    private void plotBarChart(XDDFChart chart, Chart chartDef) throws MogException {
+    private void plotBarChart(XSSFChart chart, Chart chartDef) throws MogException {
         XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
         XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
 
         XDDFBarChartData data = (XDDFBarChartData) chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
-        data.setBarDirection(XDDFBarDirection.COL);
+        data.setBarDirection(BarDirection.COL);
         if (Boolean.TRUE.equals(chartDef.getStacked())) data.setVaryColors(false);
 
         XDDFDataSource<?> categories = resolveCategories(sheet(), chartDef);
@@ -91,7 +93,7 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         chart.plot(data);
     }
 
-    private void plotCategoryValueChart(XDDFChart chart, Chart chartDef, ChartTypes type) throws MogException {
+    private void plotCategoryValueChart(XSSFChart chart, Chart chartDef, ChartTypes type) throws MogException {
         XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
         XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
         XDDFChartData data = chart.createData(type, bottomAxis, leftAxis);
@@ -104,7 +106,7 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         chart.plot(data);
     }
 
-    private void plotPieChart(XDDFChart chart, Chart chartDef) throws MogException {
+    private void plotPieChart(XSSFChart chart, Chart chartDef) throws MogException {
         XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
         XDDFDataSource<?> categories = resolveCategories(sheet(), chartDef);
         for (ChartSeries s : chartDef.getSeries()) {
@@ -152,16 +154,14 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
     }
 
     private CellRangeAddress columnRangeForTable(XSSFTable table, int columnIndex) throws MogException {
-        // Use table bounds, skip header row
-        int firstRow = table.getStartRow() + 1;
-        int lastRow = table.getEndRow();
-        int firstCol = table.getStartCol() + columnIndex;
+        AreaReference area = table.getArea();
+        if (area == null) throw new MogException("Table has no area defined");
+        CellReference first = area.getFirstCell();
+        CellReference last = area.getLastCell();
+        int firstRow = first.getRow() + 1; // skip header row
+        int lastRow = Math.max(firstRow, last.getRow());
+        int firstCol = first.getCol() + columnIndex;
         int lastCol = firstCol;
-        if (firstRow > lastRow) {
-            // create a single empty cell range under the header to keep chart valid
-            firstRow = table.getStartRow() + 1;
-            lastRow = firstRow;
-        }
         return new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
     }
 
@@ -175,4 +175,3 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         }
     }
 }
-
