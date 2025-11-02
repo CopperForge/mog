@@ -143,7 +143,7 @@ public class MogJdbcDataSource extends MogDataSource {
                     while (rs.next()) {
                         MogFetchable reportable = new MogFetchable();
                         for (int colidx = 1; colidx <= meta.getColumnCount(); colidx++) {
-                            String columnName = meta.getColumnLabel(colidx);
+                            String columnName = meta.getColumnName(colidx);
                             Object value = rs.getObject(colidx);
                             reportable.set(columnName.toLowerCase(), value);
                         }
