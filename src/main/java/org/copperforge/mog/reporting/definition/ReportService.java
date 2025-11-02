@@ -37,8 +37,9 @@ public class ReportService {
             File file = new File(filename);
             if (file.isAbsolute()) {
                 log.info("File is absolute");
-                InputStream in = new FileInputStream(file);
-                return objectMapper.readValue(in, Report.class);
+                try (InputStream in = new FileInputStream(file)) {
+                    return objectMapper.readValue(in, Report.class);
+                }
             } else {
                 // search report paths
                 List<String> paths = Mog.mog().config().getSearchPaths().getReports();
@@ -53,8 +54,9 @@ public class ReportService {
                     
                     file = new File(fullpath);
                     if (file.exists()) {
-                        InputStream in = new FileInputStream(file);
-                        return objectMapper.readValue(in, Report.class);
+                        try (InputStream in = new FileInputStream(file)) {
+                            return objectMapper.readValue(in, Report.class);
+                        }
                     }
                 }
             }

@@ -45,11 +45,14 @@ public class XLSXReportWriter extends AbstractReportWriter {
     public void save(String filename) throws MogException {
         if (workbook == null) throw new MogException("The report must be built before it can be saved");
         try {
-            FileOutputStream outputStream = new FileOutputStream(filename);
-            workbook.write(outputStream);
-            workbook.close();
+            try (FileOutputStream outputStream = new FileOutputStream(filename)) {
+                workbook.write(outputStream);
+            }
         } catch (Exception e) {
             throw new MogException(e);
+        } finally {
+            try { workbook.close(); } catch (Exception ignore) {}
+            workbook = null;
         }
     }
 

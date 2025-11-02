@@ -33,11 +33,9 @@ public class MogDecryptCommand implements Runnable {
 
             securityService = new MogSecurityService();
             String decrypted = securityService.decryptor().decrypt(options.getValue());
-            if (log.isTraceEnabled()) log.trace(String.format("decrypted = '%s'", decrypted));
             System.out.println(decrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);
         }
     }
 }
-

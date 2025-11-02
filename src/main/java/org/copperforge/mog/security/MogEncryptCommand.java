@@ -33,7 +33,6 @@ public class MogEncryptCommand implements Runnable {
 
             securityService = new MogSecurityService();
             String encrypted = securityService.encryptor().encrypt(options.getValue());
-            if (log.isTraceEnabled()) log.trace(String.format("encrypted = '%s'", encrypted));
             System.out.println(encrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);
