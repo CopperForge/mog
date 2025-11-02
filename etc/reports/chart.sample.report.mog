@@ -14,13 +14,13 @@
           "type": "table",
           "name": "t_sales",
           "title": "Sales",
-          "upperLeft": { "row": 1, "col": 1 },
+          "upperLeft": { "row": 0, "col": 0 },
           "columns": [
             { "title": "Region", "key": "region" },
             { "title": "Revenue", "key": "revenue" },
             { "title": "Units", "key": "units" }
           ],
-          "dataSource": { "name": "inline", "filter": { "type": "json", "jsonPath": "$.data" } }
+          "dataSource": { "name": "inline", "filter": { "type": "json", "jsonPath": "$.data[*]" } }
         },
         {
           "type": "chart",

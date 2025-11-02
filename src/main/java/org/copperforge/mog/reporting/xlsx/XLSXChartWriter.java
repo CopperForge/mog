@@ -156,6 +156,10 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
     private CellRangeAddress columnRangeForTable(XSSFTable table, int columnIndex) throws MogException {
         AreaReference area = table.getArea();
         if (area == null) throw new MogException("Table has no area defined");
+        int columnCount = table.getColumnCount();
+        if (columnIndex < 0 || columnIndex >= columnCount) {
+            throw new MogException("Chart column index out of bounds: " + columnIndex + " (columns=" + columnCount + ")");
+        }
         CellReference first = area.getFirstCell();
         CellReference last = area.getLastCell();
         int firstRow = first.getRow() + 1; // skip header row

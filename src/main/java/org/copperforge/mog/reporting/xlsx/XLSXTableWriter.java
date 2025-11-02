@@ -87,7 +87,8 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             List<? extends MogFetchable> data) {
         XSSFTable table = sheet().createTable(reference);
         table.setName(tableElement.getName());
-        table.setDisplayName(tableElement.getTitle());
+        table.setDisplayName(sanitizeDisplayName(tableElement.getTitle() != null ? tableElement.getTitle()
+                : (tableElement.getName() != null ? tableElement.getName() : "Table")));
 
         setTableStyle(report, table, tableElement);
 
@@ -148,9 +149,18 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
             column = table.getColumns().get(colNum);
             column.setName(columnDef.getTitle());
-            cell = row.createCell(colNum++);
+            cell = row.createCell(tableElement.getUpperLeft().getCol() + colNum++);
             cell.setCellValue(columnDef.getTitle());
         }
+    }
+
+    String sanitizeDisplayName(String name) {
+        if (name == null || name.isBlank()) return "Table";
+        String sanitized = name.replaceAll("[^A-Za-z0-9_]", "_");
+        if (!Character.isLetter(sanitized.charAt(0))) {
+            sanitized = "T_" + sanitized;
+        }
+        return sanitized;
     }
 
     /**
