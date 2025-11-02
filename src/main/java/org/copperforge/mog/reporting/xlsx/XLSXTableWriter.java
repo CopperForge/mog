@@ -93,7 +93,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         setTableStyle(report, table, tableElement);
 
         // reusables
-        int rowNum = tableElement.getUpperLeft().getRow();
+        int rowNum = tableElement.getUpperLeft().getRow() - 1; // convert 1-based to 0-based
 
         // headers
         if (columns != null) {
@@ -141,7 +141,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         int colNum = 0;
         for (Column columnDef : columns) {
             if (columnDef.getWidth() != null) {
-                sheet().setColumnWidth(colNum + tableElement.getUpperLeft().getCol(), columnDef.getWidth() * 256);
+                sheet().setColumnWidth((tableElement.getUpperLeft().getCol() - 1) + colNum, columnDef.getWidth() * 256);
             }
 
             if (log.isDebugEnabled())
@@ -149,7 +149,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
             column = table.getColumns().get(colNum);
             column.setName(columnDef.getTitle());
-            cell = row.createCell(tableElement.getUpperLeft().getCol() + colNum++);
+            cell = row.createCell((tableElement.getUpperLeft().getCol() - 1) + colNum++);
             cell.setCellValue(columnDef.getTitle());
         }
     }
@@ -195,10 +195,10 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
      * @return
      */
     AreaReference getAreaReference(Table tableElement, int columnCount, int rowCount) {
-        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(),
-                tableElement.getUpperLeft().getCol());
-        CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount,
-                tableElement.getUpperLeft().getCol() + columnCount - 1);
+        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow() - 1,
+                tableElement.getUpperLeft().getCol() - 1);
+        CellReference bottomRight = new CellReference((tableElement.getUpperLeft().getRow() - 1) + rowCount,
+                (tableElement.getUpperLeft().getCol() - 1) + columnCount - 1);
         return workbook().getCreationHelper().createAreaReference(topLeft, bottomRight);
     }
 
@@ -228,7 +228,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
      * @return
      */
     XSSFCell writeColumn(XSSFRow row, int colNum, Column columnDef, MogFetchable reportable) {
-        XSSFCell cell = row.createCell(colNum);
+        XSSFCell cell = row.createCell(colNum - 1); // convert 1-based to 0-based for column index
 
         if (columnDef.getKey() != null) {
             Object value = reportable.get(columnDef.getKey());

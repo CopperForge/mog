@@ -16,8 +16,8 @@ public class XLSXPivotTableWriter extends XLSXElementWriter<PivotTable> {
         PivotTable tableElement = (PivotTable) element;
 
         XSSFTable refTable = workbook().getTable(tableElement.getReferenceTable());
-        CellReference position = new CellReference(tableElement.getUpperLeft().getRow(),
-                tableElement.getUpperLeft().getCol());
+        CellReference position = new CellReference(tableElement.getUpperLeft().getRow() - 1,
+                tableElement.getUpperLeft().getCol() - 1);
 
         // Create a pivot table on this sheet, with H5 as the top-left cell..
         // The pivot table's data source is on the same sheet in A1:D4

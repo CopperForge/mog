@@ -38,9 +38,9 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         Chart chartDef = (Chart) element;
 
         int col1 = chartDef.getUpperLeft() != null && chartDef.getUpperLeft().getCol() != null
-                ? chartDef.getUpperLeft().getCol() : 1;
+                ? chartDef.getUpperLeft().getCol() - 1 : 0; // convert 1-based to 0-based
         int row1 = chartDef.getUpperLeft() != null && chartDef.getUpperLeft().getRow() != null
-                ? chartDef.getUpperLeft().getRow() : 1;
+                ? chartDef.getUpperLeft().getRow() - 1 : 0; // convert 1-based to 0-based
         int col2 = col1 + (chartDef.getWidth() != null ? chartDef.getWidth() : 10);
         int row2 = row1 + (chartDef.getHeight() != null ? chartDef.getHeight() : 15);
 
@@ -157,14 +157,14 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
         AreaReference area = table.getArea();
         if (area == null) throw new MogException("Table has no area defined");
         int columnCount = table.getColumnCount();
-        if (columnIndex < 0 || columnIndex >= columnCount) {
-            throw new MogException("Chart column index out of bounds: " + columnIndex + " (columns=" + columnCount + ")");
+        if (columnIndex < 1 || columnIndex > columnCount) {
+            throw new MogException("Chart column index out of bounds: " + columnIndex + " (1.." + columnCount + ")");
         }
         CellReference first = area.getFirstCell();
         CellReference last = area.getLastCell();
         int firstRow = first.getRow() + 1; // skip header row
         int lastRow = Math.max(firstRow, last.getRow());
-        int firstCol = first.getCol() + columnIndex;
+        int firstCol = first.getCol() + (columnIndex - 1);
         int lastCol = firstCol;
         return new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
     }

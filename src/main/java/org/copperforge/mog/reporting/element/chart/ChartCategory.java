@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChartCategory {
     private String table;   // backing table for categories (optional if range provided)
-    private Integer column; // column index (0-based)
+    private Integer column; // column index (1-based)
     private String range;   // explicit range, e.g., Sheet1!A2:A100
 
     public String getTable() { return table; }
@@ -22,4 +22,3 @@ public class ChartCategory {
         return "ChartCategory [table=" + table + ", column=" + column + ", range=" + range + "]";
     }
 }
-

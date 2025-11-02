@@ -14,7 +14,7 @@
           "type": "table",
           "name": "t_sales",
           "title": "Sales",
-          "upperLeft": { "row": 0, "col": 0 },
+          "upperLeft": { "row": 1, "col": 1 },
           "columns": [
             { "title": "Region", "key": "region" },
             { "title": "Revenue", "key": "revenue" },
@@ -29,9 +29,9 @@
           "title": "Revenue by Region",
           "upperLeft": { "row": 1, "col": 8 },
           "width": 10, "height": 16,
-          "category": { "table": "t_sales", "column": 0 },
+          "category": { "table": "t_sales", "column": 1 },
           "series": [
-            { "name": "Revenue", "table": "t_sales", "column": 1 }
+            { "name": "Revenue", "table": "t_sales", "column": 2 }
           ]
         }
       ]

@@ -18,13 +18,13 @@ public class XLSXSpannedTextWriter extends XLSXElementWriter<SpannedText> {
         SpannedText textElement = (SpannedText) element;
 
         sheet().addMergedRegion(
-                new CellRangeAddress(textElement.getUpperLeft().getRow(), textElement.getLowerRight().getRow(),
-                        textElement.getUpperLeft().getCol(), textElement.getLowerRight().getCol()));
+                new CellRangeAddress(textElement.getUpperLeft().getRow() - 1, textElement.getLowerRight().getRow() - 1,
+                        textElement.getUpperLeft().getCol() - 1, textElement.getLowerRight().getCol() - 1));
 
-        Row row = sheet().createRow(textElement.getUpperLeft().getRow());
+        Row row = sheet().createRow(textElement.getUpperLeft().getRow() - 1);
         row.setHeightInPoints(textElement.getHeight());
 
-        Cell cell = row.createCell(textElement.getUpperLeft().getCol());
+        Cell cell = row.createCell(textElement.getUpperLeft().getCol() - 1);
         Optional<XLSXStyle> cellStyle = xlsx.getStyles().stream().filter(s -> s.getName().equals(textElement.getStyle())).findFirst();
         if (cellStyle.isPresent()) cell.setCellStyle(((XLSXCellStyle) cellStyle.get()).xssfCellStyle(workbook()));
         cell.setCellValue(textElement.getText());
