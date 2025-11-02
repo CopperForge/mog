@@ -1,0 +1,47 @@
+{
+  "name": "chart-sample",
+  "type": "xlsx",
+  "filename": "chart-sample-${yyyyMMddHHmmss}.xlsx",
+  "dataSources": [
+  ],
+  "sheets": [
+    {
+      "name": "Charting",
+      "title": "Charting",
+      "elements": [
+        {
+          "type": "table",
+          "name": "t_sales",
+          "title": "Sales",
+          "upperLeft": { "row": 1, "col": 1 },
+          "columns": [
+            { "title": "Region", "key": "region" },
+            { "title": "Revenue", "key": "revenue" },
+            { "title": "Units", "key": "units" }
+          ],
+          "dataSource": { "name": "inline", "type": "json", "filter": {
+            "data": [
+              { "region": "North", "revenue": 100, "units": 20 },
+              { "region": "South", "revenue": 120, "units": 30 },
+              { "region": "West",  "revenue": 90,  "units": 25 },
+              { "region": "East",  "revenue": 140, "units": 35 }
+            ]
+          }}
+        },
+        {
+          "type": "chart",
+          "name": "sales_chart",
+          "chartType": "bar",
+          "title": "Revenue by Region",
+          "upperLeft": { "row": 1, "col": 8 },
+          "width": 10, "height": 16,
+          "category": { "table": "t_sales", "column": 0 },
+          "series": [
+            { "name": "Revenue", "table": "t_sales", "column": 1 }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
