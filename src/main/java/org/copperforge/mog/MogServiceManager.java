@@ -34,7 +34,7 @@ public class MogServiceManager {
 
     public <T> void register(Class<T> serviceClass, T service) {
         Object existing = services.putIfAbsent(serviceClass, service);
-        if (existing != null && existing != service) {
+        if (existing != null) {
             throw new IllegalStateException("Service already registered: " + serviceClass.getName());
         }
     }
