@@ -33,7 +33,7 @@ public class MogJsonDataSource extends MogFileDataSource {
 
     protected String json(MogJsonFilter filter) throws MogException {
         try {
-            VariableService env = (VariableService) MogServiceManager.instance().get(MogVariableService.class);
+            VariableService env = MogServiceManager.instance().get(MogVariableService.class);
             String pathStr = env.envsubst(getFile());
             Path path = Path.of(pathStr);
             return Files.readString(path, StandardCharsets.UTF_8);
