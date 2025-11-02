@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.copperforge.mog.reporting.element.table.PivotTable;
+import org.copperforge.mog.reporting.element.chart.Chart;
 import org.copperforge.mog.reporting.element.table.Table;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -11,7 +12,8 @@ import org.copperforge.mog.reporting.element.table.Table;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = SpannedText.class, name = "spannedText"),
     @JsonSubTypes.Type(value = Table.class, name = "table"),
-    @JsonSubTypes.Type(value = PivotTable.class, name = "pivotTable")
+    @JsonSubTypes.Type(value = PivotTable.class, name = "pivotTable"),
+    @JsonSubTypes.Type(value = Chart.class, name = "chart")
 })
 public class ReportElement {
 
