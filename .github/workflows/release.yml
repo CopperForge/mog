@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '1.*'
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Build distributions
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build distZip distTar --no-daemon
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mog-${{ matrix.os }}
+          path: |
+            build/libs/*.jar
+            build/distributions/*
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs: build-and-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Build artifacts
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build distZip distTar --no-daemon
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/libs/*.jar
+            build/distributions/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

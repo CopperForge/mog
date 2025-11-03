@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.1.0-beta] - 2025-11-03
 
 ### Changed
 - DSL coordinates are now 1‑based (rows and columns) to align with Excel. Example: A1 is `{ row: 1, col: 1 }` and the first table column is `column: 1`.
