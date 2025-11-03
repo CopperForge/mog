@@ -1,4 +1,5 @@
 # MOG — It is what you make it
+See INSTALL for setup and distribution details: INSTALL.md
 <img src="src/main/resources/assets/png/moglet.png" alt="Mog Mascot" width="200" />
 
 A small, batteries-included CLI to define data-driven reports and export them to XLSX, plus simple AES encryption/decryption utilities for managing secrets. Built with Java 21 and Picocli; ships as a fat jar and optional RPM.

@@ -62,6 +62,9 @@ if defined MOG_HEAP_MB (
 
 set "DEFAULT_JVM_OPTS=-Xms%HEAP_MB%m -Xmx%HEAP_MB%m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:ActiveProcessorCount=%CPUS% -Dfile.encoding=UTF-8 -XX:+ExitOnOutOfMemoryError"
 
+rem Optional log level override (INFO by default). Example: set MOG_LOG_LEVEL=DEBUG
+if defined MOG_LOG_LEVEL set "DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% -Dmog.log.level=%MOG_LOG_LEVEL%"
+
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %MOG_JAVA_OPTS% -jar "%JAR%" %*
 endlocal
 goto :eof

@@ -81,6 +81,11 @@ DEFAULT_JVM_OPTS=(
   -XX:+ExitOnOutOfMemoryError
 )
 
+# Optional log level override (INFO by default). Example: export MOG_LOG_LEVEL=DEBUG
+if [[ -n "${MOG_LOG_LEVEL:-}" ]]; then
+  DEFAULT_JVM_OPTS+=( -Dmog.log.level="${MOG_LOG_LEVEL}" )
+fi
+
 # Show wrapper usage if asked explicitly
 if [[ $# -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
   usage
