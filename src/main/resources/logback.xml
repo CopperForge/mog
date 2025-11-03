@@ -1,10 +1,15 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%msg%n</pattern>
-        </encoder>
-    </appender>
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-    </root>
+  <!-- Console appender -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- Root level defaults to INFO; override with -Dmog.log.level=DEBUG or env MOG_LOG_LEVEL (wrappers pass as system property) -->
+  <root level="${mog.log.level:-INFO}">
+    <appender-ref ref="STDOUT" />
+  </root>
 </configuration>
+

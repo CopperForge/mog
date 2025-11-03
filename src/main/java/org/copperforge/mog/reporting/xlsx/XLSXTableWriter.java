@@ -33,10 +33,17 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         Table tableElement = (Table) element;
         XLSXReport xlsxReport = (XLSXReport) report;
 
+        validateTableInputs(xlsxReport, tableElement);
+
         // get the data
         MogDataSource mogDataSource = getDataSource(xlsxReport, tableElement);
-        if (mogDataSource == null && log.isWarnEnabled()) {
-            log.warn(String.format("Unable to determine datasource for table '%s'", tableElement.getName()));
+        if (tableElement.getDataSource() != null && mogDataSource == null) {
+            // attempt to resolve from global catalog
+            var name = tableElement.getDataSource().getName();
+            mogDataSource = org.copperforge.mog.data.catalog.DataSourcesCatalog.instance().resolveByName(name);
+            if (mogDataSource == null) {
+                throw new MogException("Datasource '" + name + "' not found for table '" + tableElement.getName() + "'");
+            }
         }
 
         List<? extends MogFetchable> data = (mogDataSource != null)
@@ -55,6 +62,19 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
         if (tableElement.getEnableFilters())
             table.getCTTable().addNewAutoFilter().setRef(reference.formatAsString());
+    }
+
+    void validateTableInputs(XLSXReport report, Table table) throws MogException {
+        if (table.getUpperLeft() == null || table.getUpperLeft().getRow() == null
+                || table.getUpperLeft().getCol() == null) {
+            throw new MogException("Table '" + table.getName() + "' requires upperLeft row and col (1-based)");
+        }
+        if (table.getUpperLeft().getRow() < 1 || table.getUpperLeft().getCol() < 1) {
+            throw new MogException("Table '" + table.getName() + "' coordinates must be >= 1");
+        }
+        if (table.getColumns() == null || table.getColumns().isEmpty()) {
+            throw new MogException("Table '" + table.getName() + "' requires at least one column");
+        }
     }
 
     /**
@@ -87,12 +107,13 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             List<? extends MogFetchable> data) {
         XSSFTable table = sheet().createTable(reference);
         table.setName(tableElement.getName());
-        table.setDisplayName(tableElement.getTitle());
+        table.setDisplayName(sanitizeDisplayName(tableElement.getTitle() != null ? tableElement.getTitle()
+                : (tableElement.getName() != null ? tableElement.getName() : "Table")));
 
         setTableStyle(report, table, tableElement);
 
         // reusables
-        int rowNum = tableElement.getUpperLeft().getRow();
+        int rowNum = tableElement.getUpperLeft().getRow() - 1; // convert 1-based to 0-based
 
         // headers
         if (columns != null) {
@@ -140,17 +161,29 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         int colNum = 0;
         for (Column columnDef : columns) {
             if (columnDef.getWidth() != null) {
-                sheet().setColumnWidth(colNum + tableElement.getUpperLeft().getCol(), columnDef.getWidth() * 256);
+                sheet().setColumnWidth((tableElement.getUpperLeft().getCol() - 1) + colNum, columnDef.getWidth() * 256);
             }
 
             if (log.isDebugEnabled())
                 log.debug(String.format("table.getColumns() = %d; colNum = %d", table.getColumnCount(), colNum));
 
+            if (colNum >= table.getColumnCount()) {
+                throw new RuntimeException("Header column count exceeds table width for table '" + tableElement.getName() + "'");
+            }
             column = table.getColumns().get(colNum);
             column.setName(columnDef.getTitle());
-            cell = row.createCell(colNum++);
+            cell = row.createCell((tableElement.getUpperLeft().getCol() - 1) + colNum++);
             cell.setCellValue(columnDef.getTitle());
         }
+    }
+
+    String sanitizeDisplayName(String name) {
+        if (name == null || name.isBlank()) return "Table";
+        String sanitized = name.replaceAll("[^A-Za-z0-9_]", "_");
+        if (!Character.isLetter(sanitized.charAt(0))) {
+            sanitized = "T_" + sanitized;
+        }
+        return sanitized;
     }
 
     /**
@@ -185,10 +218,10 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
      * @return
      */
     AreaReference getAreaReference(Table tableElement, int columnCount, int rowCount) {
-        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow(),
-                tableElement.getUpperLeft().getCol());
-        CellReference bottomRight = new CellReference(tableElement.getUpperLeft().getRow() + rowCount,
-                tableElement.getUpperLeft().getCol() + columnCount - 1);
+        CellReference topLeft = new CellReference(tableElement.getUpperLeft().getRow() - 1,
+                tableElement.getUpperLeft().getCol() - 1);
+        CellReference bottomRight = new CellReference((tableElement.getUpperLeft().getRow() - 1) + rowCount,
+                (tableElement.getUpperLeft().getCol() - 1) + columnCount - 1);
         return workbook().getCreationHelper().createAreaReference(topLeft, bottomRight);
     }
 
@@ -218,7 +251,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
      * @return
      */
     XSSFCell writeColumn(XSSFRow row, int colNum, Column columnDef, MogFetchable reportable) {
-        XSSFCell cell = row.createCell(colNum);
+        XSSFCell cell = row.createCell(colNum - 1); // convert 1-based to 0-based for column index
 
         if (columnDef.getKey() != null) {
             Object value = reportable.get(columnDef.getKey());

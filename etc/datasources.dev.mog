@@ -1,0 +1,7 @@
+{
+  "datasources": [
+    { "name": "inline",   "type": "json", "file": "${MOG_HOME}/etc/sales.json" },
+    { "name": "sales_api", "type": "api",  "baseUrl": "https://dev.example.local/api" }
+  ]
+}
+

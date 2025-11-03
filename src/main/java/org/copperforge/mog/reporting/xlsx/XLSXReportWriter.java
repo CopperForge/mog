@@ -23,6 +23,7 @@ public class XLSXReportWriter extends AbstractReportWriter {
         addElementWriter("table", new XLSXTableWriter());
         addElementWriter("spannedText", new XLSXSpannedTextWriter());
         addElementWriter("pivotTable", new XLSXPivotTableWriter());
+        addElementWriter("chart", new XLSXChartWriter());
     }
 
     @Override

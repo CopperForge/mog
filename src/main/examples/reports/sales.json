@@ -1,0 +1,9 @@
+{
+  "data": [
+    { "region": "North", "revenue": 100, "units": 20 },
+    { "region": "South", "revenue": 120, "units": 30 },
+    { "region": "West",  "revenue": 90,  "units": 25 },
+    { "region": "East",  "revenue": 140, "units": 35 }
+  ]
+}
+

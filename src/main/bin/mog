@@ -1,2 +1,100 @@
-#!/bin/bash
-java -jar $MOG_HOME/lib/mog.jar $@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+MOG - It is what you make it
+
+Usage:
+  mog [options] <command> [subcommand args]
+
+Common options (forwarded to the app):
+  --config=<path>         Path to site config (defaults to ${MOG_HOME}/etc/config.mog)
+  --working-dir=<path>    Working directory used for resolving relative paths
+  --datasources=<path>    Datasources catalog file or directory
+  --env=<name>            Environment/profile name for config resolution
+
+Wrapper env vars:
+  MOG_HOME          Install root (auto-detected if unset)
+  MOG_JAVA_OPTS     Extra JVM options (appended)
+  MOG_HEAP_MB       Set both Xms/Xmx (MB). Overrides auto-sizing
+
+Examples:
+  mog --config=etc/config.mog report generate --report=chart.sample.report.mog
+  mog --env=dev --datasources=etc report generate --report=chart.sample.report.mog
+USAGE
+}
+
+# Resolve MOG_HOME if not set (bin/..)
+SOURCE=${BASH_SOURCE[0]}
+while [ -h "$SOURCE" ]; do
+  DIR=$(cd -P "$(dirname "$SOURCE")" && pwd)
+  SOURCE=$(readlink "$SOURCE")
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BIN_DIR=$(cd -P "$(dirname "$SOURCE")" && pwd)
+export MOG_HOME=${MOG_HOME:-"$(cd "$BIN_DIR/.." && pwd)"}
+
+# Java detection
+if [[ -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/java" ]]; then
+  JAVA="$JAVA_HOME/bin/java"
+else
+  JAVA=$(command -v java || true)
+fi
+if [[ -z "$JAVA" ]]; then
+  echo "ERROR: java not found. Set JAVA_HOME or add java to PATH." >&2
+  exit 1
+fi
+
+# Heuristics for CPU and memory
+detect_cpus() {
+  if command -v nproc >/dev/null 2>&1; then nproc; 
+  elif [[ "$(uname -s)" == "Darwin" ]]; then sysctl -n hw.ncpu; 
+  else printf '2'; fi
+}
+detect_mem_mb() {
+  if command -v free >/dev/null 2>&1; then free -m | awk '/Mem:/ {print $2}';
+  elif [[ "$(uname -s)" == "Darwin" ]]; then awk '{printf("%d", $0/1048576)}' <<<"$(sysctl -n hw.memsize)"; 
+  else printf '2048'; fi
+}
+CPUS=$(detect_cpus)
+MEM_MB=$(detect_mem_mb)
+
+# Heap sizing
+if [[ -n "${MOG_HEAP_MB:-}" ]]; then
+  HEAP_MB="$MOG_HEAP_MB"
+else
+  HEAP_MB=$(( MEM_MB / 4 ))
+  [[ $HEAP_MB -lt 512 ]] && HEAP_MB=512
+  [[ $HEAP_MB -gt 4096 ]] && HEAP_MB=4096
+fi
+
+# JVM options
+DEFAULT_JVM_OPTS=(
+  -Xms${HEAP_MB}m
+  -Xmx${HEAP_MB}m
+  -XX:+UseG1GC
+  -XX:MaxGCPauseMillis=200
+  -XX:+UseStringDeduplication
+  -XX:ActiveProcessorCount=${CPUS}
+  -Dfile.encoding=UTF-8
+  -XX:+ExitOnOutOfMemoryError
+)
+
+# Optional log level override (INFO by default). Example: export MOG_LOG_LEVEL=DEBUG
+if [[ -n "${MOG_LOG_LEVEL:-}" ]]; then
+  DEFAULT_JVM_OPTS+=( -Dmog.log.level="${MOG_LOG_LEVEL}" )
+fi
+
+# Show wrapper usage if asked explicitly
+if [[ $# -eq 0 || "$1" == "-h" || "$1" == "--help" ]]; then
+  usage
+fi
+
+JAR="$MOG_HOME/lib/mog.jar"
+if [[ ! -f "$JAR" ]]; then
+  echo "ERROR: $JAR not found. Ensure MOG_HOME is set to the install root." >&2
+  exit 1
+fi
+
+exec "$JAVA" "${DEFAULT_JVM_OPTS[@]}" ${MOG_JAVA_OPTS:-} -jar "$JAR" "$@"

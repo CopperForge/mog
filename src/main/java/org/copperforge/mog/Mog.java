@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Command;
 
 @Command(
@@ -32,6 +33,10 @@ public class Mog implements Runnable {
     private MogConfig config;
     private static MogOptions options;
     private Mogf mogf;
+
+    // Accept root-level options like --config via Picocli without rejecting them
+    @Mixin
+    private MogOptions cliOptions;
 
     public static Mog mog() {
         return mog;
