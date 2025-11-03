@@ -1,0 +1,26 @@
+# CODEOWNERS file for the mog repository
+# This file defines individuals or teams that are responsible for code in this repository.
+# Code owners are automatically requested for review when someone opens a pull request 
+# that modifies code that they own.
+#
+# For more information, see:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+# These owners will be requested for review unless a later match takes precedence
+* @CopperForge/admins
+
+# Protect critical workflow files - require admin review
+/.github/workflows/ @CopperForge/admins
+/.github/CODEOWNERS @CopperForge/admins
+
+# Protect build and dependency configuration
+/build.gradle @CopperForge/admins
+/settings.gradle @CopperForge/admins
+/gradle/ @CopperForge/admins
+/gradlew @CopperForge/admins
+/gradlew.bat @CopperForge/admins
+
+# Protect security-sensitive configuration
+/etc/ @CopperForge/admins
+/src/install/ @CopperForge/admins
