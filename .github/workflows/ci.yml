@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    name: Build and Test (Java 21)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build --no-daemon
+
