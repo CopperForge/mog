@@ -56,6 +56,37 @@ This writes a file like `chart-sample-<timestamp>.xlsx` to the project root.
 
 ---
 
+## Usage
+
+Run with Gradle (no install needed):
+```bash
+./gradlew run --args="report generate --report=chart.sample.report.mog"
+```
+
+Run the shaded jar (after build):
+```bash
+java -jar build/libs/mog.jar report generate --report=chart.sample.report.mog
+```
+
+Options accepted at the root command:
+- `--config=<path>`: Path to site config (defaults to `${MOG_HOME}/etc/config.mog`).
+- `--working-dir=<path>`: Set a working directory used for resolving relative report paths.
+
+Examples:
+```bash
+# Explicit config path
+java -jar build/libs/mog.jar --config=etc/config.mog report generate --report=chart.sample.report.mog
+
+# Working directory (report path resolved relative to this directory)
+java -jar build/libs/mog.jar --working-dir=./etc/reports report generate --report=chart.sample.report.mog
+```
+
+Resolution order for report paths:
+1) Absolute path; 2) Relative to current working directory; 3) Relative to `--working-dir` (if provided);
+4) Relative to `MOG_ETC`, then `MOG_HOME`; 5) Search configured report paths (`config.mog`).
+
+---
+
 ## Coordinates and Indexing (1‑based)
 
 Report coordinates are 1‑based to match Excel:
@@ -65,6 +96,8 @@ Report coordinates are 1‑based to match Excel:
 Chart table column indices are also 1‑based:
 - First table column → `column: 1`
 - Second table column → `column: 2`, etc.
+
+Breaking change: Coordinates were switched to 1‑based in the Unreleased version noted in the CHANGELOG.
 
 ---
 
@@ -138,3 +171,8 @@ Companion sample data:
 
 - Excel repair warnings: The writers validate table ranges and chart column indices, and sanitize table display names to prevent Excel “Repaired Records” messages.
 - Logging: SLF4J + Logback are in use. If you see a Log4j bridge warning, it’s harmless; a bridge can be added if desired.
+
+Validation highlights:
+- Tables require `upperLeft` (row/col ≥ 1) and at least one column.
+- If a table declares a `dataSource` name not present in the report’s `dataSources`, generation fails with a clear error.
+- Chart column indices are validated against the table width; out‑of‑range indices fail fast.
