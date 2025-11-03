@@ -33,10 +33,13 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         Table tableElement = (Table) element;
         XLSXReport xlsxReport = (XLSXReport) report;
 
+        validateTableInputs(xlsxReport, tableElement);
+
         // get the data
         MogDataSource mogDataSource = getDataSource(xlsxReport, tableElement);
-        if (mogDataSource == null && log.isWarnEnabled()) {
-            log.warn(String.format("Unable to determine datasource for table '%s'", tableElement.getName()));
+        if (tableElement.getDataSource() != null && mogDataSource == null) {
+            throw new MogException("Datasource '" + tableElement.getDataSource().getName() + "' not found for table '"
+                    + tableElement.getName() + "'");
         }
 
         List<? extends MogFetchable> data = (mogDataSource != null)
@@ -55,6 +58,19 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
 
         if (tableElement.getEnableFilters())
             table.getCTTable().addNewAutoFilter().setRef(reference.formatAsString());
+    }
+
+    void validateTableInputs(XLSXReport report, Table table) throws MogException {
+        if (table.getUpperLeft() == null || table.getUpperLeft().getRow() == null
+                || table.getUpperLeft().getCol() == null) {
+            throw new MogException("Table '" + table.getName() + "' requires upperLeft row and col (1-based)");
+        }
+        if (table.getUpperLeft().getRow() < 1 || table.getUpperLeft().getCol() < 1) {
+            throw new MogException("Table '" + table.getName() + "' coordinates must be >= 1");
+        }
+        if (table.getColumns() == null || table.getColumns().isEmpty()) {
+            throw new MogException("Table '" + table.getName() + "' requires at least one column");
+        }
     }
 
     /**
@@ -147,6 +163,9 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             if (log.isDebugEnabled())
                 log.debug(String.format("table.getColumns() = %d; colNum = %d", table.getColumnCount(), colNum));
 
+            if (colNum >= table.getColumnCount()) {
+                throw new RuntimeException("Header column count exceeds table width for table '" + tableElement.getName() + "'");
+            }
             column = table.getColumns().get(colNum);
             column.setName(columnDef.getTitle());
             cell = row.createCell((tableElement.getUpperLeft().getCol() - 1) + colNum++);

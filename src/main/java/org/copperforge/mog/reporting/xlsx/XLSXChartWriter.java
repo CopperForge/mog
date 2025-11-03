@@ -37,6 +37,8 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
     public void write(Report report, ReportElement element) throws MogException {
         Chart chartDef = (Chart) element;
 
+        validateChartInputs(chartDef);
+
         int col1 = chartDef.getUpperLeft() != null && chartDef.getUpperLeft().getCol() != null
                 ? chartDef.getUpperLeft().getCol() - 1 : 0; // convert 1-based to 0-based
         int row1 = chartDef.getUpperLeft() != null && chartDef.getUpperLeft().getRow() != null
@@ -73,6 +75,23 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
             case "pie" -> plotPieChart(chart, chartDef);
             case "scatter" -> plotCategoryValueChart(chart, chartDef, ChartTypes.SCATTER);
             default -> plotBarChart(chart, chartDef);
+        }
+    }
+
+    private void validateChartInputs(Chart chartDef) throws MogException {
+        if (chartDef.getUpperLeft() == null || chartDef.getUpperLeft().getRow() == null
+                || chartDef.getUpperLeft().getCol() == null) {
+            throw new MogException("Chart '" + chartDef.getName() + "' requires upperLeft row and col (1-based)");
+        }
+        if (chartDef.getUpperLeft().getRow() < 1 || chartDef.getUpperLeft().getCol() < 1) {
+            throw new MogException("Chart '" + chartDef.getName() + "' coordinates must be >= 1");
+        }
+        if (chartDef.getSeries() == null || chartDef.getSeries().isEmpty()) {
+            throw new MogException("Chart '" + chartDef.getName() + "' requires at least one series");
+        }
+        if (chartDef.getCategory() == null && chartDef.getChartType() != null
+                && !chartDef.getChartType().equalsIgnoreCase("pie")) {
+            throw new MogException("Chart '" + chartDef.getName() + "' requires a category for non-pie charts");
         }
     }
 

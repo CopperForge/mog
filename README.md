@@ -44,6 +44,18 @@ The generated workbook will be written to the working directory. Open it in Exce
 
 ---
 
+## One‑liner Sample Generation
+
+You can generate the sample report in a single Gradle task that assembles the app, seeds `${MOG_HOME}/etc`, and runs the generator:
+
+```bash
+./gradlew sampleReport            # Windows: .\gradlew.bat sampleReport
+```
+
+This writes a file like `chart-sample-<timestamp>.xlsx` to the project root.
+
+---
+
 ## Coordinates and Indexing (1‑based)
 
 Report coordinates are 1‑based to match Excel:
@@ -126,4 +138,3 @@ Companion sample data:
 
 - Excel repair warnings: The writers validate table ranges and chart column indices, and sanitize table display names to prevent Excel “Repaired Records” messages.
 - Logging: SLF4J + Logback are in use. If you see a Log4j bridge warning, it’s harmless; a bridge can be added if desired.
-

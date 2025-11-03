@@ -16,6 +16,9 @@ public class XLSXPivotTableWriter extends XLSXElementWriter<PivotTable> {
         PivotTable tableElement = (PivotTable) element;
 
         XSSFTable refTable = workbook().getTable(tableElement.getReferenceTable());
+        if (refTable == null) {
+            throw new MogException("Pivot table reference '" + tableElement.getReferenceTable() + "' not found");
+        }
         CellReference position = new CellReference(tableElement.getUpperLeft().getRow() - 1,
                 tableElement.getUpperLeft().getCol() - 1);
 
