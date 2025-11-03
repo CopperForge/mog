@@ -49,6 +49,7 @@ public class Chart extends ReportElement {
 
     @Override
     public Integer getHeight() { return height != null ? height : super.getHeight(); }
+    @Override
     public void setHeight(Integer height) { this.height = height; }
 
     public ChartCategory getCategory() { return category; }
