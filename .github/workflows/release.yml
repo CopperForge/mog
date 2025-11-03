@@ -61,9 +61,22 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          body_path: RELEASE_NOTES.md
           files: |
             build/libs/*.jar
             build/distributions/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate release notes from CHANGELOG
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VER="${TAG#v}"
+          awk -v ver="$VER" '
+            $0 ~ "^## \\[" ver "\\]" {print; p=1; next}
+            p && $0 ~ "^## \\\[" {exit}
+            p {print}
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          echo "Using release notes for version: $VER" && echo "---" && cat RELEASE_NOTES.md && echo "---"
