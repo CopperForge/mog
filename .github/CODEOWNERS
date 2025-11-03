@@ -5,9 +5,15 @@
 #
 # For more information, see:
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# SETUP INSTRUCTIONS:
+# 1. Create the @CopperForge/admins team in your GitHub organization, OR
+# 2. Replace @CopperForge/admins with individual usernames like @username1 @username2
+# 3. Ensure all code owners have write access to the repository
 
 # Default owners for everything in the repo
 # These owners will be requested for review unless a later match takes precedence
+# Replace @CopperForge/admins with your actual team or individual usernames
 * @CopperForge/admins
 
 # Protect critical workflow files - require admin review

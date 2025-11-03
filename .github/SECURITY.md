@@ -8,6 +8,21 @@ This repository implements security controls to protect the `main` branch and en
 
 To prevent unauthorized commits to the main branch, the following protection rules should be enforced:
 
+#### Prerequisites
+
+Before applying branch protection rules:
+
+1. **Create the `admins` team** (or choose an existing team):
+   - Navigate to: **Organization Settings → Teams**
+   - Create a new team named `admins` (or use your preferred name)
+   - Add repository administrators to this team
+   - Update references to `@CopperForge/admins` in CODEOWNERS if using a different team name
+
+2. **Verify CI workflow status checks**:
+   - Merge at least one PR to see which status check names GitHub generates
+   - Update the required status checks list based on actual names
+   - Status check names follow pattern: `workflow-name / job-name (matrix-values)`
+
 #### Required Settings (via GitHub UI)
 
 Navigate to: **Settings → Branches → Add branch protection rule**
@@ -22,10 +37,9 @@ Navigate to: **Settings → Branches → Add branch protection rule**
    
    - ✅ Require status checks to pass before merging
      - ✅ Require branches to be up to date before merging
-     - Required status checks:
-       - `Build and Test (Java 21) (ubuntu-latest)`
-       - `Build and Test (Java 21) (windows-latest)`
-       - `build`
+     - Required status checks (verify actual names in GitHub UI):
+       - CI workflow jobs (from `.github/workflows/ci.yml`)
+       - Build workflow jobs (from `.github/workflows/gradle.yml`)
    
    - ✅ Require conversation resolution before merging
    
@@ -36,7 +50,9 @@ Navigate to: **Settings → Branches → Add branch protection rule**
    - ✅ Include administrators (enforces rules for admins too)
    
    - ✅ Restrict who can push to matching branches
-     - Add teams/users who can push: `admins` team
+     - Add teams/users who can push (must exist in organization):
+       - Create an `admins` team first, or use existing team names
+       - Add appropriate users to the team
    
    - ✅ Do not allow bypassing the above settings
    
