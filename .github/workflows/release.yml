@@ -57,17 +57,6 @@ jobs:
         with:
           arguments: clean build distZip distTar --no-daemon
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          body_path: RELEASE_NOTES.md
-          files: |
-            build/libs/*.jar
-            build/distributions/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Generate release notes from CHANGELOG
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
@@ -80,3 +69,14 @@ jobs:
             p {print}
           ' CHANGELOG.md > RELEASE_NOTES.md
           echo "Using release notes for version: $VER" && echo "---" && cat RELEASE_NOTES.md && echo "---"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: RELEASE_NOTES.md
+          files: |
+            build/libs/*.jar
+            build/distributions/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
