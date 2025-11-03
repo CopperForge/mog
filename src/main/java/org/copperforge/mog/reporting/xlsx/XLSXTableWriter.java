@@ -38,8 +38,12 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         // get the data
         MogDataSource mogDataSource = getDataSource(xlsxReport, tableElement);
         if (tableElement.getDataSource() != null && mogDataSource == null) {
-            throw new MogException("Datasource '" + tableElement.getDataSource().getName() + "' not found for table '"
-                    + tableElement.getName() + "'");
+            // attempt to resolve from global catalog
+            var name = tableElement.getDataSource().getName();
+            mogDataSource = org.copperforge.mog.data.catalog.DataSourcesCatalog.instance().resolveByName(name);
+            if (mogDataSource == null) {
+                throw new MogException("Datasource '" + name + "' not found for table '" + tableElement.getName() + "'");
+            }
         }
 
         List<? extends MogFetchable> data = (mogDataSource != null)

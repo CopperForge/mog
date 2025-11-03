@@ -21,6 +21,9 @@ public class MogOptions {
     @Option(names = "--working-dir", description = "specify the working dir to execute the command")
     private String workingDirectory = null;
 
+    @Option(names = "--datasources", description = "path to datasources file or directory")
+    private String datasourcesPath = null;
+
     @Parameters(paramLabel = "COMMANDS", description = "mog commands")
     private final List<String> commands = new ArrayList<>();
 
@@ -78,10 +81,18 @@ public class MogOptions {
         this.workingDirectory = workingDirectory;
     }
 
+    public String getDatasourcesPath() {
+        return datasourcesPath;
+    }
+
+    public void setDatasourcesPath(String datasourcesPath) {
+        this.datasourcesPath = datasourcesPath;
+    }
+
     @Override
     public String toString() {
         return "MogOptions [rawArgs=" + rawArgs + ", helpRequested=" + helpRequested + ", configFile=" + configFile
-                + ", workingDirectory=" + workingDirectory + ", commands=" + commands + "]";
+                + ", workingDirectory=" + workingDirectory + ", datasourcesPath=" + datasourcesPath + ", commands=" + commands + "]";
     }
 
     @Override
