@@ -257,20 +257,28 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
             Object value = reportable.get(columnDef.getKey());
 
             if (value != null) {
-                switch (value) {
-                  case Long longValue -> {
-                      cell.setCellValue(longValue);
-                  }
-                  case Integer intValue -> {
-                      cell.setCellValue(intValue);
-                  }
-                  default -> {
-                      cell.setCellValue(value.toString());
-                  }
+                // Preserve numeric types so charts can read numeric ranges
+                if (value instanceof Number num) {
+                    if (num instanceof java.math.BigDecimal bd) {
+                        cell.setCellValue(bd.doubleValue());
+                    } else if (num instanceof java.math.BigInteger bi) {
+                        cell.setCellValue(bi.doubleValue());
+                    } else {
+                        cell.setCellValue(num.doubleValue());
+                    }
+                } else if (value instanceof Boolean b) {
+                    cell.setCellValue(b);
+                } else {
+                    cell.setCellValue(value.toString());
                 }
             } else {
                 cell.setCellValue("");
             }
+        }
+
+        // Apply optional column-level style if provided
+        if (columnDef.getStyle() != null) {
+            cell.setCellStyle(columnDef.getStyle());
         }
         return cell;
     }
