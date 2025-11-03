@@ -229,3 +229,12 @@ Reports can reference datasources by name, resolved from an external catalog, so
 Seeded examples:
 - A starter catalog is provided at `src/install/resources/etc/datasources.mog` and a sample dataset at `src/install/resources/etc/sales.json`.
 - The `sampleReport` task seeds `${MOG_HOME}/etc/datasources.mog` and `${MOG_HOME}/etc/sales.json` if missing.
+
+Getting started quickly:
+- Default (generic):
+  - `./gradlew sampleReport` (Windows: `.\u0067radlew.bat sampleReport`)
+  - Seeds `${MOG_HOME}/etc` with a starter `datasources.mog` and `sales.json`.
+- Environment-specific (e.g., dev):
+  - `./gradlew sampleReport -Penv=dev`
+  - Also seeds `${MOG_HOME}/etc/datasources.dev.mog` (template provided under `src/install/resources/etc`).
+  - The task passes `--env=dev` and `--datasources=${MOG_HOME}/etc` to the app.

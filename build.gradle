@@ -166,8 +166,16 @@ tasks.register('sampleReport', JavaExec) {
     dependsOn 'assemble'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = application.mainClass
+    // Optional environment name: -Penv=dev (falls back to MOG_ENV if set)
+    def envName = (project.findProperty('env') ?: System.getenv('MOG_ENV'))
     args 'report', 'generate', '--report=chart.sample.report.mog'
+    if (envName) {
+        args "--env=${envName}"
+    }
     environment 'MOG_HOME', project.projectDir.absolutePath
+    if (envName) {
+        environment 'MOG_ENV', envName
+    }
     doFirst {
         def etcDir = file("${project.projectDir}/etc")
         def reportsDir = file("${etcDir}/reports")
@@ -189,11 +197,21 @@ tasks.register('sampleReport', JavaExec) {
         if (!dsDst.exists() && dsSrc.exists()) {
             copy { from dsSrc; into etcDir }
         }
+        // Seed env-specific catalog if requested and template exists
+        if (envName) {
+            def envTemplate = file("src/install/resources/etc/datasources.${envName}.mog")
+            if (envTemplate.exists()) {
+                copy { from envTemplate; into etcDir }
+            }
+        }
         def salesSrc = file('src/install/resources/etc/sales.json')
         def salesDst = file("${etcDir}/sales.json")
         if (!salesDst.exists() && salesSrc.exists()) {
             copy { from salesSrc; into etcDir }
         }
+        // Always point the app at the etc dir for datasources
+        jvmArgs = []
+        args "--datasources=${etcDir.absolutePath}"
     }
 }
 
