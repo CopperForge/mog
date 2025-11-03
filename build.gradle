@@ -202,6 +202,8 @@ tasks.register('sampleReport', JavaExec) {
             def envTemplate = file("src/install/resources/etc/datasources.${envName}.mog")
             if (envTemplate.exists()) {
                 copy { from envTemplate; into etcDir }
+            } else {
+                logger.lifecycle("[sampleReport] No env-specific catalog template found at ${envTemplate}. Proceeding without env seed.")
             }
         }
         def salesSrc = file('src/install/resources/etc/sales.json')
