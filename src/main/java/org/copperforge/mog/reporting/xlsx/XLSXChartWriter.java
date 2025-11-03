@@ -31,7 +31,7 @@ import org.apache.poi.xddf.usermodel.chart.XDDFDataSourcesFactory;
 
 public class XLSXChartWriter extends XLSXElementWriter<Chart> {
 
-    private static final Logger log = LoggerFactory.getLogger(XLSXChartWriter.class);
+    static final Logger log = LoggerFactory.getLogger(XLSXChartWriter.class);
 
     @Override
     public void write(Report report, ReportElement element) throws MogException {

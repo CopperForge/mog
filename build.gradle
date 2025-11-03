@@ -217,6 +217,25 @@ tasks.register('sampleReport', JavaExec) {
     }
 }
 
+// Ensure our custom launchers are included in the application distributions
+distributions {
+    main {
+        contents {
+            // Replace default generated scripts with our custom robust wrappers
+            exclude 'bin/**'
+            from('src/main/bin') {
+                into 'bin'
+                fileMode = 0755
+            }
+        }
+    }
+}
+
+// Disable default startScripts to avoid duplicate bin entries in distributions
+tasks.withType(org.gradle.jvm.application.tasks.CreateStartScripts).configureEach {
+    enabled = false
+}
+
 task rpm(type: Rpm) {
     dependsOn('build')
     os LINUX
