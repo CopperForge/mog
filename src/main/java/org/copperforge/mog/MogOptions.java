@@ -24,6 +24,9 @@ public class MogOptions {
     @Option(names = "--datasources", description = "path to datasources file or directory")
     private String datasourcesPath = null;
 
+    @Option(names = "--env", description = "environment/profile name for config resolution (e.g., dev, test, prod)")
+    private String env = null;
+
     @Parameters(paramLabel = "COMMANDS", description = "mog commands")
     private final List<String> commands = new ArrayList<>();
 
@@ -89,10 +92,18 @@ public class MogOptions {
         this.datasourcesPath = datasourcesPath;
     }
 
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
+    }
+
     @Override
     public String toString() {
         return "MogOptions [rawArgs=" + rawArgs + ", helpRequested=" + helpRequested + ", configFile=" + configFile
-                + ", workingDirectory=" + workingDirectory + ", datasourcesPath=" + datasourcesPath + ", commands=" + commands + "]";
+                + ", workingDirectory=" + workingDirectory + ", datasourcesPath=" + datasourcesPath + ", env=" + env + ", commands=" + commands + "]";
     }
 
     @Override

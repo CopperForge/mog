@@ -25,6 +25,7 @@ public class DataSourcesCatalogIntegrationTest {
 
     @Test
     void table_resolvesDataSource_fromCatalog() throws Exception {
+        resetCatalog();
         // temp dir with datasources.mog and sales.json
         Path tmp = Files.createTempDirectory("mog-ds-test");
         Path sales = tmp.resolve("sales.json");
@@ -72,5 +73,10 @@ public class DataSourcesCatalogIntegrationTest {
         f.setAccessible(true);
         f.set(null, value);
     }
-}
 
+    private static void resetCatalog() throws Exception {
+        Field f = DataSourcesCatalog.class.getDeclaredField("INSTANCE");
+        f.setAccessible(true);
+        f.set(null, null);
+    }
+}

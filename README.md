@@ -176,3 +176,56 @@ Validation highlights:
 - Tables require `upperLeft` (row/col ≥ 1) and at least one column.
 - If a table declares a `dataSource` name not present in the report’s `dataSources`, generation fails with a clear error.
 - Chart column indices are validated against the table width; out‑of‑range indices fail fast.
+
+---
+
+## Global Datasources (Catalog)
+
+Reports can reference datasources by name, resolved from an external catalog, so you can reuse and manage them centrally.
+
+- Locations (in priority order):
+  1. `--datasources=<file-or-dir>` if provided
+  2. `${MOG_ETC}`
+  3. `${MOG_HOME}/etc`
+
+- File patterns in each location (loaded in the following order; later overrides earlier by name):
+  - `datasources.mog`
+  - `datasources/*.mog` (sorted by filename)
+  - Environment-specific (when `--env=<name>` or `MOG_ENV` is set):
+    - `datasources.<env>.mog`
+    - `datasources/<env>/*.mog` (sorted)
+
+- Catalog schema example (datasources.mog):
+```json
+{
+  "datasources": [
+    { "name": "sales_db", "type": "jdbc", "url": "${SALES_JDBC_URL}", "user": "${SALES_USER}", "password": "${SALES_PASS}" },
+    { "name": "sales_api", "type": "api",  "baseUrl": "${SALES_API_URL}" },
+    { "name": "inline",   "type": "json", "file": "${MOG_HOME}/etc/sales.json" }
+  ]
+}
+```
+
+- Referencing a catalog datasource from a report element:
+```json
+{
+  "type": "table",
+  "name": "t_sales",
+  "upperLeft": { "row": 1, "col": 1 },
+  "columns": [ { "title": "Region", "key": "region" }, { "title": "Revenue", "key": "revenue" } ],
+  "dataSource": { "name": "inline", "filter": { "type": "json", "jsonPath": "$.data[*]" } }
+}
+```
+
+- Precedence and overrides:
+  - Inline `report.dataSources` take precedence over catalog entries with the same name.
+  - Later-loaded catalog files override earlier ones; overrides are logged with the old and new source file paths.
+
+- Tips:
+  - Use env vars for secrets (`${VAR}`) — values are substituted at runtime.
+  - Use `--env=dev|test|prod` (or `MOG_ENV`) to switch datasources per environment.
+  - Organize per-environment files under `datasources.<env>.mog` or `datasources/<env>/...`.
+
+Seeded examples:
+- A starter catalog is provided at `src/install/resources/etc/datasources.mog` and a sample dataset at `src/install/resources/etc/sales.json`.
+- The `sampleReport` task seeds `${MOG_HOME}/etc/datasources.mog` and `${MOG_HOME}/etc/sales.json` if missing.

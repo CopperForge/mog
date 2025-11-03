@@ -183,6 +183,17 @@ tasks.register('sampleReport', JavaExec) {
         if (!cfgDst.exists() && cfgSrc.exists()) {
             copy { from cfgSrc; into etcDir }
         }
+        // Seed datasources and sample data if missing
+        def dsSrc = file('src/install/resources/etc/datasources.mog')
+        def dsDst = file("${etcDir}/datasources.mog")
+        if (!dsDst.exists() && dsSrc.exists()) {
+            copy { from dsSrc; into etcDir }
+        }
+        def salesSrc = file('src/install/resources/etc/sales.json')
+        def salesDst = file("${etcDir}/sales.json")
+        if (!salesDst.exists() && salesSrc.exists()) {
+            copy { from salesSrc; into etcDir }
+        }
     }
 }
 

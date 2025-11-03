@@ -28,6 +28,7 @@ public class DataSourcesCatalog {
     private static DataSourcesCatalog INSTANCE;
 
     private final Map<String, MogDataSource> byName = new HashMap<>();
+    private final Map<String, String> sourceByName = new HashMap<>();
     private boolean loaded = false;
 
     public static synchronized DataSourcesCatalog instance() {
@@ -48,17 +49,32 @@ public class DataSourcesCatalog {
         if (loaded) return;
         loaded = true;
         byName.clear();
+        sourceByName.clear();
 
         List<File> candidates = new ArrayList<>();
         FilenameFilter mogFilter = (dir, fname) -> fname.endsWith(".mog");
+        MogOptions opts = Mog.mog() != null ? Mog.mog().options() : null;
+        String env = null;
+        if (opts != null && opts.getEnv() != null && !opts.getEnv().isBlank()) {
+            env = opts.getEnv();
+        } else {
+            String envVar = System.getenv("MOG_ENV");
+            if (envVar != null && !envVar.isBlank()) env = envVar;
+        }
 
         // 1) --datasources path, if provided
-        MogOptions opts = Mog.mog() != null ? Mog.mog().options() : null;
         if (opts != null && opts.getDatasourcesPath() != null && !opts.getDatasourcesPath().isBlank()) {
             File ds = new File(opts.getDatasourcesPath());
             if (ds.isDirectory()) {
-                File[] files = ds.listFiles(mogFilter);
-                if (files != null) for (File f : files) candidates.add(f);
+                // generic first
+                listSorted(ds, mogFilter, candidates);
+                // env-specific overrides
+                if (env != null) {
+                    File envFile = new File(ds, "datasources." + env + ".mog");
+                    if (envFile.isFile()) candidates.add(envFile);
+                    File envDir = new File(ds, "datasources/" + env);
+                    if (envDir.isDirectory()) listSorted(envDir, mogFilter, candidates);
+                }
             } else if (ds.isFile()) {
                 candidates.add(ds);
             }
@@ -68,14 +84,14 @@ public class DataSourcesCatalog {
         String mogEtc = System.getenv("MOG_ETC");
         if (mogEtc != null && !mogEtc.isBlank()) {
             File etc = new File(mogEtc);
-            addDefaultLocations(etc, candidates, mogFilter);
+            addDefaultLocations(etc, candidates, mogFilter, env);
         }
 
         // 3) ${MOG_HOME}/etc
         String mogHome = System.getenv("MOG_HOME");
         if (mogHome != null && !mogHome.isBlank()) {
             File etc = new File(mogHome, "etc");
-            addDefaultLocations(etc, candidates, mogFilter);
+            addDefaultLocations(etc, candidates, mogFilter, env);
         }
 
         // Load in order; later files override earlier definitions
@@ -84,16 +100,27 @@ public class DataSourcesCatalog {
         }
     }
 
-    private void addDefaultLocations(File etcDir, List<File> out, FilenameFilter mogFilter) {
+    private void addDefaultLocations(File etcDir, List<File> out, FilenameFilter mogFilter, String env) {
+        // generic first
         File dsFile = new File(etcDir, "datasources.mog");
         if (dsFile.isFile()) out.add(dsFile);
-
         File dsDir = new File(etcDir, "datasources");
-        if (dsDir.isDirectory()) {
-            File[] files = dsDir.listFiles(mogFilter);
-            if (files != null) {
-                for (File f : files) out.add(f);
-            }
+        if (dsDir.isDirectory()) listSorted(dsDir, mogFilter, out);
+
+        // env-specific overrides
+        if (env != null) {
+            File envFile = new File(etcDir, "datasources." + env + ".mog");
+            if (envFile.isFile()) out.add(envFile);
+            File envDir = new File(etcDir, "datasources/" + env);
+            if (envDir.isDirectory()) listSorted(envDir, mogFilter, out);
+        }
+    }
+
+    private void listSorted(File dir, FilenameFilter filter, List<File> out) {
+        File[] files = dir.listFiles(filter);
+        if (files != null) {
+            java.util.Arrays.sort(files, java.util.Comparator.comparing(File::getName));
+            for (File f : files) out.add(f);
         }
     }
 
@@ -105,7 +132,13 @@ public class DataSourcesCatalog {
                 if (ds != null && ds.getDatasources() != null) {
                     ds.getDatasources().forEach(d -> {
                         if (d.getName() != null) {
-                            byName.put(d.getName(), d);
+                            String name = d.getName();
+                            if (byName.containsKey(name)) {
+                                String prev = sourceByName.get(name);
+                                log.warn("Overriding datasource '{}' from {} with {}", name, prev, file.getAbsolutePath());
+                            }
+                            byName.put(name, d);
+                            sourceByName.put(name, file.getAbsolutePath());
                         }
                     });
                 }
@@ -116,4 +149,3 @@ public class DataSourcesCatalog {
         }
     }
 }
-
