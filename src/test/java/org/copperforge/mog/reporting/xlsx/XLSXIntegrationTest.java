@@ -20,7 +20,6 @@ import org.copperforge.mog.reporting.element.chart.ChartCategory;
 import org.copperforge.mog.reporting.element.chart.ChartSeries;
 import org.copperforge.mog.reporting.element.table.Table;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTBarChart;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTPlotArea;
 import org.apache.poi.xssf.usermodel.XSSFPivotTable;
@@ -116,9 +115,8 @@ public class XLSXIntegrationTest {
         assertEquals("Sales_2025_", display);
     }
 
-    @Disabled("Chart enumeration appears flaky in this environment; legend behavior validated indirectly")
     @Test
-    void chartLegend_hidden_unsetsLegend() throws MogException {
+    void chartLegend_hidden_unsetsLegend() throws Exception {
         XSSFWorkbook wb = new XSSFWorkbook();
         XSSFSheet sheet = wb.createSheet("S");
 
@@ -167,11 +165,26 @@ public class XLSXIntegrationTest {
         XLSXChartWriter writer = new XLSXChartWriter();
         writer.workbook(wb).sheet(sheet).write(new org.copperforge.mog.reporting.definition.Report(), chartDef);
 
-        var drawing = sheet.getDrawingPatriarch();
-        assertNotNull(drawing);
-        // Some POI versions may not enumerate charts until saved; assert drawing has anchors
-        int anchors = drawing.getCTDrawing().sizeOfTwoCellAnchorArray() + drawing.getCTDrawing().sizeOfOneCellAnchorArray();
-        assertTrue(anchors > 0);
+        // Round-trip the workbook to force POI to realize drawing relationships, then re-open
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        wb.write(baos);
+        wb.close();
+        java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(baos.toByteArray());
+        XSSFWorkbook wb2 = new XSSFWorkbook(bais);
+        XSSFSheet sheet2 = wb2.getSheet("S");
+        var drawing2 = sheet2.getDrawingPatriarch();
+        assertNotNull(drawing2);
+        // Some environments return an empty list from getCharts(); fallback to scanning relations
+        java.util.List<org.apache.poi.ooxml.POIXMLDocumentPart> parts = drawing2.getRelations();
+        org.apache.poi.xssf.usermodel.XSSFChart found = null;
+        for (org.apache.poi.ooxml.POIXMLDocumentPart p : parts) {
+            if (p instanceof org.apache.poi.xssf.usermodel.XSSFChart c) {
+                found = c; break;
+            }
+        }
+        assertNotNull(found);
+        assertFalse(found.getCTChart().isSetLegend());
+        wb2.close();
     }
 
     @Test

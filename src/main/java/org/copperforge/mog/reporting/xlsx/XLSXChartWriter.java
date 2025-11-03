@@ -59,13 +59,10 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
             chart.setTitleOverlay(false);
         }
 
-        if (!chartDef.isShowLegend()) {
-            chart.getCTChart().unsetLegend();
-        } else {
-            XDDFChartLegend legend = chart.getOrAddLegend();
-            legend.setPosition(LegendPosition.TOP);
-            legend.setOverlay(false);
-        }
+        boolean hideLegend = !chartDef.isShowLegend();
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.TOP);
+        legend.setOverlay(false);
 
         String type = chartDef.getChartType() != null ? chartDef.getChartType().toLowerCase() : "bar";
 
@@ -75,6 +72,9 @@ public class XLSXChartWriter extends XLSXElementWriter<Chart> {
             case "pie" -> plotPieChart(chart, chartDef);
             case "scatter" -> plotCategoryValueChart(chart, chartDef, ChartTypes.SCATTER);
             default -> plotBarChart(chart, chartDef);
+        }
+        if (hideLegend) {
+            chart.getCTChart().unsetLegend();
         }
     }
 
