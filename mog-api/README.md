@@ -14,6 +14,11 @@ Run the service locally with:
 ./gradlew clean :mog-api:bootRun
 ```
 
+Swagger/OpenAPI docs are available once the app is running at:
+
+- JSON spec: `http://localhost:8080/v3/api-docs`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+
 ## Example usage
 
 The following `curl` commands assume the service is running on `http://localhost:8080` and that `${MOG_HOME}` includes any reference files your reports need.
