@@ -3,11 +3,8 @@ package org.copperforge.mog.reporting;
 import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogOptions;
-import org.copperforge.mog.io.MogFileNameBuilder;
 import org.copperforge.mog.reporting.definition.Report;
-import org.copperforge.mog.reporting.definition.ReportService;
-import org.copperforge.mog.reporting.writer.ReportWriter;
-import org.copperforge.mog.reporting.writer.ReportWriterService;
+import org.copperforge.mog.runtime.MogRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +42,10 @@ public class ReportingCommand {
 
                 log.trace("reportOptions = " + options);
 
-                Report definition = ReportService.instance().parse(options.getReport());
+                Report definition = MogRuntime.loadReportDefinition(options.getReport());
                 log.info("Generating report " + definition.getName() + " ...");
                 log.trace("report def = " + definition);
-                ReportWriter builder = ReportWriterService.instance().builder(definition.getType());
-                builder.build(definition);
-                String filename = MogFileNameBuilder.build(definition.getFilename());
-                builder.save(filename);
+                String filename = MogRuntime.generateReport(definition);
                 log.info("Report can be found at '" + filename + "' ...");
             } catch (MogException e) {
                 throw new RuntimeException(e);

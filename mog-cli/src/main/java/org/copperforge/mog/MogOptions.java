@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.copperforge.mog.runtime.MogCliOptionsView;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-public class MogOptions implements MogCliOptionsView {
+public class MogOptions {
 
     private final List<String> rawArgs = new ArrayList<>();
 

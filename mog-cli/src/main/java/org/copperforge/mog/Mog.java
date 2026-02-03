@@ -1,15 +1,12 @@
 package org.copperforge.mog;
 
-import java.io.File;
-
-import org.copperforge.mog.cli.RuntimeBridge;
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
-import org.copperforge.mog.reader.MogReader;
 import org.copperforge.mog.reporting.ReportingCommand;
 import org.copperforge.mog.security.MogDecryptCommand;
 import org.copperforge.mog.security.MogEncryptCommand;
-import org.copperforge.mog.var.MogVariableService;
+import org.copperforge.mog.runtime.MogContext;
+import org.copperforge.mog.runtime.MogRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +62,7 @@ public class Mog implements Runnable {
             options = MogOptions.parse(args);
             log.debug("options = " + options);
             mog.initialize(options);
-            RuntimeBridge.initialize(mog, options);
+            MogRuntime.bootstrap(buildContext(options, mog.config(), mog.mogf()));
 
             // hand off to picocli subcommands
             int exitCode = new CommandLine(new Mog()).execute(args);
@@ -90,26 +87,25 @@ public class Mog implements Runnable {
         log.info("mog v" + getVersion());
         log.info("");
 
-        log.debug("configFile = " + options.getConfigFile());
-        String configFile = new MogVariableService().envsubst(options.getConfigFile());
-        log.debug("configFile (after) = " + configFile);
-        config = new MogReader<MogConfig>(MogConfig.class).read(configFile);
+        config = MogRuntime.loadConfig(options.getConfigFile());
         log.trace("config = " + config);
 
-        // get mogf
-        File mogFile = new File(Mog.mog().config().userHome() + "/.mog");
-        if (!mogFile.isFile()) {
-            mogFile = new File(Mog.mog().config().mogHome() + "/.mog");
-            if (!mogFile.isFile())
-                mogFile = null;
-        }
-        log.debug("Using mogf of " + mogFile);
-
-        if (mogFile != null)
-            mogf = new MogReader<Mogf>(Mogf.class).read(mogFile);
-        else
-            mogf = new Mogf();
+        mogf = MogRuntime.loadMogf(config);
+        log.debug("Loaded mogf settings");
 
     }
 
+    private static MogContext buildContext(MogOptions options, MogConfig config, Mogf mogf) {
+        String mogHome = config != null ? config.mogHome() : System.getenv("MOG_HOME");
+        String mogEtc = System.getenv("MOG_ETC");
+        return MogContext.builder()
+                .config(config)
+                .mogf(mogf)
+                .datasourcesPath(options.getDatasourcesPath())
+                .environment(options.getEnv())
+                .workingDirectory(options.getWorkingDirectory())
+                .mogHome(mogHome)
+                .mogEtc(mogEtc)
+                .build();
+    }
 }

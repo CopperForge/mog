@@ -11,9 +11,8 @@ import java.util.Map;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.MogDataSource;
-import org.copperforge.mog.runtime.MogCliOptionsView;
+import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.runtime.MogRuntime;
-import org.copperforge.mog.runtime.MogRuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,20 +53,19 @@ public class DataSourcesCatalog {
 
         List<File> candidates = new ArrayList<>();
         FilenameFilter mogFilter = (dir, fname) -> fname.endsWith(".mog");
-        MogCliOptionsView opts = MogRuntime.current()
-                .flatMap(MogRuntimeContext::cliOptions)
-                .orElse(null);
+        MogContext context = MogRuntime.context().orElse(null);
         String env = null;
-        if (opts != null && opts.getEnv() != null && !opts.getEnv().isBlank()) {
-            env = opts.getEnv();
+        if (context != null && context.getEnvironment() != null && !context.getEnvironment().isBlank()) {
+            env = context.getEnvironment();
         } else {
             String envVar = System.getenv("MOG_ENV");
             if (envVar != null && !envVar.isBlank()) env = envVar;
         }
 
         // 1) --datasources path, if provided
-        if (opts != null && opts.getDatasourcesPath() != null && !opts.getDatasourcesPath().isBlank()) {
-            File ds = new File(opts.getDatasourcesPath());
+        String datasourcesPath = context != null ? context.getDatasourcesPath() : null;
+        if (datasourcesPath != null && !datasourcesPath.isBlank()) {
+            File ds = new File(datasourcesPath);
             if (ds.isDirectory()) {
                 // generic first
                 listSorted(ds, mogFilter, candidates);
@@ -84,14 +82,18 @@ public class DataSourcesCatalog {
         }
 
         // 2) ${MOG_ETC}
-        String mogEtc = System.getenv("MOG_ETC");
+        String mogEtc = context != null && context.getMogEtc() != null && !context.getMogEtc().isBlank()
+                ? context.getMogEtc()
+                : System.getenv("MOG_ETC");
         if (mogEtc != null && !mogEtc.isBlank()) {
             File etc = new File(mogEtc);
             addDefaultLocations(etc, candidates, mogFilter, env);
         }
 
         // 3) ${MOG_HOME}/etc
-        String mogHome = System.getenv("MOG_HOME");
+        String mogHome = context != null && context.getMogHome() != null && !context.getMogHome().isBlank()
+                ? context.getMogHome()
+                : System.getenv("MOG_HOME");
         if (mogHome != null && !mogHome.isBlank()) {
             File etc = new File(mogHome, "etc");
             addDefaultLocations(etc, candidates, mogFilter, env);

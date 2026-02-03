@@ -1,10 +1,7 @@
 package org.copperforge.mog.security;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.config.Mogf;
-import org.copperforge.mog.runtime.MogEncryptionOptionsView;
-import org.copperforge.mog.runtime.MogRuntime;
-import org.copperforge.mog.runtime.MogRuntimeContext;
+import org.copperforge.mog.runtime.MogContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,27 +11,21 @@ public class MogSecurityService {
 
     final MogAESEncryptorDecryptor encryptorDecryptor;
 
-    public MogSecurityService() throws MogException {
-        MogEncryptionOptionsView options = MogRuntime.current()
-                .flatMap(MogRuntimeContext::encryptionOptions)
-                .orElse(null);
+    public MogSecurityService(MogContext context, String passwordOverride) throws MogException {
+        String password = passwordOverride;
         if (log.isTraceEnabled()) {
-            log.trace("options = {}", options);
+            log.trace("options = {}", passwordOverride != null ? "***" : "null");
         }
 
-        if (options != null && options.getPassword() != null) {
-            encryptorDecryptor = new MogAESEncryptorDecryptor(options.getPassword());
+        if (password == null && context != null && context.getMogf() != null) {
+            password = context.getMogf().getEncryptionPassword();
+        }
+
+        if (password != null) {
+            encryptorDecryptor = new MogAESEncryptorDecryptor(password);
         } else {
-            String mogfPassword = MogRuntime.current()
-                    .flatMap(MogRuntimeContext::mogf)
-                    .map(Mogf::getEncryptionPassword)
-                    .orElse(null);
-            if (mogfPassword != null) {
-                encryptorDecryptor = new MogAESEncryptorDecryptor(mogfPassword);
-            } else {
-                encryptorDecryptor = null;
-                throw new MogException("Unable to determine encryption key; please check with your MOG administrator");
-            }
+            encryptorDecryptor = null;
+            throw new MogException("Unable to determine encryption key; please check with your MOG administrator");
         }
     }
 

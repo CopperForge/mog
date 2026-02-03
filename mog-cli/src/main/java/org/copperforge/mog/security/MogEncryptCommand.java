@@ -3,7 +3,7 @@ package org.copperforge.mog.security;
 import org.copperforge.mog.Mog;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.MogOptions;
-import org.copperforge.mog.cli.RuntimeBridge;
+import org.copperforge.mog.runtime.MogRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +14,6 @@ import picocli.CommandLine.Mixin;
 public class MogEncryptCommand implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(MogEncryptCommand.class);
-
-    private MogSecurityService securityService;
 
     @Mixin
     private MogEncryptDecryptOptions parsedOptions;
@@ -32,14 +30,8 @@ public class MogEncryptCommand implements Runnable {
                 return;
             }
 
-            RuntimeBridge.context().setEncryptionOptions(options);
-            try {
-                securityService = new MogSecurityService();
-                String encrypted = securityService.encryptor().encrypt(options.getValue());
-                System.out.println(encrypted);
-            } finally {
-                RuntimeBridge.context().clearEncryptionOptions();
-            }
+            String encrypted = MogRuntime.encrypt(options.getValue(), options.getPassword());
+            System.out.println(encrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);
         }

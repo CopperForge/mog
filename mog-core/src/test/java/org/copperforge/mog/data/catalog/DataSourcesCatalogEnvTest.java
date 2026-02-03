@@ -6,15 +6,9 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
-
-import org.copperforge.mog.config.MogConfig;
-import org.copperforge.mog.config.Mogf;
 import org.copperforge.mog.data.MogDataSource;
-import org.copperforge.mog.runtime.MogCliOptionsView;
-import org.copperforge.mog.runtime.MogEncryptionOptionsView;
+import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.runtime.MogRuntime;
-import org.copperforge.mog.runtime.MogRuntimeContext;
 import org.junit.jupiter.api.Test;
 
 public class DataSourcesCatalogEnvTest {
@@ -33,7 +27,11 @@ public class DataSourcesCatalogEnvTest {
         Files.writeString(tmp.resolve("datasources.dev.mog"), "{\n \"datasources\": [ { \"name\": \"svc\", \"type\": \"json\", \"file\": \"" + b.toString().replace("\\", "\\\\") + "\" } ]\n}", StandardCharsets.UTF_8);
 
         // Point catalog at dir and set env=dev
-        MogRuntime.register(new TestRuntimeContext(new TestOptions(tmp.toString(), "dev", null)));
+        MogContext context = MogContext.builder()
+                .datasourcesPath(tmp.toString())
+                .environment("dev")
+                .build();
+        MogRuntime.bootstrap(context);
 
         MogDataSource ds = DataSourcesCatalog.instance().resolveByName("svc");
         assertNotNull(ds);
@@ -49,42 +47,4 @@ public class DataSourcesCatalogEnvTest {
         f.set(null, null);
     }
 
-    private record TestOptions(String datasourcesPath, String env, String workingDir) implements MogCliOptionsView {
-        @Override
-        public String getDatasourcesPath() {
-            return datasourcesPath;
-        }
-
-        @Override
-        public String getEnv() {
-            return env;
-        }
-
-        @Override
-        public String getWorkingDirectory() {
-            return workingDir;
-        }
-    }
-
-    private record TestRuntimeContext(MogCliOptionsView options) implements MogRuntimeContext {
-        @Override
-        public Optional<MogConfig> config() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Mogf> mogf() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<? extends MogCliOptionsView> cliOptions() {
-            return Optional.ofNullable(options);
-        }
-
-        @Override
-        public Optional<? extends MogEncryptionOptionsView> encryptionOptions() {
-            return Optional.empty();
-        }
-    }
 }

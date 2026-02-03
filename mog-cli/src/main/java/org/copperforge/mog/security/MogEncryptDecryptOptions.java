@@ -1,12 +1,10 @@
 package org.copperforge.mog.security;
 
 import org.copperforge.mog.MogOptions;
-import org.copperforge.mog.runtime.MogEncryptionOptionsView;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
-public class MogEncryptDecryptOptions extends MogOptions implements MogEncryptionOptionsView {
+public class MogEncryptDecryptOptions extends MogOptions {
 
     @Option(names = "--value", description = "the value to encrypt/decrypt")
     private String value;

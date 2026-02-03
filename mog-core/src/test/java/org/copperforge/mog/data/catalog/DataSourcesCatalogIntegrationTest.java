@@ -7,23 +7,17 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
-
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.config.MogConfig;
-import org.copperforge.mog.config.Mogf;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.xlsx.XLSXReport;
 import org.copperforge.mog.reporting.xlsx.XLSXTableWriter;
 import org.copperforge.mog.reporting.element.table.Table;
 import org.copperforge.mog.reporting.ReportDataSource;
 import org.copperforge.mog.data.filter.MogJsonFilter;
-import org.copperforge.mog.runtime.MogCliOptionsView;
-import org.copperforge.mog.runtime.MogEncryptionOptionsView;
+import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.runtime.MogRuntime;
-import org.copperforge.mog.runtime.MogRuntimeContext;
 import org.junit.jupiter.api.Test;
 
 public class DataSourcesCatalogIntegrationTest {
@@ -42,7 +36,7 @@ public class DataSourcesCatalogIntegrationTest {
         Files.writeString(catalog, ds, StandardCharsets.UTF_8);
 
         // Seed Mog singleton and options with --datasources pointing at tmp
-        MogRuntime.register(new TestRuntimeContext(new TestOptions(tmp.toString(), null, null)));
+        MogRuntime.bootstrap(MogContext.builder().datasourcesPath(tmp.toString()).build());
 
         // Build a table that references the catalog datasource by name
         Table t = new Table();
@@ -77,48 +71,4 @@ public class DataSourcesCatalogIntegrationTest {
         f.set(null, null);
     }
 
-    private record TestOptions(String datasourcesPath, String env, String workingDir) implements MogCliOptionsView {
-        @Override
-        public String getDatasourcesPath() {
-            return datasourcesPath;
-        }
-
-        @Override
-        public String getEnv() {
-            return env;
-        }
-
-        @Override
-        public String getWorkingDirectory() {
-            return workingDir;
-        }
-    }
-
-    private static final class TestRuntimeContext implements MogRuntimeContext {
-        private final MogCliOptionsView options;
-
-        private TestRuntimeContext(MogCliOptionsView options) {
-            this.options = options;
-        }
-
-        @Override
-        public Optional<MogConfig> config() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Mogf> mogf() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<? extends MogCliOptionsView> cliOptions() {
-            return Optional.ofNullable(options);
-        }
-
-        @Override
-        public Optional<? extends MogEncryptionOptionsView> encryptionOptions() {
-            return Optional.empty();
-        }
-    }
 }
