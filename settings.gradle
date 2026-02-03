@@ -1,1 +1,3 @@
 rootProject.name = 'mog'
+
+include ':mog-core', ':mog-cli'

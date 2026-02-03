@@ -1,0 +1,159 @@
+plugins {
+    id 'application'
+    id 'com.netflix.nebula.rpm' version '11.9.1'
+    id 'org.liquibase.gradle' version '2.2.1'
+}
+
+def appVersion = rootProject.ext.applicationVersion
+def mainEntryPoint = 'org.copperforge.mog.Mog'
+
+dependencies {
+    implementation project(':mog-core')
+
+    implementation "info.picocli:picocli:4.7.6"
+    annotationProcessor "info.picocli:picocli-codegen:4.7.6"
+
+    liquibaseRuntime "info.picocli:picocli:4.7.6"
+    liquibaseRuntime "org.liquibase:liquibase-core:4.27.0"
+    liquibaseRuntime "org.liquibase:liquibase-groovy-dsl:3.0.3"
+    liquibaseRuntime "org.yaml:snakeyaml:2.2"
+    liquibaseRuntime "com.h2database:h2:2.2.224"
+    liquibaseRuntime "javax.xml.bind:jaxb-api:2.3.1"
+}
+
+application {
+    applicationName = 'mog'
+    mainClass = mainEntryPoint
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+
+    archiveFileName = "mog.jar"
+    manifest {
+        attributes(
+            'Main-Class': mainEntryPoint,
+            'Implementation-Title': 'MOG - It is what you make it',
+            'Implementation-Version': ""
+        )
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+distributions {
+    main {
+        contents {
+            exclude 'bin/**'
+            from('src/main/bin') {
+                into 'bin'
+                fileMode = 0755
+            }
+        }
+    }
+}
+
+tasks.named('jar') {
+    dependsOn ':mog-core:jar'
+}
+
+tasks.withType(org.gradle.jvm.application.tasks.CreateStartScripts).configureEach {
+    enabled = false
+}
+
+tasks.register('sampleReport', JavaExec) {
+    group = 'application'
+    description = 'Assembles and generates the sample chart report into the project directory.'
+    dependsOn 'assemble'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set(mainEntryPoint)
+    def envName = (project.findProperty('env') ?: System.getenv('MOG_ENV'))
+    args 'report', 'generate', '--report=chart.sample.report.mog'
+    if (envName) {
+        args "--env="
+    }
+    def mogHomeDir = rootProject.layout.projectDirectory.asFile
+    environment 'MOG_HOME', mogHomeDir.absolutePath
+    if (envName) {
+        environment 'MOG_ENV', envName
+    }
+    doFirst {
+        def etcDir = new File(mogHomeDir, 'etc')
+        def reportsDir = new File(etcDir, 'reports')
+        reportsDir.mkdirs()
+        copy {
+            from 'src/main/examples/reports/chart.sample.report.mog'
+            into reportsDir
+        }
+        def cfgSrc = file('src/install/resources/config.mog')
+        def cfgDst = new File(etcDir, 'config.mog')
+        if (!cfgDst.exists() && cfgSrc.exists()) {
+            copy { from cfgSrc; into etcDir }
+        }
+        def dsSrc = file('src/install/resources/etc/datasources.mog')
+        def dsDst = new File(etcDir, 'datasources.mog')
+        if (!dsDst.exists() && dsSrc.exists()) {
+            copy { from dsSrc; into etcDir }
+        }
+        if (envName) {
+            def envTemplate = file("src/install/resources/etc/datasources..mog")
+            if (envTemplate.exists()) {
+                copy { from envTemplate; into etcDir }
+            } else {
+                logger.lifecycle("[sampleReport] No env-specific catalog template found at . Proceeding without env seed.")
+            }
+        }
+        def salesSrc = file('src/install/resources/etc/sales.json')
+        def salesDst = new File(etcDir, 'sales.json')
+        if (!salesDst.exists() && salesSrc.exists()) {
+            copy { from salesSrc; into etcDir }
+        }
+        jvmArgs = []
+        args "--datasources="
+    }
+}
+
+tasks.register('rpm', Rpm) {
+    dependsOn('build')
+    os LINUX
+    into "/opt/mog"
+    arch 'x86_64'
+    packageName rootProject.name
+    preInstall file("src/install/scripts/pre-install.sh")
+    postInstall file("src/install/scripts/post-install.sh")
+    version appVersion.getVersion()
+    release appVersion.getRelease()
+
+    user "mog"
+    group "mog"
+    permissionGroup "mog"
+
+    from (fileTree(dir: "src/main/bin", include: "*")) {
+        into "bin"
+        fileMode 0777
+    }
+
+    from (fileTree(dir: "build/libs", include: "*.jar")) {
+        into "lib"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/main/resources/reports")) {
+        into "etc/reports"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/install/resources/etc")) {
+        addParentDirs false
+        into "/etc"
+        fileMode 0664
+    }
+
+    from (fileTree(dir: "src/install/resources", include: "config.mog")) {
+        into "etc"
+        fileMode 0664
+    }
+}

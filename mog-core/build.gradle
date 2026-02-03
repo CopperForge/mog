@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+def appVersion = rootProject.ext.applicationVersion
+
+dependencies {
+    api "org.slf4j:slf4j-api:2.0.13"
+    api "ch.qos.logback:logback-core:1.5.19"
+    api "ch.qos.logback:logback-classic:1.5.19"
+    api "org.apache.logging.log4j:log4j-to-slf4j:2.24.1"
+
+    api "commons-io:commons-io:2.16.1"
+    api "org.apache.commons:commons-compress:1.27.1"
+    api "org.apache.commons:commons-lang3:3.14.0"
+    api "commons-codec:commons-codec:1.16.1"
+    api "org.apache.poi:poi:5.4.0"
+    api "org.apache.poi:poi-ooxml:5.4.0"
+
+    api "com.fasterxml.jackson.core:jackson-core:2.18.0"
+    api "com.fasterxml.jackson.core:jackson-annotations:2.18.0"
+    api "com.fasterxml.jackson.core:jackson-databind:2.18.0"
+
+    api "org.json:json:20240303"
+    api "com.jayway.jsonpath:json-path:2.9.0"
+
+    api "com.h2database:h2:2.3.232"
+    api "org.xerial:sqlite-jdbc:3.46.0.0"
+    api 'com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11'
+
+    api "com.github.jsqlparser:jsqlparser:5.0"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.0"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.0"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.copperforge'
+            artifactId = 'mog'
+            version = appVersion.getVersion()
+
+            from components.java
+        }
+    }
+}

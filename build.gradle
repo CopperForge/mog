@@ -1,20 +1,4 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.liquibase:liquibase-gradle-plugin:2.2.1"
-    }
-}
-
-plugins {
-	id 'java'
-    id 'maven-publish'
-    id 'application'
-    id "com.netflix.nebula.rpm" version "11.9.1"
-}
-
-apply plugin: 'org.liquibase.gradle'
+import org.gradle.api.plugins.JavaPluginExtension
 
 class ApplicationVersion {
    Integer major
@@ -29,254 +13,51 @@ class ApplicationVersion {
       this.release = release
    }
 
-   private String getRelease() {
-    def date = new Date()
-
-    return this.release ? 'beta' : date.format('yyyyMMddHHmmss')
+   String getRelease() {
+        def date = new Date()
+        return this.release ? 'beta' : date.format('yyyyMMddHHmmss')
    }
 
    String getVersion() {
-      def version = "$major.$minor.$patch"
-      return "$version"
+      def version = ".."
+      return ""
    }
 
    String getReleaseVersion() {
       def version = this.getVersion()
       if (this.getRelease() != '') version += "." + this.getRelease()
-      return "$version"
+      return ""
    }
 }
 
 ext {
-    applicationVersion = new ApplicationVersion(1, 1, 1, true);
+    applicationVersion = new ApplicationVersion(1, 1, 1, true)
 }
 
-group = 'org.copperforge.mog'
-version = applicationVersion.getReleaseVersion();
+allprojects {
+    group = 'org.copperforge.mog'
+    version = applicationVersion.getReleaseVersion()
 
-repositories {
-	mavenCentral()
-    mavenLocal()
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
 }
 
-configurations.all {
-    // Avoid accidental inclusion of a Log4j provider; route Log4j API to SLF4J instead
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-}
+subprojects {
+    configurations.all {
+        // Avoid accidental inclusion of a Log4j provider; route Log4j API to SLF4J instead
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    }
 
-dependencies {
-    // Logging
-    implementation "org.slf4j:slf4j-api:2.0.13"
-    implementation "ch.qos.logback:logback-core:1.5.19"
-    implementation "ch.qos.logback:logback-classic:1.5.19"
-    implementation "org.apache.logging.log4j:log4j-to-slf4j:2.24.1"
+    plugins.withType(JavaPlugin).configureEach {
+        JavaPluginExtension javaExt = extensions.getByType(JavaPluginExtension)
+        javaExt.sourceCompatibility = JavaVersion.VERSION_21
+        javaExt.targetCompatibility = JavaVersion.VERSION_21
+        javaExt.toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 
-    // removed: guava (only used by reflection utilities we dropped)
-    // removed: bouncycastle (unused)
-
-    implementation "commons-io:commons-io:2.16.1"
-    implementation "org.apache.commons:commons-compress:1.27.1"
-    implementation "org.apache.commons:commons-lang3:3.14.0"
-    implementation "commons-codec:commons-codec:1.16.1"
-    implementation "org.apache.poi:poi:5.4.0" 
-    implementation "org.apache.poi:poi-ooxml:5.4.0" 
-
-    implementation "com.fasterxml.jackson.core:jackson-core:2.18.0"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.18.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.18.0"
-
-    implementation "org.json:json:20240303"
-    implementation "com.jayway.jsonpath:json-path:2.9.0"
-
-    implementation "com.h2database:h2:2.3.232"
-    implementation "org.xerial:sqlite-jdbc:3.46.0.0"
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11'
-
-    implementation "com.github.jsqlparser:jsqlparser:5.0"
-
-    // removed: jgit (unused)
- 
-    implementation "info.picocli:picocli:4.7.6"
-    annotationProcessor "info.picocli:picocli-codegen:4.7.6"
-    liquibaseRuntime "info.picocli:picocli:4.7.6"
-
-    liquibaseRuntime "org.liquibase:liquibase-core:4.27.0"
-    liquibaseRuntime "org.liquibase:liquibase-groovy-dsl:3.0.3"
-    liquibaseRuntime "org.yaml:snakeyaml:2.2"
-    liquibaseRuntime "com.h2database:h2:2.2.224"
-    liquibaseRuntime "javax.xml.bind:jaxb-api:2.3.1"
-
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.0")
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'org.copperforge'
-            artifactId = 'mog'
-            version = applicationVersion.getVersion()
-
-            from components.java
+        tasks.withType(Test).configureEach {
+            useJUnitPlatform()
         }
     }
-}
-
-application {
-    mainClass = 'org.copperforge.mog.Mog'
-}
-
-jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' 
-
-    archiveFileName = "mog.jar"
-    manifest {
-        attributes(
-            'Main-Class': 'org.copperforge.mog.Mog',
-            'Implementation-Title': 'MOG - It is what you make it',
-            'Implementation-Version': "${version}"
-        )
-    }
-
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
-compileJava {
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-test {
-    useJUnitPlatform()
-}
-
-// One-liner to assemble and generate the sample report
-tasks.register('sampleReport', JavaExec) {
-    group = 'application'
-    description = 'Assembles and generates the sample chart report into the project directory.'
-    dependsOn 'assemble'
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = application.mainClass
-    // Optional environment name: -Penv=dev (falls back to MOG_ENV if set)
-    def envName = (project.findProperty('env') ?: System.getenv('MOG_ENV'))
-    args 'report', 'generate', '--report=chart.sample.report.mog'
-    if (envName) {
-        args "--env=${envName}"
-    }
-    environment 'MOG_HOME', project.projectDir.absolutePath
-    if (envName) {
-        environment 'MOG_ENV', envName
-    }
-    doFirst {
-        def etcDir = file("${project.projectDir}/etc")
-        def reportsDir = file("${etcDir}/reports")
-        reportsDir.mkdirs()
-        // Copy sample report into ${MOG_HOME}/etc/reports
-        copy {
-            from 'src/main/examples/reports/chart.sample.report.mog'
-            into reportsDir
-        }
-        // Seed config if missing
-        def cfgSrc = file('src/install/resources/config.mog')
-        def cfgDst = file("${etcDir}/config.mog")
-        if (!cfgDst.exists() && cfgSrc.exists()) {
-            copy { from cfgSrc; into etcDir }
-        }
-        // Seed datasources and sample data if missing
-        def dsSrc = file('src/install/resources/etc/datasources.mog')
-        def dsDst = file("${etcDir}/datasources.mog")
-        if (!dsDst.exists() && dsSrc.exists()) {
-            copy { from dsSrc; into etcDir }
-        }
-        // Seed env-specific catalog if requested and template exists
-        if (envName) {
-            def envTemplate = file("src/install/resources/etc/datasources.${envName}.mog")
-            if (envTemplate.exists()) {
-                copy { from envTemplate; into etcDir }
-            } else {
-                logger.lifecycle("[sampleReport] No env-specific catalog template found at ${envTemplate}. Proceeding without env seed.")
-            }
-        }
-        def salesSrc = file('src/install/resources/etc/sales.json')
-        def salesDst = file("${etcDir}/sales.json")
-        if (!salesDst.exists() && salesSrc.exists()) {
-            copy { from salesSrc; into etcDir }
-        }
-        // Always point the app at the etc dir for datasources
-        jvmArgs = []
-        args "--datasources=${etcDir.absolutePath}"
-    }
-}
-
-// Ensure our custom launchers are included in the application distributions
-distributions {
-    main {
-        contents {
-            // Replace default generated scripts with our custom robust wrappers
-            exclude 'bin/**'
-            from('src/main/bin') {
-                into 'bin'
-                fileMode = 0755
-            }
-        }
-    }
-}
-
-// Disable default startScripts to avoid duplicate bin entries in distributions
-tasks.withType(org.gradle.jvm.application.tasks.CreateStartScripts).configureEach {
-    enabled = false
-}
-
-task rpm(type: Rpm) {
-    dependsOn('build')
-    os LINUX
-    into "/opt/mog"
-    arch 'x86_64'
-    packageName project.name
-    preInstall file("src/install/scripts/pre-install.sh")
-    postInstall file("src/install/scripts/post-install.sh")
-    version applicationVersion.getVersion()
-    release applicationVersion.getRelease()
-
-    user "mog"
-    group "mog"
-    permissionGroup "mog"
-
-    from (fileTree(dir: "src/main/bin", include: "*")) {
-        into "bin"
-        fileMode 0777
-    }
-
-    from (fileTree(dir: "build/libs", include: "*.jar")) {
-        into "lib"
-        fileMode 0664
-    }
-
-    // removed legacy commands packaging; Picocli subcommands replace these
-
-    from (fileTree(dir: "src/main/resources/reports")) {
-        into "etc/reports"
-        fileMode 0664
-    }
-
-    from (fileTree(dir: "src/install/resources/etc")) {
-        addParentDirs false
-        into "/etc"
-        fileMode 0664
-    }
-
-    from (fileTree(dir: "src/install/resources", include: "config.mog")) {
-        into "etc"
-        fileMode 0664
-    }
-
 }
