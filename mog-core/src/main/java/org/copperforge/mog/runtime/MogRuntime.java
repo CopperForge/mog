@@ -52,10 +52,26 @@ public final class MogRuntime {
     }
 
     public static Report loadReportDefinition(String reference) throws MogException {
-        return ReportService.instance().parse(reference, ensureContext());
+        return loadReportDefinition(reference, ensureContext());
+    }
+
+    public static Report loadReportDefinition(String reference, MogContext context) throws MogException {
+        MogContext ctx = context != null ? context : ensureContext();
+        Report report = ReportService.instance().parse(reference, ctx);
+        if (report != null) {
+            report.setContext(ctx);
+        }
+        return report;
     }
 
     public static String generateReport(Report definition) throws MogException {
+        return generateReport(definition, ensureContext());
+    }
+
+    public static String generateReport(Report definition, MogContext context) throws MogException {
+        if (definition != null && context != null) {
+            definition.setContext(context);
+        }
         ReportWriter writer = ReportWriterService.instance().builder(definition.getType());
         writer.build(definition);
         String filename = MogFileNameBuilder.build(definition.getFilename());
@@ -64,12 +80,22 @@ public final class MogRuntime {
     }
 
     public static String encrypt(String value, String passwordOverride) throws MogException {
-        MogSecurityService securityService = new MogSecurityService(ensureContext(), passwordOverride);
-        return securityService.encryptor().encrypt(value);
+        return encrypt(ensureContext(), value, passwordOverride);
     }
 
     public static String decrypt(String value, String passwordOverride) throws MogException {
-        MogSecurityService securityService = new MogSecurityService(ensureContext(), passwordOverride);
+        return decrypt(ensureContext(), value, passwordOverride);
+    }
+
+    public static String encrypt(MogContext context, String value, String passwordOverride) throws MogException {
+        MogContext ctx = context != null ? context : ensureContext();
+        MogSecurityService securityService = new MogSecurityService(ctx, passwordOverride);
+        return securityService.encryptor().encrypt(value);
+    }
+
+    public static String decrypt(MogContext context, String value, String passwordOverride) throws MogException {
+        MogContext ctx = context != null ? context : ensureContext();
+        MogSecurityService securityService = new MogSecurityService(ctx, passwordOverride);
         return securityService.decryptor().decrypt(value);
     }
 

@@ -40,7 +40,8 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         if (tableElement.getDataSource() != null && mogDataSource == null) {
             // attempt to resolve from global catalog
             var name = tableElement.getDataSource().getName();
-            mogDataSource = org.copperforge.mog.data.catalog.DataSourcesCatalog.instance().resolveByName(name);
+            mogDataSource = org.copperforge.mog.data.catalog.DataSourcesCatalog.instance()
+                    .resolveByName(name, report.getContext());
             if (mogDataSource == null) {
                 throw new MogException("Datasource '" + name + "' not found for table '" + tableElement.getName() + "'");
             }

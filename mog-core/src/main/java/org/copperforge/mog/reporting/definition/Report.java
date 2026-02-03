@@ -4,12 +4,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.reporting.xlsx.XLSXReport;
+import org.copperforge.mog.runtime.MogContext;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
@@ -27,6 +29,9 @@ public class Report implements Serializable {
     private final List<MogDataSource> dataSources = new ArrayList<>();
 
     private String filename;
+
+    @JsonIgnore
+    private transient MogContext context;
 
     public String getName() {
         return name;
@@ -69,6 +74,14 @@ public class Report implements Serializable {
     public void setDataSources(List<MogDataSource> dataSources) {
         this.dataSources.clear();
         this.dataSources.addAll(dataSources);
+    }
+
+    public MogContext getContext() {
+        return context;
+    }
+
+    public void setContext(MogContext context) {
+        this.context = context;
     }
 
     @Override

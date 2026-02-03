@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.MogDataSource;
@@ -25,11 +26,13 @@ public class DataSourcesCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourcesCatalog.class);
 
-    private static DataSourcesCatalog INSTANCE;
+    private static final FilenameFilter DSL_FILTER = (dir, fname) -> {
+        String lower = fname.toLowerCase(java.util.Locale.ROOT);
+        return lower.endsWith(".mog") || lower.endsWith(".json");
+    };
 
-    private final Map<String, MogDataSource> byName = new HashMap<>();
-    private final Map<String, String> sourceByName = new HashMap<>();
-    private boolean loaded = false;
+    private static DataSourcesCatalog INSTANCE;
+    private final Map<CatalogKey, CatalogState> caches = new ConcurrentHashMap<>();
 
     public static synchronized DataSourcesCatalog instance() {
         if (INSTANCE == null) INSTANCE = new DataSourcesCatalog();
@@ -37,99 +40,108 @@ public class DataSourcesCatalog {
     }
 
     public MogDataSource resolveByName(String name) {
-        try {
-            ensureLoaded();
-        } catch (Exception e) {
-            log.debug("Failed to load datasources catalog", e);
-        }
-        return byName.get(name);
+        return resolveByName(name, MogRuntime.context().orElse(null));
     }
 
-    private synchronized void ensureLoaded() throws MogException {
-        if (loaded) return;
-        loaded = true;
-        byName.clear();
-        sourceByName.clear();
-
-        List<File> candidates = new ArrayList<>();
-        FilenameFilter mogFilter = (dir, fname) -> fname.endsWith(".mog");
-        MogContext context = MogRuntime.context().orElse(null);
-        String env = null;
-        if (context != null && context.getEnvironment() != null && !context.getEnvironment().isBlank()) {
-            env = context.getEnvironment();
-        } else {
-            String envVar = System.getenv("MOG_ENV");
-            if (envVar != null && !envVar.isBlank()) env = envVar;
+    public MogDataSource resolveByName(String name, MogContext context) {
+        if (name == null) return null;
+        CatalogKey key = CatalogKey.from(context);
+        CatalogState state = caches.computeIfAbsent(key, k -> new CatalogState());
+        try {
+            state.ensureLoaded(context);
+        } catch (Exception e) {
+            log.debug("Failed to load datasources catalog for {}", key, e);
         }
+        return state.byName.get(name);
+    }
 
-        // 1) --datasources path, if provided
+    private static final class CatalogState {
+        private final Map<String, MogDataSource> byName = new HashMap<>();
+        private final Map<String, String> sourceByName = new HashMap<>();
+        private boolean loaded = false;
+
+        synchronized void ensureLoaded(MogContext context) throws MogException {
+            if (loaded) return;
+            loaded = true;
+            List<File> candidates = buildCandidates(context);
+            for (File f : candidates) {
+                loadFile(f, byName, sourceByName);
+            }
+        }
+    }
+
+    private static List<File> buildCandidates(MogContext context) {
+        List<File> candidates = new ArrayList<>();
+        String env = resolveEnv(context);
+
         String datasourcesPath = context != null ? context.getDatasourcesPath() : null;
         if (datasourcesPath != null && !datasourcesPath.isBlank()) {
             File ds = new File(datasourcesPath);
             if (ds.isDirectory()) {
-                // generic first
-                listSorted(ds, mogFilter, candidates);
-                // env-specific overrides
-                if (env != null) {
+                listSorted(ds, candidates);
+                if (env != null && !env.isBlank()) {
                     File envFile = new File(ds, "datasources." + env + ".mog");
                     if (envFile.isFile()) candidates.add(envFile);
+                    File envJson = new File(ds, "datasources." + env + ".json");
+                    if (envJson.isFile()) candidates.add(envJson);
                     File envDir = new File(ds, "datasources/" + env);
-                    if (envDir.isDirectory()) listSorted(envDir, mogFilter, candidates);
+                    if (envDir.isDirectory()) listSorted(envDir, candidates);
                 }
             } else if (ds.isFile()) {
                 candidates.add(ds);
             }
         }
 
-        // 2) ${MOG_ETC}
         String mogEtc = context != null && context.getMogEtc() != null && !context.getMogEtc().isBlank()
                 ? context.getMogEtc()
                 : System.getenv("MOG_ETC");
         if (mogEtc != null && !mogEtc.isBlank()) {
             File etc = new File(mogEtc);
-            addDefaultLocations(etc, candidates, mogFilter, env);
+            addDefaultLocations(etc, candidates, env);
         }
 
-        // 3) ${MOG_HOME}/etc
         String mogHome = context != null && context.getMogHome() != null && !context.getMogHome().isBlank()
                 ? context.getMogHome()
                 : System.getenv("MOG_HOME");
         if (mogHome != null && !mogHome.isBlank()) {
             File etc = new File(mogHome, "etc");
-            addDefaultLocations(etc, candidates, mogFilter, env);
+            addDefaultLocations(etc, candidates, env);
         }
 
-        // Load in order; later files override earlier definitions
-        for (File f : candidates) {
-            loadFile(f);
-        }
+        return candidates;
     }
 
-    private void addDefaultLocations(File etcDir, List<File> out, FilenameFilter mogFilter, String env) {
+    private static void addDefaultLocations(File etcDir, List<File> out, String env) {
+        if (etcDir == null || !etcDir.exists()) return;
         // generic first
         File dsFile = new File(etcDir, "datasources.mog");
         if (dsFile.isFile()) out.add(dsFile);
+        File dsJson = new File(etcDir, "datasources.json");
+        if (dsJson.isFile()) out.add(dsJson);
         File dsDir = new File(etcDir, "datasources");
-        if (dsDir.isDirectory()) listSorted(dsDir, mogFilter, out);
+        if (dsDir.isDirectory()) listSorted(dsDir, out);
 
         // env-specific overrides
-        if (env != null) {
+        if (env != null && !env.isBlank()) {
             File envFile = new File(etcDir, "datasources." + env + ".mog");
             if (envFile.isFile()) out.add(envFile);
+            File envJson = new File(etcDir, "datasources." + env + ".json");
+            if (envJson.isFile()) out.add(envJson);
             File envDir = new File(etcDir, "datasources/" + env);
-            if (envDir.isDirectory()) listSorted(envDir, mogFilter, out);
+            if (envDir.isDirectory()) listSorted(envDir, out);
         }
     }
 
-    private void listSorted(File dir, FilenameFilter filter, List<File> out) {
-        File[] files = dir.listFiles(filter);
+    private static void listSorted(File dir, List<File> out) {
+        File[] files = dir.listFiles(DSL_FILTER);
         if (files != null) {
             java.util.Arrays.sort(files, java.util.Comparator.comparing(File::getName));
             for (File f : files) out.add(f);
         }
     }
 
-    private void loadFile(File file) {
+    private static void loadFile(File file, Map<String, MogDataSource> byName, Map<String, String> sourceByName) {
+        if (file == null || !file.isFile()) return;
         try {
             ObjectMapper mapper = new ObjectMapper();
             try (InputStream in = new FileInputStream(file)) {
@@ -151,6 +163,35 @@ public class DataSourcesCatalog {
             log.debug("Loaded datasources from {} (total now: {})", file, byName.size());
         } catch (Exception e) {
             log.warn("Unable to load datasources from {} :: {}", file, e.getMessage());
+        }
+    }
+
+    private static String resolveEnv(MogContext context) {
+        if (context != null && context.getEnvironment() != null && !context.getEnvironment().isBlank()) {
+            return context.getEnvironment();
+        }
+        String envVar = System.getenv("MOG_ENV");
+        if (envVar != null && !envVar.isBlank()) return envVar;
+        return null;
+    }
+
+    private record CatalogKey(String datasourcesPath, String environment, String mogEtc, String mogHome) {
+        static CatalogKey from(MogContext context) {
+            return new CatalogKey(
+                    normalizePath(context != null ? context.getDatasourcesPath() : null),
+                    resolveEnv(context),
+                    normalizePath(context != null && context.getMogEtc() != null && !context.getMogEtc().isBlank()
+                            ? context.getMogEtc()
+                            : System.getenv("MOG_ETC")),
+                    normalizePath(context != null && context.getMogHome() != null && !context.getMogHome().isBlank()
+                            ? context.getMogHome()
+                            : System.getenv("MOG_HOME"))
+            );
+        }
+
+        private static String normalizePath(String path) {
+            if (path == null || path.isBlank()) return null;
+            return new File(path).getAbsolutePath();
         }
     }
 }

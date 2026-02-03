@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.runtime.MogContext;
-import org.copperforge.mog.runtime.MogRuntime;
 import org.junit.jupiter.api.Test;
 
 public class DataSourcesCatalogEnvTest {
@@ -31,14 +30,11 @@ public class DataSourcesCatalogEnvTest {
                 .datasourcesPath(tmp.toString())
                 .environment("dev")
                 .build();
-        MogRuntime.bootstrap(context);
-
-        MogDataSource ds = DataSourcesCatalog.instance().resolveByName("svc");
+        MogDataSource ds = DataSourcesCatalog.instance().resolveByName("svc", context);
         assertNotNull(ds);
         // Ensure the file path ends with b.json (env-specific)
         String s = ds.toString();
         assertTrue(s.contains("b.json"), () -> "Expected env-specific override to b.json, got: " + s);
-        MogRuntime.clear();
     }
 
     private static void resetCatalog() throws Exception {

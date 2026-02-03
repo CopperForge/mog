@@ -17,7 +17,6 @@ import org.copperforge.mog.reporting.element.table.Table;
 import org.copperforge.mog.reporting.ReportDataSource;
 import org.copperforge.mog.data.filter.MogJsonFilter;
 import org.copperforge.mog.runtime.MogContext;
-import org.copperforge.mog.runtime.MogRuntime;
 import org.junit.jupiter.api.Test;
 
 public class DataSourcesCatalogIntegrationTest {
@@ -35,8 +34,7 @@ public class DataSourcesCatalogIntegrationTest {
         String ds = "{\n  \"datasources\": [ { \"name\": \"inline\", \"type\": \"json\", \"file\": \"" + sales.toString().replace("\\", "\\\\") + "\" } ]\n}";
         Files.writeString(catalog, ds, StandardCharsets.UTF_8);
 
-        // Seed Mog singleton and options with --datasources pointing at tmp
-        MogRuntime.bootstrap(MogContext.builder().datasourcesPath(tmp.toString()).build());
+        MogContext context = MogContext.builder().datasourcesPath(tmp.toString()).build();
 
         // Build a table that references the catalog datasource by name
         Table t = new Table();
@@ -56,13 +54,14 @@ public class DataSourcesCatalogIntegrationTest {
 
         XSSFWorkbook wb = new XSSFWorkbook();
         XSSFSheet sheet = wb.createSheet("S");
-        new XLSXTableWriter().workbook(wb).sheet(sheet).write(new XLSXReport(), t);
+        XLSXReport report = new XLSXReport();
+        report.setContext(context);
+        new XLSXTableWriter().workbook(wb).sheet(sheet).write(report, t);
 
         // Assert data wrote: header + 2 data rows
         assertEquals(3, sheet.getLastRowNum() + 1);
         assertEquals("Region", sheet.getRow(0).getCell(0).getStringCellValue());
         assertEquals("Sales", sheet.getTables().get(0).getCTTable().getDisplayName());
-        MogRuntime.clear();
     }
 
     private static void resetCatalog() throws Exception {
