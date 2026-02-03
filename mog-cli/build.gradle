@@ -6,6 +6,14 @@ plugins {
 
 def appVersion = rootProject.ext.applicationVersion
 def mainEntryPoint = 'org.copperforge.mog.Mog'
+def setFileModeIfSupported = { spec, int mode ->
+    def metaProp = spec.metaClass.hasProperty(spec, 'fileMode')
+    if (metaProp) {
+        spec.fileMode = mode
+    } else if (spec.metaClass.respondsTo(spec, 'setFileMode', Integer.TYPE)) {
+        spec.setFileMode(mode)
+    }
+}
 
 dependencies {
     implementation project(':mog-core')
@@ -50,7 +58,7 @@ distributions {
             exclude 'bin/**'
             from('src/main/bin') {
                 into 'bin'
-                fileMode = 0755
+                setFileModeIfSupported(delegate, 0755)
             }
         }
     }
@@ -133,27 +141,27 @@ tasks.register('rpm', Rpm) {
 
     from (fileTree(dir: "src/main/bin", include: "*")) {
         into "bin"
-        fileMode 0777
+        setFileModeIfSupported(delegate, 0777)
     }
 
     from (fileTree(dir: "build/libs", include: "*.jar")) {
         into "lib"
-        fileMode 0664
+        setFileModeIfSupported(delegate, 0664)
     }
 
     from (fileTree(dir: "src/main/resources/reports")) {
         into "etc/reports"
-        fileMode 0664
+        setFileModeIfSupported(delegate, 0664)
     }
 
     from (fileTree(dir: "src/install/resources/etc")) {
         addParentDirs false
         into "/etc"
-        fileMode 0664
+        setFileModeIfSupported(delegate, 0664)
     }
 
     from (fileTree(dir: "src/install/resources", include: "config.mog")) {
         into "etc"
-        fileMode 0664
+        setFileModeIfSupported(delegate, 0664)
     }
 }
