@@ -1,0 +1,7 @@
+﻿<div th:fragment="mog-callout(message)" class="alert alert-info d-flex align-items-center mog-callout" role="alert">
+    <img th:src="@{/img/mog.png}" alt="Mog" class="mog-callout-img me-3">
+    <div>
+        <h5 class="mb-1">Mog says...</h5>
+        <p class="mb-0" th:text="${message}">Keep exploring!</p>
+    </div>
+</div>

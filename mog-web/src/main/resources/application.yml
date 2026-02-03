@@ -1,0 +1,10 @@
+﻿mog:
+  api:
+    base-url: http://localhost:8080
+
+spring:
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8081

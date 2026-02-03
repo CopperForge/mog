@@ -1,0 +1,28 @@
+﻿body {
+    background-color: #f7f9fb;
+}
+
+.navbar .mog-brand {
+    height: 32px;
+    width: 32px;
+}
+
+.mog-callout {
+    background-color: #e0f2ff;
+    border: 1px solid #bde3ff;
+}
+
+.mog-callout-img,
+.empty-state-img {
+    width: 120px;
+    height: auto;
+}
+
+pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: .5rem;
+    max-height: 400px;
+    overflow: auto;
+}

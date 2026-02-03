@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('MOG Console · Runs')"></head>
+<body>
+<div th:replace="fragments/layout :: body">
+    <div th:fragment="content">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header">Create run</div>
+                    <div class="card-body">
+                        <form th:action="@{/ui/runs}" method="post" th:object="${runForm}">
+                            <div class="mb-3">
+                                <label class="form-label">Report</label>
+                                <select class="form-select" th:field="*{reportId}" required>
+                                    <option value="" disabled>Select a report</option>
+                                    <option th:each="id : ${reports}" th:value="${id}" th:text="${id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Datasource</label>
+                                <select class="form-select" th:field="*{datasourceId}" required>
+                                    <option value="" disabled>Select a datasource</option>
+                                    <option th:each="id : ${datasources}" th:value="${id}" th:text="${id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Params JSON (optional)</label>
+                                <textarea class="form-control" rows="6" th:field="*{paramsJson}" placeholder="{ &quot;year&quot;: 2025 }"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Output format</label>
+                                <select class="form-select" th:field="*{outputFormat}">
+                                    <option value="XLSX">XLSX</option>
+                                    <option value="CSV" disabled>CSV (coming soon)</option>
+                                    <option value="JSON" disabled>JSON (coming soon)</option>
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">Run report</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7" th:if="${selectedRun}">
+                <div class="card h-100">
+                    <div class="card-header">Run details</div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Run ID</dt>
+                            <dd class="col-sm-8" th:text="${selectedRun.runId}"></dd>
+                            <dt class="col-sm-4">Status</dt>
+                            <dd class="col-sm-8"><span class="badge" th:text="${selectedRun.status}" th:classappend="${selectedRun.status}=='COMPLETED' ? ' bg-success' : (${selectedRun.status}=='FAILED' ? ' bg-danger' : ' bg-secondary')"></span></dd>
+                            <dt class="col-sm-4">Report</dt>
+                            <dd class="col-sm-8" th:text="${selectedRun.reportId}"></dd>
+                            <dt class="col-sm-4">Datasource</dt>
+                            <dd class="col-sm-8" th:text="${selectedRun.datasourceId}"></dd>
+                            <dt class="col-sm-4">Started</dt>
+                            <dd class="col-sm-8" th:text="${selectedRun.startedAt}"></dd>
+                            <dt class="col-sm-4">Finished</dt>
+                            <dd class="col-sm-8" th:text="${selectedRun.completedAt}"></dd>
+                            <dt class="col-sm-4">Artifact</dt>
+                            <dd class="col-sm-8">
+                                <a th:if="${selectedRun.artifact != null and selectedRun.artifact.fileName != null}"
+                                   th:href="@{'/ui/api/runs/' + ${selectedRun.runId} + '/artifact'}"
+                                   class="btn btn-sm btn-outline-secondary">Download</a>
+                                <span th:unless="${selectedRun.artifact != null and selectedRun.artifact.fileName != null}">Not available yet</span>
+                            </dd>
+                        </dl>
+                        <div th:if="${selectedRun.message}" class="alert alert-warning mt-3" th:text="${selectedRun.message}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">Run history</div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(runHistory)}" class="text-center text-muted">
+                    <img th:src="@{/img/mog.png}" alt="Mog" class="empty-state-img mb-3">
+                    <p>No runs recorded yet.</p>
+                </div>
+                <div th:unless="${#lists.isEmpty(runHistory)}" class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Run ID</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Finished</th>
+                                <th>Artifact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="run : ${runHistory}">
+                                <td><a th:href="@{'/ui/runs/' + ${run.runId}}" th:text="${run.runId}">id</a></td>
+                                <td>
+                                    <span class="badge" th:text="${run.status}" th:classappend="${run.status}=='COMPLETED' ? ' bg-success' : (${run.status}=='FAILED' ? ' bg-danger' : ' bg-secondary')"></span>
+                                </td>
+                                <td th:text="${run.startedAt}">-</td>
+                                <td th:text="${run.finishedAt}">-</td>
+                                <td>
+                                    <a th:if="${run.artifactName}" th:href="@{'/ui/api/runs/' + ${run.runId} + '/artifact'}" class="btn btn-sm btn-outline-secondary">Download</a>
+                                    <span th:unless="${run.artifactName}">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('MOG Console · Dashboard')"></head>
+<body>
+<div th:replace="fragments/layout :: body">
+    <div th:fragment="content">
+        <div th:replace="fragments/mog-callout :: mog-callout(message=${callout})"></div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Datasources</h6>
+                        <p class="display-6" th:text="${datasourceCount}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Reports</h6>
+                        <p class="display-6" th:text="${reportCount}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">Recent Runs</h6>
+                        <p class="display-6" th:text="${runCount}">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Latest runs</span>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/ui/runs}">View all</a>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(latestRuns)}" class="text-center text-muted">
+                    <img th:src="@{/img/mog.png}" alt="Mog" class="empty-state-img mb-3">
+                    <p class="lead">No runs yet. Kick one off from the Runs page!</p>
+                </div>
+                <div th:unless="${#lists.isEmpty(latestRuns)}" class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Run ID</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Finished</th>
+                                <th>Artifact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="run : ${latestRuns}">
+                                <td><a th:href="@{'/ui/runs/' + ${run.runId}}" th:text="${run.runId}">id</a></td>
+                                <td>
+                                    <span class="badge"
+                                          th:text="${run.status}"
+                                          th:classappend="${run.status}=='COMPLETED' ? ' bg-success' : (${run.status}=='FAILED' ? ' bg-danger' : ' bg-secondary')"></span>
+                                </td>
+                                <td th:text="${run.startedAt}">-</td>
+                                <td th:text="${run.finishedAt}">-</td>
+                                <td>
+                                    <a th:if="${run.artifactName}"
+                                       th:href="@{'/ui/api/runs/' + ${run.runId} + '/artifact'}"
+                                       class="btn btn-sm btn-outline-secondary">Download</a>
+                                    <span th:unless="${run.artifactName}">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

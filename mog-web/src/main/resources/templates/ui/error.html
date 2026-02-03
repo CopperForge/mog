@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('MOG Console · Error')"></head>
+<body>
+<div th:replace="fragments/layout :: body">
+    <div th:fragment="content">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading" th:text="${errorTitle}">Something went wrong</h4>
+            <p th:text="${errorMessage}">Please try again later.</p>
+            <p>
+                <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails">
+                    Show details
+                </button>
+            </p>
+            <div id="errorDetails" class="collapse">
+                <pre class="mb-0" th:text="${errorDetails}"></pre>
+            </div>
+        </div>
+        <a class="btn btn-primary" href="javascript:history.back()">Go back</a>
+    </div>
+</div>
+</body>
+</html>

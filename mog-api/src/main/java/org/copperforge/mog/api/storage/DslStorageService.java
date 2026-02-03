@@ -1,11 +1,17 @@
 package org.copperforge.mog.api.storage;
 
 import java.io.IOException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.copperforge.mog.api.config.MogApiProperties;
 import org.springframework.stereotype.Service;
@@ -51,6 +57,37 @@ public class DslStorageService {
 
     public Path requireReport(String id) throws IOException {
         return requireDslFile(reportsDir, id);
+    }
+
+    public List<String> listDatasourceIds() throws IOException {
+        return listIds(datasourcesDir);
+    }
+
+    public List<String> listReportIds() throws IOException {
+        return listIds(reportsDir);
+    }
+
+    public List<String> listRunIds() throws IOException {
+        if (!Files.exists(runsDir)) {
+            return List.of();
+        }
+        try (Stream<Path> stream = Files.list(runsDir)) {
+            return stream
+                    .filter(Files::isDirectory)
+                    .map(path -> path.getFileName().toString())
+                    .sorted(Comparator.reverseOrder())
+                    .toList();
+        }
+    }
+
+    public JsonNode loadDatasource(String id) throws IOException {
+        Path file = requireDatasource(id);
+        return objectMapper.readTree(file.toFile());
+    }
+
+    public JsonNode loadReport(String id) throws IOException {
+        Path file = requireReport(id);
+        return objectMapper.readTree(file.toFile());
     }
 
     public Path ensureRunDirectory(String runId) throws IOException {
@@ -103,6 +140,22 @@ public class DslStorageService {
             throw new NoSuchFileException("No DSL found for id '" + safeId + "'");
         }
         return file;
+    }
+
+    private List<String> listIds(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return Collections.emptyList();
+        }
+        try (Stream<Path> stream = Files.list(dir)) {
+            return stream
+                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".json"))
+                    .map(path -> {
+                        String filename = path.getFileName().toString();
+                        return filename.substring(0, filename.length() - ".json".length());
+                    })
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
     }
 
     private String sanitizeId(String id) {

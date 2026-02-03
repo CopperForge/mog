@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('MOG Console · Swagger')"></head>
+<body>
+<div th:replace="fragments/layout :: body">
+    <div th:fragment="content">
+        <div class="card">
+            <div class="card-header">Swagger / OpenAPI</div>
+            <div class="card-body">
+                <p>The MOG API publishes interactive documentation via Swagger UI. Use the link below to explore the REST endpoints directly.</p>
+                <a class="btn btn-primary" th:href="${swaggerUrl}" target="_blank" rel="noopener">Open Swagger UI</a>
+                <p class="mt-3 text-muted small">Ensure <code>mog-api</code> is running locally (default <code>http://localhost:8080</code>).</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

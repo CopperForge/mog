@@ -45,6 +45,34 @@ The generated workbook will be written to the working directory. Open it in Exce
 
 ---
 
+## REST API + Web Console
+
+Spin up the JSON API (`mog-api`) alongside the new Bootstrap-powered “MOG Console” UI (`mog-web`):
+
+```bash
+# terminal 1
+./gradlew :mog-api:bootRun
+
+# terminal 2
+./gradlew :mog-web:bootRun
+```
+
+- API base URL: `http://localhost:8080`
+  - Swagger UI: `http://localhost:8080/swagger-ui.html`
+  - Key endpoints now include:
+    - `GET /api/datasources`, `GET /api/datasources/{id}`
+    - `GET /api/reports`, `GET /api/reports/{id}`
+    - `GET /api/runs?limit=50`, `GET /api/runs/{id}`, `POST /api/runs`
+- Web console: `http://localhost:8081/ui`
+  - `/ui` dashboard with latest runs, status cards, and “Mog says…” callouts
+  - `/ui/datasources` & `/ui/reports` for listing and uploading DSL JSON
+  - `/ui/runs` to launch runs, view history, and download artifacts
+  - `/ui/swagger` quick link to the API docs
+
+All UI pages proxy through the server (no browser-direct calls), so you can use the console without extra CORS configuration.
+
+---
+
 ## One‑liner Sample Generation
 
 You can generate the sample report in a single Gradle task that assembles the app, seeds `${MOG_HOME}/etc`, and runs the generator:

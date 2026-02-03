@@ -2,6 +2,7 @@ package org.copperforge.mog.api.web;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 import org.copperforge.mog.api.run.RunMetadata;
 import org.copperforge.mog.api.run.RunRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,16 +40,42 @@ public class ApiController {
         this.runService = runService;
     }
 
+    @GetMapping("/datasources")
+    public List<String> listDatasources() throws IOException {
+        return storageService.listDatasourceIds();
+    }
+
     @PostMapping("/datasources")
     public SaveDslResponse createDatasource(@RequestBody JsonNode body) throws IOException {
         SaveResult result = storageService.saveDatasource(requireBody(body));
         return new SaveDslResponse(result.id(), true);
     }
 
+    @GetMapping("/datasources/{id}")
+    public JsonNode getDatasource(@PathVariable String id) throws IOException {
+        return storageService.loadDatasource(id);
+    }
+
+    @GetMapping("/reports")
+    public List<String> listReports() throws IOException {
+        return storageService.listReportIds();
+    }
+
     @PostMapping("/reports")
     public SaveDslResponse createReport(@RequestBody JsonNode body) throws IOException {
         SaveResult result = storageService.saveReport(requireBody(body));
         return new SaveDslResponse(result.id(), true);
+    }
+
+    @GetMapping("/reports/{id}")
+    public JsonNode getReport(@PathVariable String id) throws IOException {
+        return storageService.loadReport(id);
+    }
+
+    @GetMapping("/runs")
+    public List<RunService.RunSummary> listRuns(@RequestParam(name = "limit", defaultValue = "50") int limit)
+            throws IOException {
+        return runService.listRuns(limit);
     }
 
     @PostMapping("/runs")

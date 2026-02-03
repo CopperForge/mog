@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -96,6 +99,26 @@ public class RunService {
         return new RunArtifact(artifactPath, artifactMetadata);
     }
 
+    public List<RunSummary> listRuns(int limit) throws IOException {
+        int effectiveLimit = limit > 0 ? Math.min(limit, 500) : 50;
+        List<RunSummary> summaries = new ArrayList<>();
+        for (String runId : storage.listRunIds()) {
+            try {
+                RunMetadata metadata = loadMetadata(runId);
+                summaries.add(RunSummary.from(metadata));
+            } catch (NoSuchFileException ex) {
+                // run directory without metadata; skip
+            }
+        }
+        Comparator<RunSummary> comparator = Comparator.comparing(RunSummary::startedAt,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+        summaries.sort(comparator.reversed());
+        if (summaries.size() > effectiveLimit) {
+            return List.copyOf(summaries.subList(0, effectiveLimit));
+        }
+        return List.copyOf(summaries);
+    }
+
     private void writeMetadata(Path runDir, RunMetadata metadata) throws IOException {
         Path metaFile = runDir.resolve("meta.json");
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(metaFile.toFile(), metadata);
@@ -119,4 +142,13 @@ public class RunService {
     }
 
     public record RunArtifact(Path path, RunMetadata.ArtifactMetadata metadata) { }
+
+    public record RunSummary(String runId, RunStatus status, java.time.Instant startedAt,
+            java.time.Instant finishedAt, String artifactName) {
+        static RunSummary from(RunMetadata metadata) {
+            String artifact = metadata.getArtifact() != null ? metadata.getArtifact().getFileName() : null;
+            return new RunSummary(metadata.getRunId(), metadata.getStatus(), metadata.getStartedAt(),
+                    metadata.getCompletedAt(), artifact);
+        }
+    }
 }
