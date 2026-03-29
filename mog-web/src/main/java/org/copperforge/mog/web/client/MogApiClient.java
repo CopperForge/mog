@@ -31,10 +31,12 @@ public class MogApiClient {
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
+    private final String baseUrl;
 
     public MogApiClient(RestClient.Builder builder, MogApiClientProperties properties, ObjectMapper objectMapper) {
+        this.baseUrl = properties.getBaseUrl();
         this.restClient = builder
-                .baseUrl(properties.getBaseUrl())
+                .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
         this.objectMapper = objectMapper;
@@ -149,9 +151,13 @@ public class MogApiClient {
 
     private MogApiClientException translate(String action, RestClientException ex) {
         if (ex instanceof RestClientResponseException response) {
-            return new MogApiClientException("Failed to " + action, response, response.getStatusCode(),
+            return new MogApiClientException("Failed to " + action + " via " + baseUrl, response, response.getStatusCode(),
                     response.getResponseBodyAsString());
         }
-        return new MogApiClientException("Failed to " + action, ex, HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        return new MogApiClientException(
+                "Failed to " + action + " via " + baseUrl + ". Ensure mog-api is running and reachable.",
+                ex,
+                HttpStatus.SERVICE_UNAVAILABLE,
+                ex.getMessage());
     }
 }

@@ -21,6 +21,16 @@ public class DashboardController {
         this.properties = properties;
     }
 
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/ui";
+    }
+
+    @GetMapping("/favicon.ico")
+    public String favicon() {
+        return "redirect:/img/mog.png";
+    }
+
     @GetMapping({ "/ui", "/ui/" })
     public String dashboard(Model model) {
         List<String> datasources = client.listDatasources();

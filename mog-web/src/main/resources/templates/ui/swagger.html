@@ -1,8 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/layout :: head('MOG Console · Swagger')"></head>
+<head th:replace="~{fragments/layout :: head('MOG Console · Swagger')}"></head>
 <body>
-<div th:replace="fragments/layout :: body">
+<div th:replace="~{fragments/layout :: body}">
     <div th:fragment="content">
         <div class="card">
             <div class="card-header">Swagger / OpenAPI</div>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/layout :: head(${resourceType.pageTitle})"></head>
+<head th:replace="~{fragments/layout :: head(${resourceType.pageTitle})}"></head>
 <body>
-<div th:replace="fragments/layout :: body">
+<div th:replace="~{fragments/layout :: body}">
     <div th:fragment="content" class="row g-4">
         <div class="col-lg-4">
             <div class="card h-100">

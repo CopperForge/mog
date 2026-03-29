@@ -1,8 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/layout :: head('MOG Console · Error')"></head>
+<head th:replace="~{fragments/layout :: head('MOG Console · Error')}"></head>
 <body>
-<div th:replace="fragments/layout :: body">
+<div th:replace="~{fragments/layout :: body}">
     <div th:fragment="content">
         <div class="alert alert-danger" role="alert">
             <h4 class="alert-heading" th:text="${errorTitle}">Something went wrong</h4>

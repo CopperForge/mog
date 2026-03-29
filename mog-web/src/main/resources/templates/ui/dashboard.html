@@ -1,10 +1,10 @@
 ﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/layout :: head('MOG Console · Dashboard')"></head>
+<head th:replace="~{fragments/layout :: head('MOG Console · Dashboard')}"></head>
 <body>
-<div th:replace="fragments/layout :: body">
+<div th:replace="~{fragments/layout :: body}">
     <div th:fragment="content">
-        <div th:replace="fragments/mog-callout :: mog-callout(message=${callout})"></div>
+        <div th:replace="~{fragments/mog-callout :: mog-callout(message=${callout})}"></div>
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="card text-center h-100">

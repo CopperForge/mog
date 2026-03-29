@@ -3,6 +3,7 @@ package org.copperforge.mog.web.controller;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -29,6 +30,20 @@ class DashboardControllerTest {
 
     @MockBean
     private MogApiClientProperties properties;
+
+    @Test
+    void root_redirectsToUi() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ui"));
+    }
+
+    @Test
+    void favicon_redirectsToBrandImage() throws Exception {
+        mockMvc.perform(get("/favicon.ico"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/img/mog.png"));
+    }
 
     @Test
     void dashboard_populatesCountsAndRuns() throws Exception {
