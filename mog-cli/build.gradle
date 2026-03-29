@@ -32,6 +32,7 @@ dependencies {
 application {
     applicationName = 'mog'
     mainClass = mainEntryPoint
+    applicationDefaultJvmArgs = ["-Dmog.version=${project.version}"]
 }
 
 jar {
@@ -43,7 +44,7 @@ jar {
         attributes(
             'Main-Class': mainEntryPoint,
             'Implementation-Title': 'MOG - It is what you make it',
-            'Implementation-Version': ""
+            'Implementation-Version': project.version
         )
     }
 
@@ -79,12 +80,10 @@ tasks.register('sampleReport', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass.set(mainEntryPoint)
     def envName = (project.findProperty('env') ?: System.getenv('MOG_ENV'))
-    args 'report', 'generate', '--report=chart.sample.report.mog'
-    if (envName) {
-        args "--env="
-    }
     def mogHomeDir = rootProject.layout.projectDirectory.asFile
+    workingDir = mogHomeDir
     environment 'MOG_HOME', mogHomeDir.absolutePath
+    systemProperty 'mog.version', project.version
     if (envName) {
         environment 'MOG_ENV', envName
     }
@@ -107,11 +106,11 @@ tasks.register('sampleReport', JavaExec) {
             copy { from dsSrc; into etcDir }
         }
         if (envName) {
-            def envTemplate = file("src/install/resources/etc/datasources..mog")
+            def envTemplate = file("src/install/resources/etc/datasources.${envName}.mog")
             if (envTemplate.exists()) {
                 copy { from envTemplate; into etcDir }
             } else {
-                logger.lifecycle("[sampleReport] No env-specific catalog template found at . Proceeding without env seed.")
+                logger.lifecycle("[sampleReport] No env-specific catalog template found at ${envTemplate}. Proceeding without env seed.")
             }
         }
         def salesSrc = file('src/install/resources/etc/sales.json')
@@ -119,8 +118,17 @@ tasks.register('sampleReport', JavaExec) {
         if (!salesDst.exists() && salesSrc.exists()) {
             copy { from salesSrc; into etcDir }
         }
-        jvmArgs = []
-        args "--datasources="
+        args = [
+            "--datasources=${etcDir.absolutePath}"
+        ]
+        if (envName) {
+            args += "--env=${envName}"
+        }
+        args += [
+            'report',
+            'generate',
+            '--report=chart.sample.report.mog'
+        ]
     }
 }
 

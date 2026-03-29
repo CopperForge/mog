@@ -34,9 +34,10 @@ Run a sample report (from project root):
 # set MOG_HOME to the repo root so the default config path resolves
 export MOG_HOME="$PWD"            # PowerShell: $env:MOG_HOME = (Get-Location).Path
 
-# copy the sample report into ${MOG_HOME}/etc/reports
+# copy the sample report and sample data into ${MOG_HOME}/etc
 mkdir -p etc/reports               # PowerShell: New-Item -ItemType Directory -Path .\etc\reports
 cp src/main/examples/reports/chart.sample.report.mog etc/reports/
+cp mog-cli/src/install/resources/etc/sales.json etc/
 
 # generate the XLSX
 ./gradlew run --args="report generate --report=chart.sample.report.mog"
@@ -139,7 +140,7 @@ Breaking change: Coordinates were switched to 1‑based in the Unreleased versio
   "type": "xlsx",
   "filename": "chart-sample-${timestamp}.xlsx",
   "dataSources": [
-    { "name": "inline", "type": "json", "file": "src/main/examples/reports/sales.json" }
+    { "name": "inline", "type": "json", "file": "${MOG_HOME}/etc/sales.json" }
   ],
   "sheets": [
     {
@@ -176,8 +177,8 @@ Breaking change: Coordinates were switched to 1‑based in the Unreleased versio
 }
 ```
 
-Companion sample data:
-`src/main/examples/reports/sales.json`
+Companion sample data is seeded to `${MOG_HOME}/etc/sales.json` by `sampleReport` and is also available at
+`mog-cli/src/install/resources/etc/sales.json`.
 ```json
 { "data": [
   { "region": "North", "revenue": 100, "units": 20 },

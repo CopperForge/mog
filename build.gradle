@@ -19,14 +19,14 @@ class ApplicationVersion {
    }
 
    String getVersion() {
-      def version = ".."
-      return ""
+      return "${major}.${minor}.${patch}"
    }
 
    String getReleaseVersion() {
       def version = this.getVersion()
-      if (this.getRelease() != '') version += "." + this.getRelease()
-      return ""
+      def release = this.getRelease()
+      if (release != '') version += "." + release
+      return version
    }
 }
 

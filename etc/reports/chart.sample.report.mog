@@ -3,7 +3,7 @@
   "type": "xlsx",
   "filename": "chart-sample-${timestamp}.xlsx",
   "dataSources": [
-    { "name": "inline", "type": "json", "file": "src/main/examples/reports/sales.json" }
+    { "name": "inline", "type": "json", "file": "${MOG_HOME}/etc/sales.json" }
   ],
   "sheets": [
     {

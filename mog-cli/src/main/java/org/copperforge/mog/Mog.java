@@ -58,7 +58,11 @@ public class Mog implements Runnable {
     }
 
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        String version = getClass().getPackage().getImplementationVersion();
+        if (version == null || version.isBlank()) {
+            version = System.getProperty("mog.version");
+        }
+        return version != null && !version.isBlank() ? version : "dev";
     }
 
     public static void main(String[] args) {

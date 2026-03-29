@@ -62,6 +62,7 @@
 
 **Verification**
 - Expect an XLSX like `chart-sample-<timestamp>.xlsx` in the working directory.
+- The seeded sample report reads `${MOG_HOME}/etc/sales.json`, so keep the seeded sample data in place when running it manually.
 - If Excel reports “Repaired Records”, update to the latest build; writers validate table ranges, chart bounds, and sanitize display names.
 
 **Uninstall**
