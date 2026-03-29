@@ -8,6 +8,7 @@ import org.copperforge.mog.contract.run.RunResponse;
 import org.copperforge.mog.contract.web.SaveDslResponse;
 import org.copperforge.mog.web.config.MogApiClientProperties;
 import org.copperforge.mog.web.model.ArtifactDownload;
+import org.copperforge.mog.web.model.DslResourceType;
 import org.copperforge.mog.web.model.RunMetadata;
 import org.copperforge.mog.web.model.RunSummary;
 import org.copperforge.mog.web.support.MogApiClientException;
@@ -40,27 +41,39 @@ public class MogApiClient {
     }
 
     public List<String> listDatasources() {
-        return getList("/api/datasources");
+        return listDslResources(DslResourceType.DATASOURCE);
     }
 
     public List<String> listReports() {
-        return getList("/api/reports");
+        return listDslResources(DslResourceType.REPORT);
     }
 
     public JsonNode getDatasource(String id) {
-        return getJson("/api/datasources/{id}", Map.of("id", id));
+        return getDslResource(DslResourceType.DATASOURCE, id);
     }
 
     public JsonNode getReport(String id) {
-        return getJson("/api/reports/{id}", Map.of("id", id));
+        return getDslResource(DslResourceType.REPORT, id);
     }
 
     public SaveDslResponse saveDatasource(JsonNode json) {
-        return post("/api/datasources", json, SaveDslResponse.class);
+        return saveDslResource(DslResourceType.DATASOURCE, json);
     }
 
     public SaveDslResponse saveReport(JsonNode json) {
-        return post("/api/reports", json, SaveDslResponse.class);
+        return saveDslResource(DslResourceType.REPORT, json);
+    }
+
+    public List<String> listDslResources(DslResourceType type) {
+        return getList("/api/" + type.getPathSegment());
+    }
+
+    public JsonNode getDslResource(DslResourceType type, String id) {
+        return getJson("/api/" + type.getPathSegment() + "/{id}", Map.of("id", id));
+    }
+
+    public SaveDslResponse saveDslResource(DslResourceType type, JsonNode json) {
+        return post("/api/" + type.getPathSegment(), json, SaveDslResponse.class);
     }
 
     public RunResponse runReport(RunRequest payload) {
