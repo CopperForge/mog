@@ -20,11 +20,6 @@ public abstract class AbstractReportWriter implements ReportWriter {
     }
 
     @Override
-    public void register() {
-        ReportWriterService.instance().register(type, this);
-    }
-
-    @Override
     public void build(Report report) throws MogException {
         buildReport(report);
     }
@@ -49,6 +44,10 @@ public abstract class AbstractReportWriter implements ReportWriter {
 
     public Map<String, ElementWriter<?>> elementWriters() {
         return elementWriters;
+    }
+
+    protected String type() {
+        return type;
     }
 
 }

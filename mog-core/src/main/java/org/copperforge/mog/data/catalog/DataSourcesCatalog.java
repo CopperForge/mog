@@ -40,7 +40,7 @@ public class DataSourcesCatalog {
     }
 
     public MogDataSource resolveByName(String name) {
-        return resolveByName(name, MogRuntime.context().orElse(null));
+        return resolveByName(name, null);
     }
 
     public MogDataSource resolveByName(String name, MogContext context) {

@@ -10,11 +10,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.MogServiceManager;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogJsonFilter;
+import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.var.MogVariableService;
-import org.copperforge.mog.var.VariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,15 +25,14 @@ public class MogJsonDataSource extends MogFileDataSource {
     private final Logger log = LoggerFactory.getLogger(MogJsonDataSource.class);
 
     @Override
-    public List<? extends MogFetchable> fetch(MogDataFilter filter) throws MogException {
+    public List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.debug("filter = " + filter);
         return fetch(json((MogJsonFilter) filter), (MogJsonFilter) filter);
     }
 
     protected String json(MogJsonFilter filter) throws MogException {
         try {
-            VariableService env = MogServiceManager.instance().get(MogVariableService.class);
-            String pathStr = env.envsubst(getFile());
+            String pathStr = new MogVariableService().envsubst(getFile());
             Path path = Path.of(pathStr);
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {

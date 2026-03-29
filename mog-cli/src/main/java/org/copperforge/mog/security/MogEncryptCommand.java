@@ -30,7 +30,7 @@ public class MogEncryptCommand implements Runnable {
                 return;
             }
 
-            String encrypted = MogRuntime.encrypt(options.getValue(), options.getPassword());
+            String encrypted = MogRuntime.encrypt(Mog.mog().context(), options.getValue(), options.getPassword());
             System.out.println(encrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);

@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.MogServiceManager;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
+import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.security.MogSecurityService;
 import org.copperforge.mog.var.MogVariableService;
-import org.copperforge.mog.var.VariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,19 +110,19 @@ public class MogJdbcDataSource extends MogDataSource {
     }
 
     @Override
-    public List<MogFetchable> fetch(MogDataFilter filter) throws MogException {
+    public List<MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.trace("Fetching using " + filter);
-        MogSecurityService securityService = (MogSecurityService) MogServiceManager.instance()
-                .get(MogSecurityService.class);
         MogQueryFilter queryFilter = (MogQueryFilter) filter;
 
         List<MogFetchable> data = new ArrayList<>();
-        MogServiceManager manager = MogServiceManager.instance();
-        VariableService environmentService = (VariableService) manager.get(MogVariableService.class);
         try {
-            String url = environmentService.envsubst(getUrl()); // url
+            String url = new MogVariableService().envsubst(getUrl()); // url
             String username = getUser(); // credentials
-            String password = (getPassword() != null) && (!getPassword().isBlank()) ? securityService.decryptor().decrypt(getPassword()) : "";
+            String password = "";
+            if (getPassword() != null && !getPassword().isBlank()) {
+                MogSecurityService securityService = new MogSecurityService(context, null);
+                password = securityService.decryptor().decrypt(getPassword());
+            }
             String query = queryFilter.getQuery(); // query to be run
             if (getJdbcClass() != null && !getJdbcClass().isEmpty())
                 Class.forName(getJdbcClass()); // Driver name

@@ -1,14 +1,12 @@
 package org.copperforge.mog.io;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.MogServiceManager;
 import org.copperforge.mog.var.MogVariableService;
-import org.copperforge.mog.var.VariableService;
 
 public class MogFileNameBuilder {
 
     public static String build(String filename) throws MogException {
-        VariableService varService = (VariableService) MogServiceManager.instance().get(MogVariableService.class);
+        MogVariableService varService = new MogVariableService();
         filename = varService.envsubst(filename);
         filename = varService.varsubst(filename);
         return filename;

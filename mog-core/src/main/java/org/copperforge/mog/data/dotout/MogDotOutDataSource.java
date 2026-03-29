@@ -11,6 +11,7 @@ import org.copperforge.mog.data.MogFetchable;
 import org.copperforge.mog.data.MogFileDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
+import org.copperforge.mog.runtime.MogContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class MogDotOutDataSource extends MogFileDataSource {
     private Logger log = LoggerFactory.getLogger(MogDotOutDataSource.class);
 
     @Override
-    public List<? extends MogFetchable> fetch(MogDataFilter filter) throws MogException {
+    public List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         List<MogDotOutFetchable> fetchables = new ArrayList<>();
 
         try {

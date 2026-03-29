@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
-import org.copperforge.mog.reporting.xlsx.XLSXReportWriter;
 import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.var.MogVariableService;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ public class ReportService {
     private final Logger log = LoggerFactory.getLogger(ReportService.class);
 
     private ReportService() {
-        new XLSXReportWriter().register();
     }
 
     public static final ReportService instance() {

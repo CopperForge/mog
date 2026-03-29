@@ -48,7 +48,7 @@ public class XLSXTableWriter extends XLSXElementWriter<Table> {
         }
 
         List<? extends MogFetchable> data = (mogDataSource != null)
-                ? mogDataSource.fetch(tableElement.getDataSource().getFilter())
+                ? mogDataSource.fetch(tableElement.getDataSource().getFilter(), report.getContext())
                 : new ArrayList<>();
 
         List<Column> columns = tableElement.getColumns();

@@ -30,7 +30,7 @@ public class MogDecryptCommand implements Runnable {
                 return;
             }
 
-            String decrypted = MogRuntime.decrypt(options.getValue(), options.getPassword());
+            String decrypted = MogRuntime.decrypt(Mog.mog().context(), options.getValue(), options.getPassword());
             System.out.println(decrypted);
         } catch (MogException e) {
             throw new RuntimeException(e);

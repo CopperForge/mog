@@ -42,10 +42,10 @@ public class ReportingCommand {
 
                 log.trace("reportOptions = " + options);
 
-                Report definition = MogRuntime.loadReportDefinition(options.getReport());
+                Report definition = MogRuntime.loadReportDefinition(options.getReport(), Mog.mog().context());
                 log.info("Generating report " + definition.getName() + " ...");
                 log.trace("report def = " + definition);
-                String filename = MogRuntime.generateReport(definition);
+                String filename = MogRuntime.generateReport(definition, Mog.mog().context());
                 log.info("Report can be found at '" + filename + "' ...");
             } catch (MogException e) {
                 throw new RuntimeException(e);

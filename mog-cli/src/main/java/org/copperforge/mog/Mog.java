@@ -31,6 +31,7 @@ public class Mog implements Runnable {
     private MogConfig config;
     private static MogOptions options;
     private Mogf mogf;
+    private MogContext context;
 
     // Accept root-level options like --config via Picocli without rejecting them
     @Mixin
@@ -52,6 +53,10 @@ public class Mog implements Runnable {
         return mogf;
     }
 
+    public MogContext context() {
+        return context;
+    }
+
     public String getVersion() {
         return getClass().getPackage().getImplementationVersion();
     }
@@ -62,7 +67,7 @@ public class Mog implements Runnable {
             options = MogOptions.parse(args);
             log.debug("options = " + options);
             mog.initialize(options);
-            MogRuntime.bootstrap(buildContext(options, mog.config(), mog.mogf()));
+            mog.context = buildContext(options, mog.config(), mog.mogf());
 
             // hand off to picocli subcommands
             int exitCode = new CommandLine(new Mog()).execute(args);

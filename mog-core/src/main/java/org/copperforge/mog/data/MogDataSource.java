@@ -5,6 +5,7 @@ import java.util.List;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.dotout.MogDotOutDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
+import org.copperforge.mog.runtime.MogContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -41,7 +42,11 @@ public abstract class MogDataSource {
         this.type = type;
     }
 
-    public abstract List<? extends MogFetchable> fetch(MogDataFilter filter) throws MogException;
+    public List<? extends MogFetchable> fetch(MogDataFilter filter) throws MogException {
+        return fetch(filter, null);
+    }
+
+    public abstract List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException;
 
     @Override
     public String toString() {

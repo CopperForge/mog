@@ -1,8 +1,6 @@
 package org.copperforge.mog.runtime;
 
 import java.io.File;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.config.MogConfig;
@@ -17,21 +15,7 @@ import org.copperforge.mog.security.MogSecurityService;
 import org.copperforge.mog.var.MogVariableService;
 
 public final class MogRuntime {
-    private static final AtomicReference<MogContext> CONTEXT = new AtomicReference<>();
-
     private MogRuntime() {
-    }
-
-    public static void bootstrap(MogContext context) {
-        CONTEXT.set(context);
-    }
-
-    public static Optional<MogContext> context() {
-        return Optional.ofNullable(CONTEXT.get());
-    }
-
-    public static void clear() {
-        CONTEXT.set(null);
     }
 
     public static MogConfig loadConfig(String rawConfigPath) throws MogException {
@@ -51,21 +35,12 @@ public final class MogRuntime {
         return new MogReader<Mogf>(Mogf.class).read(mogFile);
     }
 
-    public static Report loadReportDefinition(String reference) throws MogException {
-        return loadReportDefinition(reference, ensureContext());
-    }
-
     public static Report loadReportDefinition(String reference, MogContext context) throws MogException {
-        MogContext ctx = context != null ? context : ensureContext();
-        Report report = ReportService.instance().parse(reference, ctx);
+        Report report = ReportService.instance().parse(reference, context);
         if (report != null) {
-            report.setContext(ctx);
+            report.setContext(context);
         }
         return report;
-    }
-
-    public static String generateReport(Report definition) throws MogException {
-        return generateReport(definition, ensureContext());
     }
 
     public static String generateReport(Report definition, MogContext context) throws MogException {
@@ -73,33 +48,22 @@ public final class MogRuntime {
             definition.setContext(context);
         }
         ReportWriter writer = ReportWriterService.instance().builder(definition.getType());
+        if (writer == null) {
+            throw new MogException("No report writer registered for type '" + definition.getType() + "'");
+        }
         writer.build(definition);
         String filename = MogFileNameBuilder.build(definition.getFilename());
         writer.save(filename);
         return filename;
     }
 
-    public static String encrypt(String value, String passwordOverride) throws MogException {
-        return encrypt(ensureContext(), value, passwordOverride);
-    }
-
-    public static String decrypt(String value, String passwordOverride) throws MogException {
-        return decrypt(ensureContext(), value, passwordOverride);
-    }
-
     public static String encrypt(MogContext context, String value, String passwordOverride) throws MogException {
-        MogContext ctx = context != null ? context : ensureContext();
-        MogSecurityService securityService = new MogSecurityService(ctx, passwordOverride);
+        MogSecurityService securityService = new MogSecurityService(context, passwordOverride);
         return securityService.encryptor().encrypt(value);
     }
 
     public static String decrypt(MogContext context, String value, String passwordOverride) throws MogException {
-        MogContext ctx = context != null ? context : ensureContext();
-        MogSecurityService securityService = new MogSecurityService(ctx, passwordOverride);
+        MogSecurityService securityService = new MogSecurityService(context, passwordOverride);
         return securityService.decryptor().decrypt(value);
-    }
-
-    private static MogContext ensureContext() {
-        return context().orElseThrow(() -> new IllegalStateException("MogContext has not been initialized"));
     }
 }
