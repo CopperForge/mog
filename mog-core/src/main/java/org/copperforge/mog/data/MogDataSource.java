@@ -5,6 +5,8 @@ import java.util.List;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.dotout.MogDotOutDataSource;
 import org.copperforge.mog.data.filter.MogDataFilter;
+import org.copperforge.mog.data.filter.MogJsonFilter;
+import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.copperforge.mog.runtime.MogContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -47,6 +49,38 @@ public abstract class MogDataSource {
     }
 
     public abstract List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException;
+
+    protected final <T extends MogDataFilter> T requireFilter(MogDataFilter filter, Class<T> expectedClass,
+            String expectedType) throws MogException {
+        if (expectedClass.isInstance(filter)) {
+            return expectedClass.cast(filter);
+        }
+        throw incompatibleFilter(filter, expectedType);
+    }
+
+    protected final MogException incompatibleFilter(MogDataFilter filter, String expectedType) {
+        String actualType = resolveFilterType(filter);
+        String datasourceName = getName() != null && !getName().isBlank() ? getName() : "<unnamed>";
+        String datasourceType = getType() != null && !getType().isBlank() ? getType() : getClass().getSimpleName();
+        return new MogException("Datasource '" + datasourceName + "' of type '" + datasourceType
+                + "' requires filter type '" + expectedType + "' but received '" + actualType + "'");
+    }
+
+    private String resolveFilterType(MogDataFilter filter) {
+        if (filter == null) {
+            return "none";
+        }
+        if (filter.getType() != null && !filter.getType().isBlank()) {
+            return filter.getType();
+        }
+        if (filter instanceof MogQueryFilter) {
+            return "query";
+        }
+        if (filter instanceof MogJsonFilter) {
+            return "json";
+        }
+        return filter.getClass().getSimpleName();
+    }
 
     @Override
     public String toString() {

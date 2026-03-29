@@ -112,7 +112,7 @@ public class MogJdbcDataSource extends MogDataSource {
     @Override
     public List<MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.trace("Fetching using " + filter);
-        MogQueryFilter queryFilter = (MogQueryFilter) filter;
+        MogQueryFilter queryFilter = requireFilter(filter, MogQueryFilter.class, "query");
 
         List<MogFetchable> data = new ArrayList<>();
         try {

@@ -29,8 +29,9 @@ public class MogDotOutDataSource extends MogFileDataSource {
 
         try {
             Expression where = null;
-            if (filter != null && filter instanceof MogQueryFilter) {
-                where = ((MogQueryFilter) filter).where();
+            if (filter != null) {
+                MogQueryFilter queryFilter = requireFilter(filter, MogQueryFilter.class, "query");
+                where = queryFilter.where();
             }
 
             MogDotOutFetchable fetchable;
@@ -52,6 +53,8 @@ public class MogDotOutDataSource extends MogFileDataSource {
                 }
             }
 
+        } catch (MogException e) {
+            throw e;
         } catch (Exception e) {
             throw new MogException("Unable to fetch data for " + getName(), e);
         }

@@ -27,7 +27,8 @@ public class MogJsonDataSource extends MogFileDataSource {
     @Override
     public List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.debug("filter = " + filter);
-        return fetch(json((MogJsonFilter) filter, context), (MogJsonFilter) filter);
+        MogJsonFilter jsonFilter = requireFilter(filter, MogJsonFilter.class, "json");
+        return fetch(json(jsonFilter, context), jsonFilter);
     }
 
     protected String json(MogJsonFilter filter) throws MogException {
