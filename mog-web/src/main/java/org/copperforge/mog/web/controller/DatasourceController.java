@@ -2,9 +2,9 @@ package org.copperforge.mog.web.controller;
 
 import java.util.List;
 
+import org.copperforge.mog.contract.web.SaveDslResponse;
 import org.copperforge.mog.web.client.MogApiClient;
 import org.copperforge.mog.web.model.DslUploadForm;
-import org.copperforge.mog.web.model.SaveDslResponse;
 import org.copperforge.mog.web.support.JsonHelper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -3,13 +3,13 @@ package org.copperforge.mog.web.client;
 import java.util.List;
 import java.util.Map;
 
+import org.copperforge.mog.contract.run.RunRequest;
+import org.copperforge.mog.contract.run.RunResponse;
+import org.copperforge.mog.contract.web.SaveDslResponse;
 import org.copperforge.mog.web.config.MogApiClientProperties;
 import org.copperforge.mog.web.model.ArtifactDownload;
 import org.copperforge.mog.web.model.RunMetadata;
-import org.copperforge.mog.web.model.RunRequestPayload;
-import org.copperforge.mog.web.model.RunResponse;
 import org.copperforge.mog.web.model.RunSummary;
-import org.copperforge.mog.web.model.SaveDslResponse;
 import org.copperforge.mog.web.support.MogApiClientException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ContentDisposition;
@@ -63,7 +63,7 @@ public class MogApiClient {
         return post("/api/reports", json, SaveDslResponse.class);
     }
 
-    public RunResponse runReport(RunRequestPayload payload) {
+    public RunResponse runReport(RunRequest payload) {
         return post("/api/runs", payload, RunResponse.class);
     }
 

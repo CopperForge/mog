@@ -1,4 +1,4 @@
-package org.copperforge.mog.api.run;
+package org.copperforge.mog.contract.run;
 
 import java.util.Map;
 

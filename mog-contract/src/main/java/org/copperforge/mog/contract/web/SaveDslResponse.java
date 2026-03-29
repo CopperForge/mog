@@ -1,3 +1,3 @@
-package org.copperforge.mog.api.web;
+package org.copperforge.mog.contract.web;
 
 public record SaveDslResponse(String id, boolean saved) { }

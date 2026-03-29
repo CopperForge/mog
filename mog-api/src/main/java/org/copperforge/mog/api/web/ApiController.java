@@ -5,11 +5,12 @@ import java.nio.file.Files;
 import java.util.List;
 
 import org.copperforge.mog.api.run.RunMetadata;
-import org.copperforge.mog.api.run.RunRequest;
-import org.copperforge.mog.api.run.RunResponse;
 import org.copperforge.mog.api.run.RunService;
 import org.copperforge.mog.api.storage.DslStorageService;
 import org.copperforge.mog.api.storage.DslStorageService.SaveResult;
+import org.copperforge.mog.contract.run.RunRequest;
+import org.copperforge.mog.contract.run.RunResponse;
+import org.copperforge.mog.contract.web.SaveDslResponse;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

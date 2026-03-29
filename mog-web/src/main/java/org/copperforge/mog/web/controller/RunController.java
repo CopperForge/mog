@@ -3,11 +3,11 @@ package org.copperforge.mog.web.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.copperforge.mog.contract.run.RunRequest;
+import org.copperforge.mog.contract.run.RunResponse;
 import org.copperforge.mog.web.client.MogApiClient;
 import org.copperforge.mog.web.model.RunForm;
 import org.copperforge.mog.web.model.RunMetadata;
-import org.copperforge.mog.web.model.RunRequestPayload;
-import org.copperforge.mog.web.model.RunResponse;
 import org.copperforge.mog.web.model.RunSummary;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -69,8 +69,8 @@ public class RunController {
             format = "XLSX";
         }
 
-        RunRequestPayload payload = new RunRequestPayload(form.getReportId(), form.getDatasourceId(), params,
-                new RunRequestPayload.Output(format));
+        RunRequest payload = new RunRequest(form.getReportId(), form.getDatasourceId(), params,
+                new RunRequest.RunOutput(format));
         RunResponse response = client.runReport(payload);
         redirectAttributes.addFlashAttribute("successMessage", "Run " + response.runId() + " started");
         return "redirect:/ui/runs/" + response.runId();
