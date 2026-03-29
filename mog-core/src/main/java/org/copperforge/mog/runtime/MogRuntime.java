@@ -52,7 +52,7 @@ public final class MogRuntime {
             throw new MogException("No report writer registered for type '" + definition.getType() + "'");
         }
         writer.build(definition);
-        String filename = MogFileNameBuilder.build(definition.getFilename());
+        String filename = MogFileNameBuilder.build(definition.getFilename(), context);
         writer.save(filename);
         return filename;
     }

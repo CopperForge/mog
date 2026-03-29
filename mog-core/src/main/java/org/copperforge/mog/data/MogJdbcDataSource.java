@@ -116,7 +116,7 @@ public class MogJdbcDataSource extends MogDataSource {
 
         List<MogFetchable> data = new ArrayList<>();
         try {
-            String url = new MogVariableService().envsubst(getUrl()); // url
+            String url = new MogVariableService(context).envsubst(getUrl()); // url
             String username = getUser(); // credentials
             String password = "";
             if (getPassword() != null && !getPassword().isBlank()) {

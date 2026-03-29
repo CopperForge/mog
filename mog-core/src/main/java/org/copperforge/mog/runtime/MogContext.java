@@ -1,5 +1,9 @@
 package org.copperforge.mog.runtime;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.copperforge.mog.config.MogConfig;
 import org.copperforge.mog.config.Mogf;
 
@@ -15,6 +19,7 @@ public final class MogContext {
     private final String workingDirectory;
     private final String mogHome;
     private final String mogEtc;
+    private final Map<String, Object> variables;
 
     private MogContext(Builder builder) {
         this.config = builder.config;
@@ -24,6 +29,7 @@ public final class MogContext {
         this.workingDirectory = builder.workingDirectory;
         this.mogHome = builder.mogHome;
         this.mogEtc = builder.mogEtc;
+        this.variables = Collections.unmodifiableMap(new LinkedHashMap<>(builder.variables));
     }
 
     public MogConfig getConfig() {
@@ -54,6 +60,10 @@ public final class MogContext {
         return mogEtc;
     }
 
+    public Map<String, Object> getVariables() {
+        return variables;
+    }
+
     public Builder toBuilder() {
         return new Builder()
                 .config(this.config)
@@ -62,7 +72,8 @@ public final class MogContext {
                 .environment(this.environment)
                 .workingDirectory(this.workingDirectory)
                 .mogHome(this.mogHome)
-                .mogEtc(this.mogEtc);
+                .mogEtc(this.mogEtc)
+                .variables(this.variables);
     }
 
     public static Builder builder() {
@@ -77,6 +88,7 @@ public final class MogContext {
         private String workingDirectory;
         private String mogHome;
         private String mogEtc;
+        private final Map<String, Object> variables = new LinkedHashMap<>();
 
         public Builder config(MogConfig config) {
             this.config = config;
@@ -110,6 +122,21 @@ public final class MogContext {
 
         public Builder mogEtc(String mogEtc) {
             this.mogEtc = mogEtc;
+            return this;
+        }
+
+        public Builder variable(String key, Object value) {
+            if (key != null && !key.isBlank() && value != null) {
+                this.variables.put(key, value);
+            }
+            return this;
+        }
+
+        public Builder variables(Map<String, ?> variables) {
+            this.variables.clear();
+            if (variables != null) {
+                variables.forEach(this::variable);
+            }
             return this;
         }
 

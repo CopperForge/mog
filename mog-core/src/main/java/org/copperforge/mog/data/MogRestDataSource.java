@@ -16,6 +16,8 @@ import javax.net.ssl.TrustManager;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.filter.MogJsonFilter;
 import org.copperforge.mog.http.MogTrustManager;
+import org.copperforge.mog.runtime.MogContext;
+import org.copperforge.mog.var.MogVariableService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,9 @@ public class MogRestDataSource extends MogJsonDataSource {
     private String token;
 
     @Override
-    protected String json(MogJsonFilter filter) throws MogException {
+    protected String json(MogJsonFilter filter, MogContext context) throws MogException {
         try {
+            MogVariableService vars = new MogVariableService(context);
             // create client
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[] { new MogTrustManager() }, new SecureRandom());
@@ -41,8 +44,8 @@ public class MogRestDataSource extends MogJsonDataSource {
 
             // create request
             HttpRequest request = HttpRequest.newBuilder()
-                    .header("Authorization", "Bearer " + getToken())
-                    .uri(URI.create(getUrl() + filter.getSuburl()))
+                    .header("Authorization", "Bearer " + vars.envsubst(getToken()))
+                    .uri(URI.create(vars.envsubst(getUrl()) + vars.envsubst(filter.getSuburl())))
                     .build();
 
             log.debug("HttpRequest = " + request);

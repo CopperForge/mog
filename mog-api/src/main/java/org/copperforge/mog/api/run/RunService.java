@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.api.config.MogApiProperties;
 import org.copperforge.mog.api.storage.DslStorageService;
+import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.catalog.DataSourcesFile;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.runtime.MogContext;
@@ -48,7 +50,7 @@ public class RunService {
 
         Path reportPath = storage.requireReport(request.reportId());
         Path datasourcePath = storage.requireDatasource(request.datasourceId());
-        MogContext context = buildContext(runDir, datasourcePath);
+        MogContext context = buildContext(runDir, datasourcePath, params);
 
         try {
             Report report = MogRuntime.loadReportDefinition(reportPath.toString(), context);
@@ -126,18 +128,44 @@ public class RunService {
 
     private void attachDataSources(Report report, Path datasourcePath) throws IOException {
         DataSourcesFile dsFile = objectMapper.readValue(datasourcePath.toFile(), DataSourcesFile.class);
+        List<MogDataSource> merged = new ArrayList<>();
+        Map<String, MogDataSource> named = new LinkedHashMap<>();
+        LinkedHashSet<MogDataSource> unnamed = new LinkedHashSet<>();
+
         if (dsFile != null && dsFile.getDatasources() != null) {
-            report.setDataSources(dsFile.getDatasources());
+            mergeDataSources(dsFile.getDatasources(), named, unnamed);
+        }
+        if (report != null && report.getDataSources() != null) {
+            mergeDataSources(report.getDataSources(), named, unnamed);
+        }
+
+        merged.addAll(unnamed);
+        merged.addAll(named.values());
+        report.setDataSources(merged);
+    }
+
+    private void mergeDataSources(List<MogDataSource> sources, Map<String, MogDataSource> named,
+            LinkedHashSet<MogDataSource> unnamed) {
+        for (MogDataSource dataSource : sources) {
+            if (dataSource == null) {
+                continue;
+            }
+            if (dataSource.getName() == null || dataSource.getName().isBlank()) {
+                unnamed.add(dataSource);
+            } else {
+                named.put(dataSource.getName(), dataSource);
+            }
         }
     }
 
-    private MogContext buildContext(Path runDir, Path datasourcePath) {
+    private MogContext buildContext(Path runDir, Path datasourcePath, Map<String, Object> params) {
         return MogContext.builder()
                 .datasourcesPath(datasourcePath != null ? datasourcePath.toAbsolutePath().toString() : null)
                 .environment(properties.resolvedEnvironment())
                 .workingDirectory(runDir.toAbsolutePath().toString())
                 .mogHome(properties.resolvedMogHome())
                 .mogEtc(properties.resolvedMogEtc())
+                .variables(params)
                 .build();
     }
 

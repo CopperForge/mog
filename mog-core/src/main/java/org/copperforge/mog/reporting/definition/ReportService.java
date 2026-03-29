@@ -35,7 +35,7 @@ public class ReportService {
     public Report parse(final String filename, MogContext context) throws MogException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            MogVariableService vars = new MogVariableService();
+            MogVariableService vars = new MogVariableService(context);
             String requested = vars.envsubst(filename);
             log.info("parsing " + requested);
 

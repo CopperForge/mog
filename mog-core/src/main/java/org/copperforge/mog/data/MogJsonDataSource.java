@@ -27,12 +27,16 @@ public class MogJsonDataSource extends MogFileDataSource {
     @Override
     public List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.debug("filter = " + filter);
-        return fetch(json((MogJsonFilter) filter), (MogJsonFilter) filter);
+        return fetch(json((MogJsonFilter) filter, context), (MogJsonFilter) filter);
     }
 
     protected String json(MogJsonFilter filter) throws MogException {
+        return json(filter, null);
+    }
+
+    protected String json(MogJsonFilter filter, MogContext context) throws MogException {
         try {
-            String pathStr = new MogVariableService().envsubst(getFile());
+            String pathStr = new MogVariableService(context).envsubst(getFile());
             Path path = Path.of(pathStr);
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
