@@ -27,6 +27,14 @@ public class MogJsonFilter extends MogDataFilter {
         this.suburl = suburl;
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

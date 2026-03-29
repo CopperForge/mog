@@ -3,6 +3,7 @@ package org.copperforge.mog.data;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -15,6 +16,7 @@ import javax.net.ssl.TrustManager;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.filter.MogJsonFilter;
+import org.copperforge.mog.http.MogHttpMethod;
 import org.copperforge.mog.http.MogTrustManager;
 import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.var.MogVariableService;
@@ -32,29 +34,67 @@ public class MogRestDataSource extends MogJsonDataSource {
 
     private String token;
 
+    private Boolean insecureTls;
+
     @Override
     protected String json(MogJsonFilter filter, MogContext context) throws MogException {
         try {
             MogVariableService vars = new MogVariableService(context);
-            // create client
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, new TrustManager[] { new MogTrustManager() }, new SecureRandom());
-
-            HttpClient client = HttpClient.newBuilder().sslContext(sslContext).build();
-
-            // create request
-            HttpRequest request = HttpRequest.newBuilder()
-                    .header("Authorization", "Bearer " + vars.envsubst(getToken()))
-                    .uri(URI.create(vars.envsubst(getUrl()) + vars.envsubst(filter.getSuburl())))
-                    .build();
+            HttpClient client = createClient(Boolean.TRUE.equals(getInsecureTls()));
+            HttpRequest request = createRequest(vars, filter);
 
             log.debug("HttpRequest = " + request);
-            HttpResponse<?> resp = client.send(request, BodyHandlers.ofString());
+            HttpResponse<String> resp = client.send(request, BodyHandlers.ofString());
             log.debug("HttpResponse = " + resp);
 
-            return resp.body().toString();
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | InterruptedException e) {
+            int statusCode = resp.statusCode();
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new MogException("REST datasource '" + getName() + "' request failed with HTTP " + statusCode
+                        + " for " + request.method() + " " + request.uri());
+            }
+
+            return resp.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new MogException(e);
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | IllegalArgumentException e) {
+            throw new MogException(e);
+        }
+    }
+
+    protected HttpClient createClient(boolean insecureTls) throws NoSuchAlgorithmException, KeyManagementException {
+        HttpClient.Builder builder = HttpClient.newBuilder();
+        if (insecureTls) {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[] { new MogTrustManager() }, new SecureRandom());
+            builder.sslContext(sslContext);
+        }
+        return builder.build();
+    }
+
+    protected HttpRequest createRequest(MogVariableService vars, MogJsonFilter filter) {
+        String resolvedUrl = vars.envsubst(getUrl());
+        String resolvedSuburl = vars.envsubst(filter != null ? filter.getSuburl() : null);
+        URI uri = URI.create((resolvedUrl != null ? resolvedUrl : "") + (resolvedSuburl != null ? resolvedSuburl : ""));
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
+        String resolvedToken = vars.envsubst(getToken());
+        if (resolvedToken != null && !resolvedToken.isBlank()) {
+            builder.header("Authorization", "Bearer " + resolvedToken);
+        }
+
+        MogHttpMethod method = resolveMethod(filter != null ? filter.getMethod() : null);
+        return builder.method(method.name(), BodyPublishers.noBody()).build();
+    }
+
+    protected MogHttpMethod resolveMethod(String rawMethod) {
+        if (rawMethod == null || rawMethod.isBlank()) {
+            return MogHttpMethod.GET;
+        }
+        try {
+            return MogHttpMethod.valueOf(rawMethod.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unsupported HTTP method '" + rawMethod + "'");
         }
     }
 
@@ -74,9 +114,18 @@ public class MogRestDataSource extends MogJsonDataSource {
         this.token = token;
     }
 
+    public Boolean getInsecureTls() {
+        return insecureTls;
+    }
+
+    public void setInsecureTls(Boolean insecureTls) {
+        this.insecureTls = insecureTls;
+    }
+
     @Override
     public String toString() {
-        return "MogRestDataSource [mapper=" + mapper + ", url=" + url + ", token=" + token + "]";
+        return "MogRestDataSource [mapper=" + mapper + ", url=" + url + ", token=" + token
+                + ", insecureTls=" + insecureTls + "]";
     }
 
     @Override
@@ -86,6 +135,7 @@ public class MogRestDataSource extends MogJsonDataSource {
         result = prime * result + ((mapper == null) ? 0 : mapper.hashCode());
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
+        result = prime * result + ((insecureTls == null) ? 0 : insecureTls.hashCode());
         return result;
     }
 
@@ -112,6 +162,11 @@ public class MogRestDataSource extends MogJsonDataSource {
             if (other.token != null)
                 return false;
         } else if (!token.equals(other.token))
+            return false;
+        if (insecureTls == null) {
+            if (other.insecureTls != null)
+                return false;
+        } else if (!insecureTls.equals(other.insecureTls))
             return false;
         return true;
     }
