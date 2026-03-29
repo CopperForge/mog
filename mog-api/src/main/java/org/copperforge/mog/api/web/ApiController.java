@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.copperforge.mog.api.run.RunMetadata;
 import org.copperforge.mog.api.run.RunService;
-import org.copperforge.mog.api.storage.DslStorageService;
-import org.copperforge.mog.api.storage.DslStorageService.SaveResult;
+import org.copperforge.mog.api.storage.DslRepository;
+import org.copperforge.mog.api.storage.DslRepository.SaveResult;
 import org.copperforge.mog.contract.run.RunRequest;
 import org.copperforge.mog.contract.run.RunResponse;
 import org.copperforge.mog.contract.web.SaveDslResponse;
@@ -33,44 +33,44 @@ import jakarta.validation.Valid;
 @Validated
 public class ApiController {
 
-    private final DslStorageService storageService;
+    private final DslRepository dslRepository;
     private final RunService runService;
 
-    public ApiController(DslStorageService storageService, RunService runService) {
-        this.storageService = storageService;
+    public ApiController(DslRepository dslRepository, RunService runService) {
+        this.dslRepository = dslRepository;
         this.runService = runService;
     }
 
     @GetMapping("/datasources")
     public List<String> listDatasources() throws IOException {
-        return storageService.listDatasourceIds();
+        return dslRepository.listDatasourceIds();
     }
 
     @PostMapping("/datasources")
     public SaveDslResponse createDatasource(@RequestBody JsonNode body) throws IOException {
-        SaveResult result = storageService.saveDatasource(requireBody(body));
+        SaveResult result = dslRepository.saveDatasource(requireBody(body));
         return new SaveDslResponse(result.id(), true);
     }
 
     @GetMapping("/datasources/{id}")
     public JsonNode getDatasource(@PathVariable String id) throws IOException {
-        return storageService.loadDatasource(id);
+        return dslRepository.loadDatasource(id);
     }
 
     @GetMapping("/reports")
     public List<String> listReports() throws IOException {
-        return storageService.listReportIds();
+        return dslRepository.listReportIds();
     }
 
     @PostMapping("/reports")
     public SaveDslResponse createReport(@RequestBody JsonNode body) throws IOException {
-        SaveResult result = storageService.saveReport(requireBody(body));
+        SaveResult result = dslRepository.saveReport(requireBody(body));
         return new SaveDslResponse(result.id(), true);
     }
 
     @GetMapping("/reports/{id}")
     public JsonNode getReport(@PathVariable String id) throws IOException {
-        return storageService.loadReport(id);
+        return dslRepository.loadReport(id);
     }
 
     @GetMapping("/runs")

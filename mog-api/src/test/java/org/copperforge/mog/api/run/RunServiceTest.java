@@ -9,7 +9,9 @@ import java.util.Map;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.copperforge.mog.api.config.MogApiProperties;
-import org.copperforge.mog.api.storage.DslStorageService;
+import org.copperforge.mog.api.storage.FileSystemDslRepository;
+import org.copperforge.mog.api.storage.FileSystemRunRepository;
+import org.copperforge.mog.api.storage.FileSystemStorageLayout;
 import org.copperforge.mog.contract.run.RunRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,8 +31,10 @@ class RunServiceTest {
         properties.setMogHome(tempDir.toString());
         properties.setMogEtc(tempDir.resolve("etc").toString());
 
-        DslStorageService storage = new DslStorageService(objectMapper, properties);
-        RunService runService = new RunService(storage, properties, objectMapper);
+        FileSystemStorageLayout layout = new FileSystemStorageLayout(properties);
+        FileSystemDslRepository dslRepository = new FileSystemDslRepository(objectMapper, layout);
+        FileSystemRunRepository runRepository = new FileSystemRunRepository(layout);
+        RunService runService = new RunService(dslRepository, runRepository, properties, objectMapper);
 
         Path inlineJson = tempDir.resolve("inline.json");
         Files.writeString(inlineJson, "{\"data\":[{\"message\":\"INLINE\"}]}");
@@ -38,7 +42,7 @@ class RunServiceTest {
         Path externalJson = tempDir.resolve("external.json");
         Files.writeString(externalJson, "{\"data\":[{\"message\":\"EXTERNAL\"}]}");
 
-        storage.saveReport(objectMapper.readTree("""
+        dslRepository.saveReport(objectMapper.readTree("""
                 {
                   "id": "report-inline-wins",
                   "name": "report-inline-wins",
@@ -71,7 +75,7 @@ class RunServiceTest {
                 }
                 """));
 
-        storage.saveDatasource(objectMapper.readTree("""
+        dslRepository.saveDatasource(objectMapper.readTree("""
                 {
                   "id": "datasource-inline-wins",
                   "datasources": [
@@ -93,7 +97,7 @@ class RunServiceTest {
         assertEquals("COMPLETED", metadata.getStatus().name());
         assertEquals(inlineJson.toString(), metadata.getParams().get("inline_file"));
 
-        Path artifact = storage.runDirectory(metadata.getRunId()).resolve(metadata.getArtifact().getFileName());
+        Path artifact = runRepository.runDirectory(metadata.getRunId()).resolve(metadata.getArtifact().getFileName());
         try (XSSFWorkbook workbook = new XSSFWorkbook(artifact.toFile())) {
             assertEquals("Message", workbook.getSheet("Sheet1").getRow(0).getCell(0).getStringCellValue());
             assertEquals("INLINE", workbook.getSheet("Sheet1").getRow(1).getCell(0).getStringCellValue());

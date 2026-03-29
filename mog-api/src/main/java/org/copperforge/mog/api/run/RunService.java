@@ -14,7 +14,8 @@ import java.util.UUID;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.api.config.MogApiProperties;
-import org.copperforge.mog.api.storage.DslStorageService;
+import org.copperforge.mog.api.storage.DslRepository;
+import org.copperforge.mog.api.storage.RunRepository;
 import org.copperforge.mog.contract.run.RunRequest;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.catalog.DataSourcesFile;
@@ -30,12 +31,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class RunService {
 
-    private final DslStorageService storage;
+    private final DslRepository dslRepository;
+    private final RunRepository runRepository;
     private final MogApiProperties properties;
     private final ObjectMapper objectMapper;
 
-    public RunService(DslStorageService storage, MogApiProperties properties, ObjectMapper objectMapper) {
-        this.storage = storage;
+    public RunService(DslRepository dslRepository, RunRepository runRepository,
+            MogApiProperties properties, ObjectMapper objectMapper) {
+        this.dslRepository = dslRepository;
+        this.runRepository = runRepository;
         this.properties = properties;
         this.objectMapper = objectMapper;
     }
@@ -45,12 +49,12 @@ public class RunService {
         ArtifactFormat format = ArtifactFormat.from(request.output() != null ? request.output().format() : null);
 
         String runId = UUID.randomUUID().toString();
-        Path runDir = storage.ensureRunDirectory(runId);
+        Path runDir = runRepository.createRunDirectory(runId);
         RunMetadata metadata = RunMetadata.starting(runId, request.reportId(), request.datasourceId(), params, format.name());
         writeMetadata(runDir, metadata);
 
-        Path reportPath = storage.requireReport(request.reportId());
-        Path datasourcePath = storage.requireDatasource(request.datasourceId());
+        Path reportPath = dslRepository.requireReport(request.reportId());
+        Path datasourcePath = dslRepository.requireDatasource(request.datasourceId());
         MogContext context = buildContext(runDir, datasourcePath, params);
 
         try {
@@ -82,7 +86,7 @@ public class RunService {
     }
 
     public RunMetadata loadMetadata(String runId) throws IOException {
-        Path meta = storage.metadataFile(runId);
+        Path meta = runRepository.metadataFile(runId);
         if (!Files.exists(meta)) {
             throw new NoSuchFileException("Run '" + runId + "' not found");
         }
@@ -95,7 +99,7 @@ public class RunService {
         if (artifactMetadata == null || artifactMetadata.getFileName() == null) {
             throw new NoSuchFileException("Run '" + runId + "' has no artifact");
         }
-        Path artifactPath = storage.runDirectory(runId).resolve(artifactMetadata.getFileName());
+        Path artifactPath = runRepository.runDirectory(runId).resolve(artifactMetadata.getFileName());
         if (!Files.exists(artifactPath)) {
             throw new NoSuchFileException("Artifact missing for run '" + runId + "'");
         }
@@ -105,7 +109,7 @@ public class RunService {
     public List<RunSummary> listRuns(int limit) throws IOException {
         int effectiveLimit = limit > 0 ? Math.min(limit, 500) : 50;
         List<RunSummary> summaries = new ArrayList<>();
-        for (String runId : storage.listRunIds()) {
+        for (String runId : runRepository.listRunIds()) {
             try {
                 RunMetadata metadata = loadMetadata(runId);
                 summaries.add(RunSummary.from(metadata));

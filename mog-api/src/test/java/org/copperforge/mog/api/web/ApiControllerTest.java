@@ -14,13 +14,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Map;
 
 import org.copperforge.mog.api.run.RunMetadata;
 import org.copperforge.mog.api.run.RunService;
 import org.copperforge.mog.api.run.RunStatus;
-import org.copperforge.mog.api.storage.DslStorageService;
+import org.copperforge.mog.api.storage.DslRepository;
 import org.copperforge.mog.contract.run.RunRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,8 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +45,7 @@ class ApiControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private DslStorageService storageService;
+    private DslRepository dslRepository;
 
     @MockBean
     private RunService runService;
@@ -56,8 +55,8 @@ class ApiControllerTest {
 
     @Test
     void createDatasource_returnsSavedId() throws Exception {
-        when(storageService.saveDatasource(any(JsonNode.class)))
-                .thenReturn(new DslStorageService.SaveResult("shared", tempDir.resolve("shared.json")));
+        when(dslRepository.saveDatasource(any(JsonNode.class)))
+                .thenReturn(new DslRepository.SaveResult("shared", tempDir.resolve("shared.json")));
 
         mockMvc.perform(post("/api/datasources")
                         .contentType(APPLICATION_JSON)
@@ -69,7 +68,7 @@ class ApiControllerTest {
 
     @Test
     void getReport_returnsStoredJson() throws Exception {
-        when(storageService.loadReport("sales")).thenReturn(objectMapper.readTree("{\"id\":\"sales\",\"name\":\"Sales\"}"));
+        when(dslRepository.loadReport("sales")).thenReturn(objectMapper.readTree("{\"id\":\"sales\",\"name\":\"Sales\"}"));
 
         mockMvc.perform(get("/api/reports/sales"))
                 .andExpect(status().isOk())
