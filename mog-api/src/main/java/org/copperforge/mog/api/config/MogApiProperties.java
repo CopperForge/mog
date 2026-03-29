@@ -12,6 +12,7 @@ public class MogApiProperties {
     private String environment;
     private String mogHome;
     private String mogEtc;
+    private RunMetadataStore runMetadataStore = new RunMetadataStore();
 
     public Path getStoreDir() {
         return storeDir;
@@ -43,6 +44,14 @@ public class MogApiProperties {
 
     public void setMogEtc(String mogEtc) {
         this.mogEtc = mogEtc;
+    }
+
+    public RunMetadataStore getRunMetadataStore() {
+        return runMetadataStore;
+    }
+
+    public void setRunMetadataStore(RunMetadataStore runMetadataStore) {
+        this.runMetadataStore = runMetadataStore != null ? runMetadataStore : new RunMetadataStore();
     }
 
     public Path resolvedStoreDir() {
@@ -80,7 +89,62 @@ public class MogApiProperties {
         return isBlank(env) ? null : env;
     }
 
+    public boolean usesJdbcRunMetadataStore() {
+        return "jdbc".equalsIgnoreCase(runMetadataStore.getType());
+    }
+
+    public String resolvedRunMetadataJdbcUrl() {
+        if (!usesJdbcRunMetadataStore()) {
+            return null;
+        }
+        if (!isBlank(runMetadataStore.getJdbcUrl())) {
+            return runMetadataStore.getJdbcUrl();
+        }
+        String defaultPath = resolvedStoreDir().resolve("runs-db").toAbsolutePath().normalize().toString()
+                .replace("\\", "/");
+        return "jdbc:h2:file:" + defaultPath;
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    public static class RunMetadataStore {
+        private String type = "file";
+        private String jdbcUrl;
+        private String jdbcUser;
+        private String jdbcPassword;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getJdbcUrl() {
+            return jdbcUrl;
+        }
+
+        public void setJdbcUrl(String jdbcUrl) {
+            this.jdbcUrl = jdbcUrl;
+        }
+
+        public String getJdbcUser() {
+            return jdbcUser;
+        }
+
+        public void setJdbcUser(String jdbcUser) {
+            this.jdbcUser = jdbcUser;
+        }
+
+        public String getJdbcPassword() {
+            return jdbcPassword;
+        }
+
+        public void setJdbcPassword(String jdbcPassword) {
+            this.jdbcPassword = jdbcPassword;
+        }
     }
 }

@@ -1,7 +1,6 @@
 package org.copperforge.mog.api.run;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class RunService {
         String runId = UUID.randomUUID().toString();
         Path runDir = runRepository.createRunDirectory(runId);
         RunMetadata metadata = RunMetadata.starting(runId, request.reportId(), request.datasourceId(), params, format.name());
-        writeMetadata(runDir, metadata);
+        runRepository.saveMetadata(metadata);
 
         Path reportPath = dslRepository.requireReport(request.reportId());
         Path datasourcePath = dslRepository.requireDatasource(request.datasourceId());
@@ -64,33 +63,29 @@ public class RunService {
             report.setFilename(artifactPath.toString());
             String saved = MogRuntime.generateReport(report, context);
             Path actual = Path.of(saved);
-            long size = Files.size(actual);
+            long size = java.nio.file.Files.size(actual);
             String fileName = artifactPath.getFileName().toString();
             metadata.markCompleted(new RunMetadata.ArtifactMetadata(fileName, format.contentType(), size));
-            writeMetadata(runDir, metadata);
+            runRepository.saveMetadata(metadata);
             return metadata;
         } catch (NoSuchFileException e) {
             metadata.markFailed(e.getMessage());
-            writeMetadata(runDir, metadata);
+            runRepository.saveMetadata(metadata);
             throw e;
         } catch (MogException e) {
             metadata.markFailed(e.getMessage());
-            writeMetadata(runDir, metadata);
+            runRepository.saveMetadata(metadata);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (Exception e) {
             metadata.markFailed(e.getMessage());
-            writeMetadata(runDir, metadata);
+            runRepository.saveMetadata(metadata);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Unable to execute run " + runId, e);
         }
     }
 
     public RunMetadata loadMetadata(String runId) throws IOException {
-        Path meta = runRepository.metadataFile(runId);
-        if (!Files.exists(meta)) {
-            throw new NoSuchFileException("Run '" + runId + "' not found");
-        }
-        return objectMapper.readValue(meta.toFile(), RunMetadata.class);
+        return runRepository.loadMetadata(runId);
     }
 
     public RunArtifact loadArtifact(String runId) throws IOException {
@@ -100,7 +95,7 @@ public class RunService {
             throw new NoSuchFileException("Run '" + runId + "' has no artifact");
         }
         Path artifactPath = runRepository.runDirectory(runId).resolve(artifactMetadata.getFileName());
-        if (!Files.exists(artifactPath)) {
+        if (!java.nio.file.Files.exists(artifactPath)) {
             throw new NoSuchFileException("Artifact missing for run '" + runId + "'");
         }
         return new RunArtifact(artifactPath, artifactMetadata);
@@ -108,27 +103,15 @@ public class RunService {
 
     public List<RunSummary> listRuns(int limit) throws IOException {
         int effectiveLimit = limit > 0 ? Math.min(limit, 500) : 50;
-        List<RunSummary> summaries = new ArrayList<>();
-        for (String runId : runRepository.listRunIds()) {
-            try {
-                RunMetadata metadata = loadMetadata(runId);
-                summaries.add(RunSummary.from(metadata));
-            } catch (NoSuchFileException ex) {
-                // run directory without metadata; skip
-            }
-        }
-        Comparator<RunSummary> comparator = Comparator.comparing(RunSummary::startedAt,
-                Comparator.nullsLast(Comparator.naturalOrder()));
-        summaries.sort(comparator.reversed());
+        List<RunSummary> summaries = runRepository.listMetadata().stream()
+                .map(RunSummary::from)
+                .sorted(Comparator.comparing(RunSummary::startedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .toList();
         if (summaries.size() > effectiveLimit) {
             return List.copyOf(summaries.subList(0, effectiveLimit));
         }
         return List.copyOf(summaries);
-    }
-
-    private void writeMetadata(Path runDir, RunMetadata metadata) throws IOException {
-        Path metaFile = runDir.resolve("meta.json");
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(metaFile.toFile(), metadata);
     }
 
     private void attachDataSources(Report report, Path datasourcePath) throws IOException {

@@ -2,20 +2,25 @@ package org.copperforge.mog.api.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.springframework.stereotype.Repository;
+import org.copperforge.mog.api.run.RunMetadata;
 
-@Repository
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class FileSystemRunRepository implements RunRepository {
 
     private final FileSystemStorageLayout layout;
+    private final ObjectMapper objectMapper;
 
-    public FileSystemRunRepository(FileSystemStorageLayout layout) {
+    public FileSystemRunRepository(FileSystemStorageLayout layout, ObjectMapper objectMapper) {
         this.layout = layout;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -31,21 +36,41 @@ public class FileSystemRunRepository implements RunRepository {
     }
 
     @Override
-    public Path metadataFile(String runId) {
-        return layout.metadataFile(runId);
+    public void saveMetadata(RunMetadata metadata) throws IOException {
+        Path runDir = createRunDirectory(metadata.getRunId());
+        Path metaFile = runDir.resolve("meta.json");
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(metaFile.toFile(), metadata);
     }
 
     @Override
-    public List<String> listRunIds() throws IOException {
+    public RunMetadata loadMetadata(String runId) throws IOException {
+        Path metaFile = runDirectory(runId).resolve("meta.json");
+        if (!Files.exists(metaFile)) {
+            throw new NoSuchFileException("Run '" + runId + "' not found");
+        }
+        return objectMapper.readValue(metaFile.toFile(), RunMetadata.class);
+    }
+
+    @Override
+    public List<RunMetadata> listMetadata() throws IOException {
         if (!Files.exists(layout.runsDir())) {
             return List.of();
         }
+        List<RunMetadata> metadata = new ArrayList<>();
         try (Stream<Path> stream = Files.list(layout.runsDir())) {
-            return stream
+            List<String> runIds = stream
                     .filter(Files::isDirectory)
                     .map(path -> path.getFileName().toString())
                     .sorted(Comparator.reverseOrder())
                     .toList();
+            for (String runId : runIds) {
+                try {
+                    metadata.add(loadMetadata(runId));
+                } catch (NoSuchFileException ex) {
+                    // run directory without metadata; skip
+                }
+            }
         }
+        return metadata;
     }
 }

@@ -33,7 +33,7 @@ class RunServiceTest {
 
         FileSystemStorageLayout layout = new FileSystemStorageLayout(properties);
         FileSystemDslRepository dslRepository = new FileSystemDslRepository(objectMapper, layout);
-        FileSystemRunRepository runRepository = new FileSystemRunRepository(layout);
+        FileSystemRunRepository runRepository = new FileSystemRunRepository(layout, objectMapper);
         RunService runService = new RunService(dslRepository, runRepository, properties, objectMapper);
 
         Path inlineJson = tempDir.resolve("inline.json");
@@ -108,3 +108,4 @@ class RunServiceTest {
         return path.toString().replace("\\", "\\\\");
     }
 }
+

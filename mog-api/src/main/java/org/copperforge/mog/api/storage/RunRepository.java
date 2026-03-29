@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.copperforge.mog.api.run.RunMetadata;
+
 public interface RunRepository {
 
     Path createRunDirectory(String runId) throws IOException;
 
     Path runDirectory(String runId);
 
-    Path metadataFile(String runId);
+    void saveMetadata(RunMetadata metadata) throws IOException;
 
-    List<String> listRunIds() throws IOException;
+    RunMetadata loadMetadata(String runId) throws IOException;
+
+    List<RunMetadata> listMetadata() throws IOException;
 }

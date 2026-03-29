@@ -1,4 +1,4 @@
-﻿# MOG API
+# MOG API
 
 `mog-api` is a Spring Boot 3 service that exposes HTTP endpoints for storing MOG DSL artifacts and executing reports using `mog-core`. The runtime currently emits XLSX artifacts (CSV/JSON formats are reserved for future writers).
 
@@ -7,6 +7,9 @@
 - `mog.api.storeDir` – Root directory for persisted DSL and run artifacts. Defaults to `${MOG_ETC}/api-store` if `MOG_ETC` is set, otherwise `./etc/api-store` relative to the project.
 - `mog.api.environment` – Optional override for the runtime environment passed to `MogContext` (defaults to `${MOG_ENV}`).
 - `mog.api.mogHome` / `mog.api.mogEtc` – Optional overrides for `MOG_HOME`/`MOG_ETC` resolution inside the runtime context.
+- `mog.api.runMetadataStore.type` – Run metadata persistence mode. Defaults to `file`; set to `jdbc` to store run metadata in a database while keeping generated artifacts on disk.
+- `mog.api.runMetadataStore.jdbcUrl` – Optional JDBC URL used when `type=jdbc`. If omitted, the API defaults to an H2 file store under `${mog.api.storeDir}/runs-db`.
+- `mog.api.runMetadataStore.jdbcUser` / `mog.api.runMetadataStore.jdbcPassword` – Optional JDBC credentials for the metadata store.
 
 Run the service locally with:
 
@@ -92,4 +95,4 @@ curl -L -o run.xlsx http://localhost:8080/api/runs/<uuid>/artifact
 curl http://localhost:8080/api/runs/<uuid>
 ```
 
-The metadata response includes timestamps, status, parameters, and artifact details (filename, content type, size). Artifacts and metadata are stored under `${mog.api.storeDir}/runs/{runId}`.
+The metadata response includes timestamps, status, parameters, and artifact details (filename, content type, size). Generated artifacts remain on disk under `${mog.api.storeDir}/runs/{runId}`. Run metadata can stay file-backed in `meta.json` or move to the optional JDBC metadata store, depending on `mog.api.runMetadataStore.type`.
