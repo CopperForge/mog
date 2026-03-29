@@ -1,3 +1,5 @@
+import java.util.Locale
+
 plugins {
     id 'application'
     id 'com.netflix.nebula.rpm' version '11.9.1'
@@ -6,12 +8,60 @@ plugins {
 
 def appVersion = rootProject.ext.applicationVersion
 def mainEntryPoint = 'org.copperforge.mog.Mog'
+def linuxInstallRoot = '/opt/mog'
+def windowsInstallRoot = 'C:\\opt\\mog'
+def stagedInstallDir = layout.buildDirectory.dir('installer/stage')
+def renderedWindowsInstallerDir = layout.buildDirectory.dir('installer/windows')
+def windowsInstallerOutputName = "mog-${project.version}-windows-x64-installer"
+def isWindows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
 def setFileModeIfSupported = { spec, int mode ->
     def metaProp = spec.metaClass.hasProperty(spec, 'fileMode')
     if (metaProp) {
         spec.fileMode = mode
     } else if (spec.metaClass.respondsTo(spec, 'setFileMode', Integer.TYPE)) {
         spec.setFileMode(mode)
+    }
+}
+def resolveIsccExecutable = {
+    def configured = System.getenv('ISCC_EXE')
+    if (configured) {
+        return configured
+    }
+
+    [
+        'C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe',
+        'C:\\Program Files\\Inno Setup 6\\ISCC.exe'
+    ].find { new File(it).exists() }
+}
+def addPackagedContent = { spec ->
+    spec.from('src/main/bin') {
+        into 'bin'
+        setFileModeIfSupported(delegate, 0755)
+    }
+    spec.from('src/install/resources/config.mog') {
+        into 'etc'
+        setFileModeIfSupported(delegate, 0644)
+    }
+    spec.from('src/install/resources/etc') {
+        into 'etc'
+        exclude 'profile.d/**'
+        setFileModeIfSupported(delegate, 0644)
+    }
+    spec.from('src/main/examples') {
+        into 'examples'
+        setFileModeIfSupported(delegate, 0644)
+    }
+    spec.from(rootProject.file('INSTALL.md')) {
+        into 'docs'
+        setFileModeIfSupported(delegate, 0644)
+    }
+    spec.from(rootProject.file('README.md')) {
+        into 'docs'
+        setFileModeIfSupported(delegate, 0644)
+    }
+    spec.from(rootProject.file('LICENSE')) {
+        into 'docs'
+        setFileModeIfSupported(delegate, 0644)
     }
 }
 
@@ -57,10 +107,7 @@ distributions {
     main {
         contents {
             exclude 'bin/**'
-            from('src/main/bin') {
-                into 'bin'
-                setFileModeIfSupported(delegate, 0755)
-            }
+            addPackagedContent(delegate)
         }
     }
 }
@@ -71,6 +118,54 @@ tasks.named('jar') {
 
 tasks.withType(org.gradle.jvm.application.tasks.CreateStartScripts).configureEach {
     enabled = false
+}
+
+tasks.register('stageInstallTree', Sync) {
+    group = 'distribution'
+    description = 'Stages the install tree used by Linux and Windows installers.'
+    dependsOn 'jar'
+    into stagedInstallDir
+
+    addPackagedContent(delegate)
+
+    from(tasks.named('jar')) {
+        into 'lib'
+        setFileModeIfSupported(delegate, 0644)
+    }
+}
+
+tasks.register('renderWindowsInstallerScript', Copy) {
+    group = 'distribution'
+    description = 'Renders the Inno Setup script used to build the Windows installer.'
+    dependsOn 'stageInstallTree'
+    from('src/install/windows') {
+        include 'mog.iss'
+    }
+    into renderedWindowsInstallerDir
+    filteringCharset = 'UTF-8'
+    filter { line ->
+        line
+            .replace('@APP_NAME@', application.applicationName)
+            .replace('@APP_VERSION@', project.version.toString())
+            .replace('@DEFAULT_INSTALL_DIR@', windowsInstallRoot)
+            .replace('@OUTPUT_BASE_FILENAME@', windowsInstallerOutputName)
+    }
+}
+
+tasks.register('windowsInstaller', Exec) {
+    group = 'distribution'
+    description = 'Builds a Windows installer that defaults to C:\\opt\\mog or MOG_HOME when present.'
+    dependsOn 'renderWindowsInstallerScript'
+    onlyIf { isWindows }
+
+    doFirst {
+        def isccExecutable = resolveIsccExecutable()
+        if (!isccExecutable) {
+            throw new GradleException('ISCC.exe not found. Install Inno Setup 6 or set ISCC_EXE.')
+        }
+
+        commandLine isccExecutable, renderedWindowsInstallerDir.get().file('mog.iss').asFile.absolutePath
+    }
 }
 
 tasks.register('sampleReport', JavaExec) {
@@ -133,43 +228,39 @@ tasks.register('sampleReport', JavaExec) {
 }
 
 tasks.register('rpm', Rpm) {
-    dependsOn('build')
+    dependsOn 'stageInstallTree'
     os LINUX
-    into "/opt/mog"
-    arch 'x86_64'
+    arch 'noarch'
     packageName rootProject.name
-    preInstall file("src/install/scripts/pre-install.sh")
-    postInstall file("src/install/scripts/post-install.sh")
     version appVersion.getVersion()
     release appVersion.getRelease()
+    packageDescription = 'MOG command-line distribution'
+    prefix linuxInstallRoot
+    into linuxInstallRoot
+    directory linuxInstallRoot, 0755
 
-    user "mog"
-    group "mog"
-    permissionGroup "mog"
-
-    from (fileTree(dir: "src/main/bin", include: "*")) {
-        into "bin"
+    from(stagedInstallDir.map { it.dir('bin') }) {
+        into 'bin'
         setFileModeIfSupported(delegate, 0777)
     }
 
-    from (fileTree(dir: "build/libs", include: "*.jar")) {
-        into "lib"
+    from(stagedInstallDir.map { it.dir('lib') }) {
+        into 'lib'
         setFileModeIfSupported(delegate, 0664)
     }
 
-    from (fileTree(dir: "src/main/resources/reports")) {
-        into "etc/reports"
+    from(stagedInstallDir.map { it.dir('etc') }) {
+        into 'etc'
         setFileModeIfSupported(delegate, 0664)
     }
 
-    from (fileTree(dir: "src/install/resources/etc")) {
-        addParentDirs false
-        into "/etc"
+    from(stagedInstallDir.map { it.dir('examples') }) {
+        into 'examples'
         setFileModeIfSupported(delegate, 0664)
     }
 
-    from (fileTree(dir: "src/install/resources", include: "config.mog")) {
-        into "etc"
+    from(stagedInstallDir.map { it.dir('docs') }) {
+        into 'docs'
         setFileModeIfSupported(delegate, 0664)
     }
 }
