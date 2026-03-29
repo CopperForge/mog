@@ -31,7 +31,7 @@ class ApplicationVersion {
 }
 
 ext {
-    applicationVersion = new ApplicationVersion(1, 1, 1, true)
+    applicationVersion = new ApplicationVersion(1, 2, 0, true)
 }
 
 allprojects {
