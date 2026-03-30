@@ -6,6 +6,9 @@ plugins {
     id 'org.liquibase.gradle' version '2.2.1'
 }
 
+evaluationDependsOn(':mog-api')
+evaluationDependsOn(':mog-web')
+
 def appVersion = rootProject.ext.applicationVersion
 def mainEntryPoint = 'org.copperforge.mog.Mog'
 def linuxInstallRoot = '/opt/mog'
@@ -13,6 +16,8 @@ def windowsInstallRoot = 'C:\\opt\\mog'
 def stagedInstallDir = layout.buildDirectory.dir('installer/stage')
 def renderedWindowsInstallerDir = layout.buildDirectory.dir('installer/windows')
 def windowsInstallerOutputName = "mog-${project.version}-windows-x64-installer"
+def mogApiBootJar = project(':mog-api').tasks.named('bootJar')
+def mogWebBootJar = project(':mog-web').tasks.named('bootJar')
 def isWindows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
 def setFileModeIfSupported = { spec, int mode ->
     def metaProp = spec.metaClass.hasProperty(spec, 'fileMode')
@@ -123,13 +128,25 @@ tasks.withType(org.gradle.jvm.application.tasks.CreateStartScripts).configureEac
 tasks.register('stageInstallTree', Sync) {
     group = 'distribution'
     description = 'Stages the install tree used by Linux and Windows installers.'
-    dependsOn 'jar'
+    dependsOn 'jar', mogApiBootJar, mogWebBootJar
     into stagedInstallDir
 
     addPackagedContent(delegate)
 
     from(tasks.named('jar')) {
         into 'lib'
+        setFileModeIfSupported(delegate, 0644)
+    }
+
+    from(mogApiBootJar) {
+        into 'services/api'
+        rename { 'mog-api.jar' }
+        setFileModeIfSupported(delegate, 0644)
+    }
+
+    from(mogWebBootJar) {
+        into 'services/web'
+        rename { 'mog-web.jar' }
         setFileModeIfSupported(delegate, 0644)
     }
 }
@@ -256,6 +273,11 @@ tasks.register('rpm', Rpm) {
 
     from(stagedInstallDir.map { it.dir('examples') }) {
         into 'examples'
+        setFileModeIfSupported(delegate, 0664)
+    }
+
+    from(stagedInstallDir.map { it.dir('services') }) {
+        into 'services'
         setFileModeIfSupported(delegate, 0664)
     }
 
