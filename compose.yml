@@ -1,0 +1,35 @@
+services:
+  mog-api:
+    build:
+      context: .
+      dockerfile: mog-api/Dockerfile
+    image: mog-api:dev
+    container_name: mog-api
+    environment:
+      JAVA_OPTS: ""
+      MOG_HOME: /opt/mog
+      MOG_ETC: /opt/mog/etc
+      MOG_API_MOG_HOME: /opt/mog
+      MOG_API_MOG_ETC: /opt/mog/etc
+      MOG_API_STORE_DIR: /opt/mog/var/api-store
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./etc:/opt/mog/etc
+      - ./var:/opt/mog/var
+    restart: unless-stopped
+
+  mog-web:
+    build:
+      context: .
+      dockerfile: mog-web/Dockerfile
+    image: mog-web:dev
+    container_name: mog-web
+    environment:
+      JAVA_OPTS: ""
+      MOG_API_BASE_URL: http://mog-api:8080
+    depends_on:
+      - mog-api
+    ports:
+      - "8081:8081"
+    restart: unless-stopped

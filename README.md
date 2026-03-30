@@ -72,6 +72,20 @@ Spin up the JSON API (`mog-api`) alongside the new Bootstrap-powered “MOG Cons
 
 All UI pages proxy through the server (no browser-direct calls), so you can use the console without extra CORS configuration.
 
+### Docker Compose
+
+You can also run the API and web console in Docker:
+
+```bash
+docker compose up --build
+```
+
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Web console: `http://localhost:8081/ui`
+
+The compose stack mounts the local `./etc` directory to `/opt/mog/etc` and `./var` to `/opt/mog/var` inside the API container. That keeps DSL files, generated artifacts, and runtime state on the host and gives you a clean migration path to container platforms such as ECS later.
+
 ---
 
 ## One‑liner Sample Generation

@@ -1,0 +1,12 @@
+.git
+.github
+.gradle
+.gradle-user
+.idea
+.vscode
+**\build
+**/build
+**/.DS_Store
+chart-sample-*.xlsx
+simple_report.xlsx
+mog.code-workspace

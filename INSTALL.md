@@ -34,6 +34,16 @@
   - `sudo rpm -Uvh build/distributions/*.rpm`
 - Files install under `/opt/mog` with launchers in `/opt/mog/bin`.
 
+**Run With Docker**
+- Build and start the API + web stack:
+  - `docker compose up --build`
+- Services:
+  - API: `http://localhost:8080`
+  - Web: `http://localhost:8081/ui`
+- Host directories:
+  - `./etc` is mounted to `/opt/mog/etc`
+  - `./var` is mounted to `/opt/mog/var`
+
 **Environment Variables**
 - `MOG_HOME` (recommended): install root. Auto‑detected by launchers if not set.
 - `JAVA_HOME`: JDK install (optional if `java` on PATH).
