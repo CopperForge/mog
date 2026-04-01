@@ -47,7 +47,7 @@ class RunServiceTest {
                   "id": "report-inline-wins",
                   "name": "report-inline-wins",
                   "type": "xlsx",
-                  "filename": "ignored.xlsx",
+                  "filename": "${projectName}-mappings-${timestamp}.xlsx",
                   "dataSources": [
                     { "name": "shared", "type": "json", "file": "${inline_file}" }
                   ],
@@ -87,13 +87,16 @@ class RunServiceTest {
         RunRequest request = new RunRequest(
                 "report-inline-wins",
                 "datasource-inline-wins",
-                Map.of("inline_file", inlineJson.toString()),
+                Map.of("inline_file", inlineJson.toString(), "projectName", "Claims Conversion"),
                 new RunRequest.RunOutput("xlsx"));
 
         RunMetadata metadata = runService.execute(request);
 
         assertNotNull(metadata.getRunId());
-        assertEquals("artifact.xlsx", metadata.getArtifact().getFileName());
+        String fileName = metadata.getArtifact().getFileName();
+        assertNotNull(fileName);
+        org.junit.jupiter.api.Assertions.assertTrue(fileName.startsWith("Claims Conversion-mappings-"));
+        org.junit.jupiter.api.Assertions.assertTrue(fileName.endsWith(".xlsx"));
         assertEquals("COMPLETED", metadata.getStatus().name());
         assertEquals(inlineJson.toString(), metadata.getParams().get("inline_file"));
 

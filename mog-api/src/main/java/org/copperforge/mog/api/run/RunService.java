@@ -59,12 +59,12 @@ public class RunService {
         try {
             Report report = MogRuntime.loadReportDefinition(reportPath.toString(), context);
             attachDataSources(report, datasourcePath);
-            Path artifactPath = runDir.resolve(format.artifactFileName());
+            Path artifactPath = resolveArtifactPath(runDir, report, context, format);
             report.setFilename(artifactPath.toString());
             String saved = MogRuntime.generateReport(report, context);
             Path actual = Path.of(saved);
             long size = java.nio.file.Files.size(actual);
-            String fileName = artifactPath.getFileName().toString();
+            String fileName = actual.getFileName().toString();
             metadata.markCompleted(new RunMetadata.ArtifactMetadata(fileName, format.contentType(), size));
             runRepository.saveMetadata(metadata);
             return metadata;
@@ -130,6 +130,22 @@ public class RunService {
         merged.addAll(unnamed);
         merged.addAll(named.values());
         report.setDataSources(merged);
+    }
+
+    private Path resolveArtifactPath(Path runDir, Report report, MogContext context, ArtifactFormat format) throws MogException {
+        if (report != null && report.getFilename() != null && !report.getFilename().isBlank()) {
+            String resolved = org.copperforge.mog.io.MogFileNameBuilder.build(report.getFilename(), context);
+            if (resolved != null && !resolved.isBlank()) {
+                Path candidate = Path.of(resolved).getFileName();
+                if (candidate != null) {
+                    String fileName = candidate.toString();
+                    if (!fileName.isBlank()) {
+                        return runDir.resolve(fileName);
+                    }
+                }
+            }
+        }
+        return runDir.resolve(format.artifactFileName());
     }
 
     private void mergeDataSources(List<MogDataSource> sources, Map<String, MogDataSource> named,
