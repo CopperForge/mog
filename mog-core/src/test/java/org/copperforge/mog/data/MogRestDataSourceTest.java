@@ -104,6 +104,36 @@ class MogRestDataSourceTest {
         assertTrue(ex.getMessage().contains("HTTP 503"));
     }
 
+    @Test
+    void fetch_honorsConfiguredRequestTimeout() throws Exception {
+        startServer("/slow", exchange -> {
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            respond(exchange, 200, "{\"data\":[{\"message\":\"slow\"}]}");
+        });
+
+        MogRestDataSource dataSource = new MogRestDataSource();
+        dataSource.setName("restSource");
+        dataSource.setType("rest");
+        dataSource.setUrl(baseUrl());
+        dataSource.setRequestTimeoutMs("${request_timeout_ms}");
+
+        MogJsonFilter filter = new MogJsonFilter();
+        filter.setType("json");
+        filter.setSuburl("/slow");
+        filter.setJsonPath("$.data[*]");
+
+        MogException ex = assertThrows(MogException.class,
+                () -> dataSource.fetch(filter, MogContext.builder()
+                        .variable("request_timeout_ms", "25")
+                        .build()));
+
+        assertTrue(ex.getCause() instanceof java.net.http.HttpTimeoutException);
+    }
+
     private void startServer(String path, ExchangeHandler handler) throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext(path, exchange -> handler.handle(exchange));

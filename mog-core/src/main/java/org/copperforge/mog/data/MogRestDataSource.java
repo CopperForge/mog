@@ -1,6 +1,7 @@
 package org.copperforge.mog.data;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -36,11 +37,15 @@ public class MogRestDataSource extends MogJsonDataSource {
 
     private Boolean insecureTls;
 
+    private String connectTimeoutMs;
+
+    private String requestTimeoutMs;
+
     @Override
     protected String json(MogJsonFilter filter, MogContext context) throws MogException {
         try {
             MogVariableService vars = new MogVariableService(context);
-            HttpClient client = createClient(Boolean.TRUE.equals(getInsecureTls()));
+            HttpClient client = createClient(vars, Boolean.TRUE.equals(getInsecureTls()));
             HttpRequest request = createRequest(vars, filter);
 
             log.debug("HttpRequest = " + request);
@@ -62,8 +67,13 @@ public class MogRestDataSource extends MogJsonDataSource {
         }
     }
 
-    protected HttpClient createClient(boolean insecureTls) throws NoSuchAlgorithmException, KeyManagementException {
+    protected HttpClient createClient(MogVariableService vars, boolean insecureTls)
+            throws NoSuchAlgorithmException, KeyManagementException, MogException {
         HttpClient.Builder builder = HttpClient.newBuilder();
+        Duration connectTimeout = resolveTimeout(vars, getConnectTimeoutMs(), "connectTimeoutMs");
+        if (connectTimeout != null) {
+            builder.connectTimeout(connectTimeout);
+        }
         if (insecureTls) {
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[] { new MogTrustManager() }, new SecureRandom());
@@ -72,12 +82,16 @@ public class MogRestDataSource extends MogJsonDataSource {
         return builder.build();
     }
 
-    protected HttpRequest createRequest(MogVariableService vars, MogJsonFilter filter) {
+    protected HttpRequest createRequest(MogVariableService vars, MogJsonFilter filter) throws MogException {
         String resolvedUrl = vars.envsubst(getUrl());
         String resolvedSuburl = vars.envsubst(filter != null ? filter.getSuburl() : null);
         URI uri = URI.create((resolvedUrl != null ? resolvedUrl : "") + (resolvedSuburl != null ? resolvedSuburl : ""));
 
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
+        Duration requestTimeout = resolveTimeout(vars, getRequestTimeoutMs(), "requestTimeoutMs");
+        if (requestTimeout != null) {
+            builder.timeout(requestTimeout);
+        }
         String resolvedToken = vars.envsubst(getToken());
         if (resolvedToken != null && !resolvedToken.isBlank()) {
             builder.header("Authorization", "Bearer " + resolvedToken);
@@ -95,6 +109,27 @@ public class MogRestDataSource extends MogJsonDataSource {
             return MogHttpMethod.valueOf(rawMethod.trim().toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Unsupported HTTP method '" + rawMethod + "'");
+        }
+    }
+
+    protected Duration resolveTimeout(MogVariableService vars, String rawValue, String fieldName) throws MogException {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+        String resolved = vars.envsubst(rawValue);
+        if (resolved == null || resolved.isBlank()) {
+            return null;
+        }
+        try {
+            long millis = Long.parseLong(resolved.trim());
+            if (millis <= 0) {
+                throw new MogException("REST datasource '" + getName() + "' field '" + fieldName
+                        + "' must be greater than 0");
+            }
+            return Duration.ofMillis(millis);
+        } catch (NumberFormatException ex) {
+            throw new MogException("REST datasource '" + getName() + "' field '" + fieldName
+                    + "' must be a whole number of milliseconds");
         }
     }
 
@@ -122,17 +157,36 @@ public class MogRestDataSource extends MogJsonDataSource {
         this.insecureTls = insecureTls;
     }
 
+    public String getConnectTimeoutMs() {
+        return connectTimeoutMs;
+    }
+
+    public void setConnectTimeoutMs(String connectTimeoutMs) {
+        this.connectTimeoutMs = connectTimeoutMs;
+    }
+
+    public String getRequestTimeoutMs() {
+        return requestTimeoutMs;
+    }
+
+    public void setRequestTimeoutMs(String requestTimeoutMs) {
+        this.requestTimeoutMs = requestTimeoutMs;
+    }
+
     @Override
     public String toString() {
         return "MogRestDataSource [mapper=" + mapper + ", url=" + url + ", token=" + token
-                + ", insecureTls=" + insecureTls + "]";
+                + ", insecureTls=" + insecureTls + ", connectTimeoutMs=" + connectTimeoutMs
+                + ", requestTimeoutMs=" + requestTimeoutMs + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((connectTimeoutMs == null) ? 0 : connectTimeoutMs.hashCode());
         result = prime * result + ((mapper == null) ? 0 : mapper.hashCode());
+        result = prime * result + ((requestTimeoutMs == null) ? 0 : requestTimeoutMs.hashCode());
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + ((token == null) ? 0 : token.hashCode());
         result = prime * result + ((insecureTls == null) ? 0 : insecureTls.hashCode());
@@ -152,6 +206,16 @@ public class MogRestDataSource extends MogJsonDataSource {
             if (other.mapper != null)
                 return false;
         } else if (!mapper.equals(other.mapper))
+            return false;
+        if (connectTimeoutMs == null) {
+            if (other.connectTimeoutMs != null)
+                return false;
+        } else if (!connectTimeoutMs.equals(other.connectTimeoutMs))
+            return false;
+        if (requestTimeoutMs == null) {
+            if (other.requestTimeoutMs != null)
+                return false;
+        } else if (!requestTimeoutMs.equals(other.requestTimeoutMs))
             return false;
         if (url == null) {
             if (other.url != null)
