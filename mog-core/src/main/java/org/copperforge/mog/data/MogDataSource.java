@@ -50,6 +50,14 @@ public abstract class MogDataSource {
 
     public abstract List<? extends MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException;
 
+    public MogFetchCursor openCursor(MogDataFilter filter) throws MogException {
+        return openCursor(filter, null);
+    }
+
+    public MogFetchCursor openCursor(MogDataFilter filter, MogContext context) throws MogException {
+        return MogFetchCursors.fromList(fetch(filter, context));
+    }
+
     protected final <T extends MogDataFilter> T requireFilter(MogDataFilter filter, Class<T> expectedClass,
             String expectedType) throws MogException {
         if (expectedClass.isInstance(filter)) {
