@@ -35,6 +35,23 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.0"
 }
 
+tasks.register('largeReportBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Runs a developer-only streaming XLSX large-report benchmark.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.copperforge.mog.benchmark.LargeReportStreamingBenchmark'
+
+    def outputPath = project.findProperty('outputPath')
+    args '--rows', project.findProperty('rows') ?: '100000',
+            '--columns', project.findProperty('columns') ?: '10',
+            '--rowWindow', project.findProperty('rowWindow') ?: '100',
+            '--fetchSize', project.findProperty('fetchSize') ?: '1000'
+    if (outputPath != null && !outputPath.toString().isBlank()) {
+        args '--outputPath', outputPath.toString()
+    }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
