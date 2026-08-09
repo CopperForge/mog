@@ -4,13 +4,19 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
+import org.copperforge.mog.data.sql.MogNamedSqlParser;
+import org.copperforge.mog.data.sql.MogPreparedSql;
+import org.copperforge.mog.data.sql.MogPreparedStatementBinder;
+import org.copperforge.mog.data.sql.MogResolvedSqlParameter;
+import org.copperforge.mog.data.sql.MogSqlParameterResolver;
 import org.copperforge.mog.runtime.MogContext;
 import org.copperforge.mog.security.MogSecurityService;
 import org.copperforge.mog.var.MogVariableService;
@@ -28,6 +34,12 @@ public class MogJdbcDataSource extends MogDataSource {
     private String password;
 
     private String jdbcClass;
+
+    private Integer fetchSize;
+
+    private Integer queryTimeoutSeconds;
+
+    private Boolean readOnly;
 
     public String getUrl() {
         return url;
@@ -61,9 +73,35 @@ public class MogJdbcDataSource extends MogDataSource {
         this.jdbcClass = jdbcClass;
     }
 
+    public Integer getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(Integer fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
+    public Integer getQueryTimeoutSeconds() {
+        return queryTimeoutSeconds;
+    }
+
+    public void setQueryTimeoutSeconds(Integer queryTimeoutSeconds) {
+        this.queryTimeoutSeconds = queryTimeoutSeconds;
+    }
+
+    public Boolean getReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     @Override
     public String toString() {
-        return "MogJdbcDataSource [url=" + url + ", user=" + user + ", password=*, jdbcClass=" + jdbcClass + "]";
+        return "MogJdbcDataSource [url=" + url + ", user=" + user + ", password=*, jdbcClass=" + jdbcClass
+                + ", fetchSize=" + fetchSize + ", queryTimeoutSeconds=" + queryTimeoutSeconds
+                + ", readOnly=" + readOnly + "]";
     }
 
     @Override
@@ -74,6 +112,9 @@ public class MogJdbcDataSource extends MogDataSource {
         result = prime * result + ((user == null) ? 0 : user.hashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((jdbcClass == null) ? 0 : jdbcClass.hashCode());
+        result = prime * result + ((fetchSize == null) ? 0 : fetchSize.hashCode());
+        result = prime * result + ((queryTimeoutSeconds == null) ? 0 : queryTimeoutSeconds.hashCode());
+        result = prime * result + ((readOnly == null) ? 0 : readOnly.hashCode());
         return result;
     }
 
@@ -106,15 +147,44 @@ public class MogJdbcDataSource extends MogDataSource {
                 return false;
         } else if (!jdbcClass.equals(other.jdbcClass))
             return false;
+        if (fetchSize == null) {
+            if (other.fetchSize != null)
+                return false;
+        } else if (!fetchSize.equals(other.fetchSize))
+            return false;
+        if (queryTimeoutSeconds == null) {
+            if (other.queryTimeoutSeconds != null)
+                return false;
+        } else if (!queryTimeoutSeconds.equals(other.queryTimeoutSeconds))
+            return false;
+        if (readOnly == null) {
+            if (other.readOnly != null)
+                return false;
+        } else if (!readOnly.equals(other.readOnly))
+            return false;
         return true;
     }
 
     @Override
     public List<MogFetchable> fetch(MogDataFilter filter, MogContext context) throws MogException {
         log.trace("Fetching using " + filter);
+        List<MogFetchable> data = new ArrayList<>();
+        try (MogFetchCursor cursor = openCursor(filter, context)) {
+            while (cursor.next()) {
+                data.add(cursor.current());
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public MogFetchCursor openCursor(MogDataFilter filter, MogContext context) throws MogException {
+        log.trace("Opening JDBC cursor using " + filter);
         MogQueryFilter queryFilter = requireFilter(filter, MogQueryFilter.class, "query");
 
-        List<MogFetchable> data = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             String url = new MogVariableService(context).envsubst(getUrl()); // url
             String username = getUser(); // credentials
@@ -135,26 +205,42 @@ public class MogJdbcDataSource extends MogDataSource {
                 query = addLimit(query, filter.getLimit().intValue());
             }
 
-            try (Connection con = DriverManager.getConnection(url, username, password);
-                 Statement st = con.createStatement()) {
-                try (ResultSet rs = st.executeQuery(query)) { // Execute query
-                    ResultSetMetaData meta = rs.getMetaData();
-                    while (rs.next()) {
-                        MogFetchable reportable = new MogFetchable();
-                        for (int colidx = 1; colidx <= meta.getColumnCount(); colidx++) {
-                            String columnName = meta.getColumnName(colidx);
-                            Object value = rs.getObject(colidx);
-                            reportable.set(columnName.toLowerCase(), value);
-                        }
-                        data.add(reportable);
-                    }
-                }
+            MogNamedSqlParser sqlParser = new MogNamedSqlParser();
+            MogPreparedSql preparedSql = sqlParser.parse(query);
+            List<MogResolvedSqlParameter> parameters = new MogSqlParameterResolver()
+                    .resolve(preparedSql, queryFilter.getParameters(), context);
+
+            connection = DriverManager.getConnection(url, username, password);
+            if (getReadOnly() != null) {
+                connection.setReadOnly(getReadOnly());
             }
+            statement = connection.prepareStatement(preparedSql.sql(), ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY);
+            if (getFetchSize() != null) {
+                statement.setFetchSize(getFetchSize());
+            }
+            if (getQueryTimeoutSeconds() != null) {
+                statement.setQueryTimeout(getQueryTimeoutSeconds());
+            }
+            new MogPreparedStatementBinder().bind(statement, parameters);
+            resultSet = statement.executeQuery();
+
+            MogJdbcFetchCursor cursor = new MogJdbcFetchCursor(resultSet, statement, connection);
+            resultSet = null;
+            statement = null;
+            connection = null;
+            return cursor;
+        } catch (MogException e) {
+            closeQuietly(resultSet);
+            closeQuietly(statement);
+            closeQuietly(connection);
+            throw e;
         } catch (Exception e) {
+            closeQuietly(resultSet);
+            closeQuietly(statement);
+            closeQuietly(connection);
             throw new MogException(e);
         }
-
-        return data;
     }
 
     private String addLimit(String query, int limit) {
@@ -165,4 +251,135 @@ public class MogJdbcDataSource extends MogDataSource {
         return query + " OFFSET " + offset + " ROWS";
     }
 
+    private void closeQuietly(AutoCloseable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Exception ignore) {
+        }
+    }
+
+    private static final class MogJdbcFetchCursor implements MogFetchCursor {
+        private final ResultSet resultSet;
+        private final PreparedStatement statement;
+        private final Connection connection;
+        private final ResultSetMetaData metadata;
+        private final List<String> columns;
+        private MogFetchable current;
+        private long rowNumber = 0;
+        private boolean closed = false;
+        private boolean exhausted = false;
+
+        private MogJdbcFetchCursor(ResultSet resultSet, PreparedStatement statement, Connection connection)
+                throws SQLException {
+            this.resultSet = resultSet;
+            this.statement = statement;
+            this.connection = connection;
+            this.metadata = resultSet.getMetaData();
+            this.columns = resolveColumns(metadata);
+        }
+
+        @Override
+        public List<String> columns() throws MogException {
+            ensureOpen();
+            return columns;
+        }
+
+        @Override
+        public boolean next() throws MogException {
+            ensureOpen();
+            if (exhausted) {
+                current = null;
+                return false;
+            }
+            try {
+                if (!resultSet.next()) {
+                    current = null;
+                    exhausted = true;
+                    return false;
+                }
+                current = toFetchable(resultSet, metadata);
+                rowNumber++;
+                return true;
+            } catch (SQLException e) {
+                current = null;
+                throw new MogException(e);
+            }
+        }
+
+        @Override
+        public MogFetchable current() throws MogException {
+            ensureOpen();
+            if (current == null) {
+                throw new MogException("Cursor is not positioned on a row");
+            }
+            return current;
+        }
+
+        @Override
+        public long rowNumber() {
+            return rowNumber;
+        }
+
+        @Override
+        public void close() throws MogException {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            current = null;
+
+            MogException failure = null;
+            failure = close(resultSet, failure);
+            failure = close(statement, failure);
+            failure = close(connection, failure);
+            if (failure != null) {
+                throw failure;
+            }
+        }
+
+        private void ensureOpen() throws MogException {
+            if (closed) {
+                throw new MogException("Cursor is closed");
+            }
+        }
+
+        private static List<String> resolveColumns(ResultSetMetaData metadata) throws SQLException {
+            List<String> names = new ArrayList<>();
+            for (int colidx = 1; colidx <= metadata.getColumnCount(); colidx++) {
+                names.add(metadata.getColumnName(colidx).toLowerCase());
+            }
+            return List.copyOf(names);
+        }
+
+        private static MogFetchable toFetchable(ResultSet resultSet, ResultSetMetaData metadata)
+                throws SQLException {
+            MogFetchable reportable = new MogFetchable();
+            for (int colidx = 1; colidx <= metadata.getColumnCount(); colidx++) {
+                String columnName = metadata.getColumnName(colidx);
+                Object value = resultSet.getObject(colidx);
+                reportable.set(columnName.toLowerCase(), value);
+            }
+            return reportable;
+        }
+
+        private static MogException close(AutoCloseable closeable, MogException existing) {
+            if (closeable == null) {
+                return existing;
+            }
+            try {
+                closeable.close();
+                return existing;
+            } catch (Exception e) {
+                MogException failure = new MogException(e);
+                if (existing != null) {
+                    existing.addSuppressed(e);
+                    return existing;
+                }
+                return failure;
+            }
+        }
+    }
 }
