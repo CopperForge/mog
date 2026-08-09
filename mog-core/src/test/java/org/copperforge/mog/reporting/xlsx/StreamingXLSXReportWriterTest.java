@@ -125,15 +125,6 @@ class StreamingXLSXReportWriterTest {
     }
 
     @Test
-    void tableFailsWithPhaseFiveMessage() {
-        MogException ex = unsupported(table());
-
-        assertTrue(ex.getMessage().contains("streaming mode"));
-        assertTrue(ex.getMessage().contains("table"));
-        assertTrue(ex.getMessage().contains("streaming table writer"));
-    }
-
-    @Test
     void spannedTextFailsClearlyUntilPhaseSix() {
         assertUnsupported(spannedText(), "spannedText", "streaming mode");
     }

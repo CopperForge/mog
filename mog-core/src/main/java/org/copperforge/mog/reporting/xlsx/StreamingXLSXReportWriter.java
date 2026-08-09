@@ -2,11 +2,13 @@ package org.copperforge.mog.reporting.xlsx;
 
 import java.io.FileOutputStream;
 
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.Sheet;
 import org.copperforge.mog.reporting.element.ReportElement;
+import org.copperforge.mog.reporting.element.table.Table;
 import org.copperforge.mog.reporting.writer.AbstractReportWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,14 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
     protected void buildSheet(Report report, Sheet sheet) throws MogException {
         String title = sheet.getTitle();
         log.info("Building streaming sheet '" + title + "'");
-        workbook.createSheet(title);
+        SXSSFSheet xlsxSheet = workbook.createSheet(title);
+        for (ReportElement element : sheet.getElements()) {
+            if ("table".equals(element.getType())) {
+                new StreamingXLSXTableWriter().workbook(workbook).sheet(xlsxSheet).write(report, (Table) element);
+            } else {
+                throw unsupported(report, sheet, element.getType(), "not supported in streaming mode");
+            }
+        }
     }
 
     @Override
@@ -98,11 +107,9 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
                     continue;
                 }
                 String type = element.getType();
-                if ("table".equals(type)) {
-                    throw unsupported(report, sheet, type,
-                            "not supported until the streaming table writer is implemented");
+                if (!"table".equals(type)) {
+                    throw unsupported(report, sheet, type, "not supported in streaming mode");
                 }
-                throw unsupported(report, sheet, type, "not supported in streaming mode");
             }
         }
     }
