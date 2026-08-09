@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import org.copperforge.mog.reporting.xlsx.XLSXReportWriter;
+import org.copperforge.mog.reporting.xlsx.XLSXReportWriterSelector;
 
 public class ReportWriterService {
 
@@ -14,7 +14,7 @@ public class ReportWriterService {
     private final Map<String, Supplier<? extends ReportWriter>> builders = new ConcurrentHashMap<>();
 
     private ReportWriterService() {
-        register("xlsx", XLSXReportWriter::new);
+        register("xlsx", XLSXReportWriterSelector::new);
     }
 
     public static final ReportWriterService instance() {
