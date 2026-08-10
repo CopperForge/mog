@@ -10,6 +10,8 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.copperforge.mog.MogException;
@@ -125,8 +127,51 @@ class StreamingXLSXReportWriterTest {
     }
 
     @Test
-    void spannedTextFailsClearlyUntilPhaseSix() {
-        assertUnsupported(spannedText(), "spannedText", "streaming mode");
+    void spannedText_writesMergedRegionTextAndReusableCellStyle() throws Exception {
+        XLSXReport report = streamingReport("spanned");
+        XLSXCellStyle style = new XLSXCellStyle();
+        style.setType("cell");
+        style.setName("title");
+        style.setAlignment("center");
+        style.setVerticalAlignment("center");
+        style.setWrapText(true);
+        report.setStyles(java.util.List.of(style));
+        report.setSheets(java.util.List.of(sheetWith("S", spannedText())));
+        Path file = Files.createTempFile("mog-streaming-spanned", ".xlsx");
+
+        try {
+            StreamingXLSXReportWriter writer = new StreamingXLSXReportWriter();
+            writer.build(report);
+            writer.save(file.toString());
+
+            try (XSSFWorkbook workbook = new XSSFWorkbook(file.toFile())) {
+                var sheet = workbook.getSheet("S");
+                assertEquals("Streaming title", sheet.getRow(0).getCell(0).getStringCellValue());
+                assertEquals(1, sheet.getNumMergedRegions());
+                assertEquals("A1:C1", sheet.getMergedRegion(0).formatAsString());
+                var cellStyle = sheet.getRow(0).getCell(0).getCellStyle();
+                assertEquals(HorizontalAlignment.CENTER, cellStyle.getAlignment());
+                assertEquals(VerticalAlignment.CENTER, cellStyle.getVerticalAlignment());
+                assertTrue(cellStyle.getWrapText());
+            }
+        } finally {
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
+    void closeIsCalledAfterSpannedTextFailure() {
+        XLSXReport report = streamingReport("cleanup-spanned-failure");
+        SpannedText text = spannedText();
+        text.setLowerRight(null);
+        report.setSheets(java.util.List.of(sheetWith("S", text)));
+        InspectingStreamingWriter writer = new InspectingStreamingWriter();
+
+        MogException ex = assertThrows(MogException.class, () -> writer.build(report));
+
+        assertTrue(ex.getMessage().contains("spanned text"));
+        assertEquals(1, writer.closeCount);
+        assertEquals(1, writer.createdWorkbook.closeCount);
     }
 
     private void assertUnsupported(ReportElement element, String type, String context) {
@@ -195,6 +240,13 @@ class StreamingXLSXReportWriterTest {
         upperLeft.setRow(1);
         upperLeft.setCol(1);
         text.setUpperLeft(upperLeft);
+        CellReference lowerRight = new CellReference();
+        lowerRight.setRow(1);
+        lowerRight.setCol(3);
+        text.setLowerRight(lowerRight);
+        text.setStyle("title");
+        text.setText("Streaming title");
+        text.setHeight(24);
         return text;
     }
 

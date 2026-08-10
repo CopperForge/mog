@@ -1,7 +1,9 @@
 package org.copperforge.mog.reporting.xlsx;
 
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -37,8 +39,8 @@ public class XLSXCellStyle extends XLSXStyle {
         this.alignment = alignment;
     }
 
-    public XSSFCellStyle xssfCellStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle cellStyle = workbook.createCellStyle();
+    public CellStyle cellStyle(Workbook workbook) {
+        CellStyle cellStyle = workbook.createCellStyle();
         if (getWrapText() != null)
             cellStyle.setWrapText(getWrapText());
         if (getVerticalAlignment() != null)
@@ -47,6 +49,10 @@ public class XLSXCellStyle extends XLSXStyle {
             cellStyle.setAlignment(HorizontalAlignment.valueOf(getAlignment().toUpperCase()));
 
         return cellStyle;
+    }
+
+    public XSSFCellStyle xssfCellStyle(XSSFWorkbook workbook) {
+        return (XSSFCellStyle) cellStyle(workbook);
     }
 
     @Override

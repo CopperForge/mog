@@ -8,6 +8,7 @@ import org.copperforge.mog.MogException;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.Sheet;
 import org.copperforge.mog.reporting.element.ReportElement;
+import org.copperforge.mog.reporting.element.SpannedText;
 import org.copperforge.mog.reporting.element.table.Table;
 import org.copperforge.mog.reporting.writer.AbstractReportWriter;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
     private final Logger log = LoggerFactory.getLogger(StreamingXLSXReportWriter.class);
 
     private SXSSFWorkbook workbook;
+    private XLSXStyleCache styleCache;
 
     public StreamingXLSXReportWriter() {
         super("xlsx");
@@ -27,6 +29,7 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
     protected void buildReport(Report report) throws MogException {
         XLSXOptions options = options(report);
         workbook = createWorkbook(options);
+        styleCache = createStyleCache(report);
         try {
             validateStreamingReport(report);
             super.buildReport(report);
@@ -46,7 +49,10 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
         SXSSFSheet xlsxSheet = workbook.createSheet(title);
         for (ReportElement element : sheet.getElements()) {
             if ("table".equals(element.getType())) {
-                new StreamingXLSXTableWriter().workbook(workbook).sheet(xlsxSheet).write(report, (Table) element);
+                new StreamingXLSXTableWriter().workbook(workbook).sheet(xlsxSheet).styles(styleCache)
+                        .write(report, (Table) element);
+            } else if ("spannedText".equals(element.getType())) {
+                new StreamingXLSXSpannedTextWriter().sheet(xlsxSheet).styles(styleCache).write((SpannedText) element);
             } else {
                 throw unsupported(report, sheet, element.getType(), "not supported in streaming mode");
             }
@@ -81,6 +87,7 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
     protected void closeWorkbook() throws MogException {
         SXSSFWorkbook toClose = workbook;
         workbook = null;
+        styleCache = null;
         if (toClose == null) {
             return;
         }
@@ -100,6 +107,13 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
         return new XLSXOptions();
     }
 
+    private XLSXStyleCache createStyleCache(Report report) {
+        if (report instanceof XLSXReport xlsxReport) {
+            return new XLSXStyleCache(workbook, xlsxReport.getStyles());
+        }
+        return new XLSXStyleCache(workbook, null);
+    }
+
     private void validateStreamingReport(Report report) throws MogException {
         for (Sheet sheet : report.getSheets()) {
             for (ReportElement element : sheet.getElements()) {
@@ -107,7 +121,7 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
                     continue;
                 }
                 String type = element.getType();
-                if (!"table".equals(type)) {
+                if (!"table".equals(type) && !"spannedText".equals(type)) {
                     throw unsupported(report, sheet, type, "not supported in streaming mode");
                 }
             }

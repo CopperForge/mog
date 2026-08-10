@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,8 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.copperforge.mog.MogException;
 import org.copperforge.mog.data.MogDataSource;
 import org.copperforge.mog.data.MogFetchCursor;
@@ -28,6 +30,8 @@ import org.copperforge.mog.reporting.definition.CellReference;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.definition.Sheet;
+import org.copperforge.mog.reporting.element.ReportElement;
+import org.copperforge.mog.reporting.element.SpannedText;
 import org.copperforge.mog.reporting.element.table.Table;
 import org.copperforge.mog.runtime.MogContext;
 import org.junit.jupiter.api.Test;
@@ -200,15 +204,112 @@ class StreamingXLSXTableWriterTest {
 
     @Test
     void tableStyleFailsClearlyBecauseFormalXssfTableIsUnsupported() throws Exception {
-        StreamingXLSXTableWriter writer = new StreamingXLSXTableWriter();
-        Table table = table("t_styled", "none", null);
-        table.setStyle("TableStyleLight12");
+        XLSXTableStyle style = new XLSXTableStyle();
+        style.setType("table");
+        style.setName("TableStyleLight12");
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            StreamingXLSXTableWriter writer = new StreamingXLSXTableWriter()
+                    .styles(new XLSXStyleCache(workbook, List.of(style)));
+            Table table = table("t_styled", "none", null);
+            table.setStyle("TableStyleLight12");
 
-        MogException ex = assertThrows(MogException.class, () -> writer.validateStreamingTableFeatures(table));
+            MogException ex = assertThrows(MogException.class, () -> writer.validateStreamingTableFeatures(table));
 
-        assertTrue(ex.getMessage().contains("streaming mode"));
-        assertTrue(ex.getMessage().contains("table style"));
-        assertTrue(ex.getMessage().contains("formal XSSFTable"));
+            assertTrue(ex.getMessage().contains("streaming mode"));
+            assertTrue(ex.getMessage().contains("table style"));
+            assertTrue(ex.getMessage().contains("formal XSSFTable"));
+        }
+    }
+
+    @Test
+    void cellStyleNamedAsTableStyle_appliesToStreamingHeaderCells() throws Exception {
+        CursorOnlyDataSource dataSource = new CursorOnlyDataSource(rows(2));
+        dataSource.setName("rows");
+        XLSXReport report = streamingReport(25);
+        XLSXCellStyle style = new XLSXCellStyle();
+        style.setType("cell");
+        style.setName("headerStyle");
+        style.setAlignment("center");
+        style.setWrapText(true);
+        report.setStyles(List.of(style));
+        Table table = table("t_rows", "rows", null);
+        table.setStyle("headerStyle");
+        report.setDataSources(List.of(dataSource));
+        report.setSheets(List.of(sheetWith(table)));
+        Path file = Files.createTempFile("mog-stream-header-style", ".xlsx");
+
+        try {
+            write(report, file);
+
+            try (XSSFWorkbook workbook = new XSSFWorkbook(file.toFile())) {
+                var sheet = workbook.getSheet("Numbers");
+                var idStyle = sheet.getRow(0).getCell(0).getCellStyle();
+                var nameStyle = sheet.getRow(0).getCell(1).getCellStyle();
+                assertEquals(HorizontalAlignment.CENTER, idStyle.getAlignment());
+                assertTrue(idStyle.getWrapText());
+                assertEquals(idStyle.getIndex(), nameStyle.getIndex());
+            }
+        } finally {
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
+    void styleCache_reusesWorkbookCellStyleForRepeatedLookup() throws Exception {
+        XLSXCellStyle style = new XLSXCellStyle();
+        style.setType("cell");
+        style.setName("reused");
+        style.setAlignment("right");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XLSXStyleCache cache = new XLSXStyleCache(workbook, List.of(style));
+
+            assertSame(cache.cellStyle("reused"), cache.cellStyle("reused"));
+            assertEquals(2, workbook.getNumCellStyles());
+        }
+    }
+
+    @Test
+    void spannedTextBeforeLargeStreamingTable_preservesMergeAndRowsBeyondWindow() throws Exception {
+        CursorOnlyDataSource dataSource = new CursorOnlyDataSource(rows(200));
+        dataSource.setName("rows");
+        XLSXReport report = streamingReport(25);
+        report.setDataSources(List.of(dataSource));
+        Table table = table("t_rows", "rows", null);
+        table.getUpperLeft().setRow(3);
+        report.setSheets(List.of(sheetWithElements("Numbers", spannedText(1, 1, 1, 2, "Sparse title"), table)));
+        Path file = Files.createTempFile("mog-stream-spanned-table", ".xlsx");
+
+        try {
+            write(report, file);
+
+            try (XSSFWorkbook workbook = new XSSFWorkbook(file.toFile())) {
+                var sheet = workbook.getSheet("Numbers");
+                assertEquals("Sparse title", sheet.getRow(0).getCell(0).getStringCellValue());
+                assertEquals("A1:B1", sheet.getMergedRegion(0).formatAsString());
+                assertEquals(200.0, sheet.getRow(202).getCell(0).getNumericCellValue());
+            }
+        } finally {
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
+    void spannedTextAfterTargetRowsAreFlushed_failsClearlyAndClosesWorkbook() throws Exception {
+        CursorOnlyDataSource dataSource = new CursorOnlyDataSource(rows(200));
+        dataSource.setName("rows");
+        XLSXReport report = streamingReport(25);
+        report.setDataSources(List.of(dataSource));
+        report.setSheets(List.of(sheetWithElements("Numbers", table("t_rows", "rows", null),
+                spannedText(1, 1, 1, 2, "Too late"))));
+        InspectingStreamingWriter writer = new InspectingStreamingWriter();
+
+        MogException ex = assertThrows(MogException.class, () -> writer.build(report));
+
+        assertTrue(ex.getMessage().contains("spanned text"));
+        assertTrue(ex.getMessage().contains("flushed"));
+        assertEquals(1, writer.closeCount);
+        assertEquals(1, writer.createdWorkbook.closeCount);
     }
 
     private void write(XLSXReport report, Path file) throws Exception {
@@ -236,6 +337,14 @@ class StreamingXLSXTableWriterTest {
         return sheet;
     }
 
+    private Sheet sheetWithElements(String title, ReportElement... elements) {
+        Sheet sheet = new Sheet();
+        sheet.setName(title);
+        sheet.setTitle(title);
+        sheet.setElements(List.of(elements));
+        return sheet;
+    }
+
     private Table table(String name, String datasourceName, String query) throws Exception {
         Table table = new Table();
         table.setType("table");
@@ -256,6 +365,21 @@ class StreamingXLSXTableWriterTest {
         }
         table.setDataSource(reportDataSource);
         return table;
+    }
+
+    private SpannedText spannedText(int firstRow, int firstCol, int lastRow, int lastCol, String text) {
+        SpannedText spannedText = new SpannedText();
+        spannedText.setType("spannedText");
+        CellReference upperLeft = new CellReference();
+        upperLeft.setRow(firstRow);
+        upperLeft.setCol(firstCol);
+        spannedText.setUpperLeft(upperLeft);
+        CellReference lowerRight = new CellReference();
+        lowerRight.setRow(lastRow);
+        lowerRight.setCol(lastCol);
+        spannedText.setLowerRight(lowerRight);
+        spannedText.setText(text);
+        return spannedText;
     }
 
     private MogJdbcDataSource jdbcDataSource(String url) {

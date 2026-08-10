@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -30,6 +31,7 @@ public class StreamingXLSXTableWriter {
 
     private SXSSFWorkbook workbook;
     private SXSSFSheet sheet;
+    private XLSXStyleCache styles;
 
     public StreamingXLSXTableWriter workbook(SXSSFWorkbook workbook) {
         this.workbook = workbook;
@@ -38,6 +40,11 @@ public class StreamingXLSXTableWriter {
 
     public StreamingXLSXTableWriter sheet(SXSSFSheet sheet) {
         this.sheet = sheet;
+        return this;
+    }
+
+    public StreamingXLSXTableWriter styles(XLSXStyleCache styles) {
+        this.styles = styles;
         return this;
     }
 
@@ -90,7 +97,8 @@ public class StreamingXLSXTableWriter {
     }
 
     void validateStreamingTableFeatures(Table table) throws MogException {
-        if (table.getStyle() != null && !table.getStyle().isBlank()) {
+        if (table.getStyle() != null && !table.getStyle().isBlank()
+                && styles != null && styles.style(table.getStyle()) instanceof XLSXTableStyle) {
             throw new MogException("XLSX streaming mode does not support table style '" + table.getStyle()
                     + "' for table '" + table.getName() + "' because formal XSSFTable styling is not available");
         }
@@ -139,14 +147,18 @@ public class StreamingXLSXTableWriter {
         return dataSource;
     }
 
-    void writeColumnHeaders(Table tableElement, int rowNum, List<Column> columns) {
+    void writeColumnHeaders(Table tableElement, int rowNum, List<Column> columns) throws MogException {
         Row row = sheet.createRow(rowNum);
         int colNum = tableElement.getUpperLeft().getCol() - 1;
+        CellStyle headerStyle = styles != null ? styles.cellStyle(tableElement.getStyle()) : null;
         for (Column columnDef : columns) {
             if (columnDef.getWidth() != null) {
                 sheet.setColumnWidth(colNum, columnDef.getWidth() * 256);
             }
             Cell cell = row.createCell(colNum++);
+            if (headerStyle != null) {
+                cell.setCellStyle(headerStyle);
+            }
             cell.setCellValue(columnDef.getTitle());
         }
     }
@@ -162,6 +174,9 @@ public class StreamingXLSXTableWriter {
 
     Cell writeColumn(Row row, int colNum, Column columnDef, MogFetchable reportable) {
         Cell cell = row.createCell(colNum - 1);
+        if (columnDef.getStyle() != null) {
+            cell.setCellStyle(columnDef.getStyle());
+        }
 
         if (columnDef.getKey() != null) {
             Object value = reportable.get(columnDef.getKey());
