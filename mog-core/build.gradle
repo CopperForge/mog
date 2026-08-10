@@ -43,10 +43,23 @@ tasks.register('largeReportBenchmark', JavaExec) {
     mainClass = 'org.copperforge.mog.benchmark.LargeReportStreamingBenchmark'
 
     def outputPath = project.findProperty('outputPath')
+    def rowsPerSheet = project.findProperty('rowsPerSheet')
+    def validateOutput = project.findProperty('validate')
+    def deleteOutput = project.findProperty('deleteOutput')
     args '--rows', project.findProperty('rows') ?: '100000',
+            '--sheetCount', project.findProperty('sheetCount') ?: '1',
             '--columns', project.findProperty('columns') ?: '10',
             '--rowWindow', project.findProperty('rowWindow') ?: '100',
             '--fetchSize', project.findProperty('fetchSize') ?: '1000'
+    if (rowsPerSheet != null && !rowsPerSheet.toString().isBlank()) {
+        args '--rowsPerSheet', rowsPerSheet.toString()
+    }
+    if (validateOutput != null && !validateOutput.toString().isBlank()) {
+        args '--validate', validateOutput.toString()
+    }
+    if (deleteOutput != null && !deleteOutput.toString().isBlank()) {
+        args '--deleteOutput', deleteOutput.toString()
+    }
     if (outputPath != null && !outputPath.toString().isBlank()) {
         args '--outputPath', outputPath.toString()
     }
