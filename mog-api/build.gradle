@@ -19,3 +19,23 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.register('apiLargeReportValidation', JavaExec) {
+    group = 'verification'
+    description = 'Runs a developer-only API lifecycle validation for a production-shaped streaming XLSX report.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.copperforge.mog.api.benchmark.ApiLargeReportValidation'
+
+    args '--totalRows', project.findProperty('totalRows') ?: '14194708',
+            '--sheetCount', project.findProperty('sheetCount') ?: '15',
+            '--columns', project.findProperty('columns') ?: '10',
+            '--rowWindow', project.findProperty('rowWindow') ?: '100',
+            '--fetchSize', project.findProperty('fetchSize') ?: '1000',
+            '--workers', project.findProperty('workers') ?: '1',
+            '--queueCapacity', project.findProperty('queueCapacity') ?: '10',
+            '--deleteOutput', project.findProperty('deleteOutput') ?: 'true',
+            '--validateZip', project.findProperty('validateZip') ?: 'true',
+            '--smallValidationRows', project.findProperty('smallValidationRows') ?: '1000',
+            '--smallValidationSheets', project.findProperty('smallValidationSheets') ?: '3'
+}
