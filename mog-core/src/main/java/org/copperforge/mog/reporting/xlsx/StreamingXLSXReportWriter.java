@@ -2,6 +2,7 @@ package org.copperforge.mog.reporting.xlsx;
 
 import java.io.FileOutputStream;
 
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.copperforge.mog.MogException;
@@ -50,6 +51,7 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
         for (ReportElement element : sheet.getElements()) {
             if ("table".equals(element.getType())) {
                 new StreamingXLSXTableWriter().workbook(workbook).sheet(xlsxSheet).styles(styleCache)
+                        .sheetFactory(this::createContinuationSheet)
                         .write(report, (Table) element);
             } else if ("spannedText".equals(element.getType())) {
                 new StreamingXLSXSpannedTextWriter().sheet(xlsxSheet).styles(styleCache).write((SpannedText) element);
@@ -57,6 +59,14 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
                 throw unsupported(report, sheet, element.getType(), "not supported in streaming mode");
             }
         }
+    }
+
+    private SXSSFSheet createContinuationSheet(String sheetName) throws MogException {
+        validateSheetName(sheetName);
+        if (workbook.getSheet(sheetName) != null) {
+            throw new MogException("XLSX streaming table overflow generated duplicate worksheet name '" + sheetName + "'");
+        }
+        return workbook.createSheet(sheetName);
     }
 
     @Override
@@ -124,7 +134,22 @@ public class StreamingXLSXReportWriter extends AbstractReportWriter {
                 if (!"table".equals(type) && !"spannedText".equals(type)) {
                     throw unsupported(report, sheet, type, "not supported in streaming mode");
                 }
+                if ("table".equals(type) && ((Table) element).getOverflow() != null
+                        && ((Table) element).getOverflow().isNewSheet()
+                        && sheet.getElements().size() != 1) {
+                    throw unsupported(report, sheet, type,
+                            "automatic overflow to continuation sheets requires the table to be the only element on the source sheet");
+                }
             }
+        }
+    }
+
+    private void validateSheetName(String sheetName) throws MogException {
+        try {
+            WorkbookUtil.validateSheetName(sheetName);
+        } catch (IllegalArgumentException e) {
+            throw new MogException("Invalid XLSX streaming continuation worksheet name '" + sheetName + "': "
+                    + e.getMessage(), e);
         }
     }
 

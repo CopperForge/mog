@@ -19,6 +19,7 @@ public class Table extends ReportElement {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
     private ReportDataSource dataSource;
     private boolean enableFilters = true;
+    private TableOverflow overflow;
 
     public List<Column> getColumns() {
         return columns;
@@ -76,10 +77,19 @@ public class Table extends ReportElement {
         this.enableFilters = enableFilters;
     }
 
+    public TableOverflow getOverflow() {
+        return overflow;
+    }
+
+    public void setOverflow(TableOverflow overflow) {
+        this.overflow = overflow;
+    }
+
     @Override
     public String toString() {
         return "Table [name=" + name + ", title=" + title + ", style=" + style + ", columns=" + columns + ", upperLeft="
-                + upperLeft + ", dataSource=" + dataSource + ", enableFilters=" + enableFilters + "]";
+                + upperLeft + ", dataSource=" + dataSource + ", enableFilters=" + enableFilters
+                + ", overflow=" + overflow + "]";
     }
 
 }

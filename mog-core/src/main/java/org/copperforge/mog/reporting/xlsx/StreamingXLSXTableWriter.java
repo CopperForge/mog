@@ -2,7 +2,9 @@ package org.copperforge.mog.reporting.xlsx;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.IllegalFormatException;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
@@ -20,6 +22,7 @@ import org.copperforge.mog.reporting.ReportDataSource;
 import org.copperforge.mog.reporting.definition.Column;
 import org.copperforge.mog.reporting.definition.Report;
 import org.copperforge.mog.reporting.element.table.Table;
+import org.copperforge.mog.reporting.element.table.TableOverflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,9 @@ public class StreamingXLSXTableWriter {
     private SXSSFWorkbook workbook;
     private SXSSFSheet sheet;
     private XLSXStyleCache styles;
+    private StreamingXLSXSheetFactory sheetFactory;
+    private String sourceSheetName;
+    private int continuationSheetNumber;
 
     public StreamingXLSXTableWriter workbook(SXSSFWorkbook workbook) {
         this.workbook = workbook;
@@ -48,6 +54,11 @@ public class StreamingXLSXTableWriter {
         return this;
     }
 
+    public StreamingXLSXTableWriter sheetFactory(StreamingXLSXSheetFactory sheetFactory) {
+        this.sheetFactory = sheetFactory;
+        return this;
+    }
+
     public void write(Report report, Table tableElement) throws MogException {
         if (log.isDebugEnabled()) {
             log.debug(String.format("Writing streaming table %s", tableElement));
@@ -60,27 +71,33 @@ public class StreamingXLSXTableWriter {
         int headerRowIndex = tableElement.getUpperLeft().getRow() - 1;
         int firstColIndex = tableElement.getUpperLeft().getCol() - 1;
         int lastColIndex = firstColIndex + columns.size() - 1;
+        sourceSheetName = sheet.getSheetName();
+        continuationSheetNumber = 1;
 
-        long maxDetailRows = maxDetailRows(tableElement);
+        long maxDetailRows = effectiveMaxDetailRows(tableElement);
         writeColumnHeaders(tableElement, headerRowIndex, columns);
 
-        long rowsWritten = 0;
+        long currentSheetRows = 0;
         MogDataSource dataSource = resolveDataSource(report, tableElement);
         if (dataSource != null) {
             ReportDataSource reportDataSource = tableElement.getDataSource();
             try (MogFetchCursor cursor = dataSource.openCursor(reportDataSource.getFilter(), report.getContext())) {
                 while (cursor.next()) {
-                    rowsWritten++;
-                    checkDetailRowLimit(report, tableElement, rowsWritten, maxDetailRows);
-                    writeRow(tableElement, headerRowIndex + (int) rowsWritten, columns, cursor.current());
+                    if (currentSheetRows >= maxDetailRows) {
+                        if (!isNewSheetOverflow(tableElement)) {
+                            checkDetailRowLimit(report, tableElement, currentSheetRows + 1, maxDetailRows);
+                        }
+                        finalizeAutofilter(tableElement, currentSheetRows, headerRowIndex, firstColIndex, lastColIndex);
+                        sheet = createContinuationSheet(tableElement, columns);
+                        currentSheetRows = 0;
+                    }
+                    currentSheetRows++;
+                    writeRow(tableElement, headerRowIndex + (int) currentSheetRows, columns, cursor.current());
                 }
             }
         }
 
-        if (tableElement.getEnableFilters()) {
-            int lastRowIndex = headerRowIndex + (int) rowsWritten;
-            sheet.setAutoFilter(new CellRangeAddress(headerRowIndex, lastRowIndex, firstColIndex, lastColIndex));
-        }
+        finalizeAutofilter(tableElement, currentSheetRows, headerRowIndex, firstColIndex, lastColIndex);
     }
 
     void validateTableInputs(Table table) throws MogException {
@@ -102,6 +119,15 @@ public class StreamingXLSXTableWriter {
             throw new MogException("XLSX streaming mode does not support table style '" + table.getStyle()
                     + "' for table '" + table.getName() + "' because formal XSSFTable styling is not available");
         }
+        TableOverflow overflow = table.getOverflow();
+        if (overflow == null || overflow.getMode() == null || overflow.getMode().isBlank()) {
+            return;
+        }
+        if (!overflow.isNewSheet()) {
+            throw new MogException("XLSX streaming table '" + table.getName()
+                    + "' has unsupported overflow mode '" + overflow.getMode() + "'");
+        }
+        formatContinuationSheetName(table, 2);
     }
 
     long maxDetailRows(Table table) throws MogException {
@@ -111,6 +137,29 @@ public class StreamingXLSXTableWriter {
                     + " exceeds XLSX worksheet row limit " + MAX_WORKSHEET_ROWS);
         }
         return MAX_WORKSHEET_ROWS - headerRow;
+    }
+
+    long effectiveMaxDetailRows(Table table) throws MogException {
+        long maxDetailRows = maxDetailRows(table);
+        TableOverflow overflow = table.getOverflow();
+        Long configured = overflow != null ? overflow.getMaxDetailRowsPerSheet() : null;
+        if (configured == null) {
+            if (isNewSheetOverflow(table) && maxDetailRows < 1) {
+                throw new MogException("XLSX streaming table '" + table.getName()
+                        + "' cannot overflow because the table placement leaves no detail rows on a worksheet");
+            }
+            return maxDetailRows;
+        }
+        if (configured < 1) {
+            throw new MogException("XLSX streaming table '" + table.getName()
+                    + "' overflow maxDetailRowsPerSheet must be >= 1");
+        }
+        if (configured > maxDetailRows) {
+            throw new MogException("XLSX streaming table '" + table.getName()
+                    + "' overflow maxDetailRowsPerSheet " + configured
+                    + " exceeds the XLSX worksheet detail row limit " + maxDetailRows);
+        }
+        return configured;
     }
 
     void checkDetailRowLimit(Report report, Table table, long rowsWritten, long maxDetailRows) throws MogException {
@@ -200,5 +249,55 @@ public class StreamingXLSXTableWriter {
         }
 
         return cell;
+    }
+
+    void finalizeAutofilter(Table tableElement, long rowsWritten, int headerRowIndex, int firstColIndex,
+            int lastColIndex) {
+        if (tableElement.getEnableFilters()) {
+            int lastRowIndex = headerRowIndex + (int) rowsWritten;
+            sheet.setAutoFilter(new CellRangeAddress(headerRowIndex, lastRowIndex, firstColIndex, lastColIndex));
+        }
+    }
+
+    SXSSFSheet createContinuationSheet(Table tableElement, List<Column> columns) throws MogException {
+        if (sheetFactory == null) {
+            throw new MogException("XLSX streaming table overflow requires a continuation sheet factory");
+        }
+        int continuationNumber = ++continuationSheetNumber;
+        String sheetName = formatContinuationSheetName(tableElement, continuationNumber);
+        SXSSFSheet continuation = sheetFactory.createContinuationSheet(sheetName);
+        SXSSFSheet previous = sheet;
+        sheet = continuation;
+        try {
+            writeColumnHeaders(tableElement, tableElement.getUpperLeft().getRow() - 1, columns);
+            return continuation;
+        } catch (MogException e) {
+            sheet = previous;
+            throw e;
+        }
+    }
+
+    String formatContinuationSheetName(Table tableElement, int continuationNumber) throws MogException {
+        TableOverflow overflow = tableElement.getOverflow();
+        String pattern = overflow != null ? overflow.getSheetNamePattern() : null;
+        if (pattern == null || pattern.isBlank()) {
+            String baseName = sourceSheetName != null ? sourceSheetName : (sheet != null ? sheet.getSheetName() : "Sheet");
+            pattern = baseName + " %d";
+        }
+        try {
+            String formatted = String.format(Locale.ROOT, pattern, continuationNumber);
+            if (formatted == null || formatted.isBlank()) {
+                throw new MogException("XLSX streaming table '" + tableElement.getName()
+                        + "' overflow sheetNamePattern produced a blank worksheet name");
+            }
+            return formatted;
+        } catch (IllegalFormatException e) {
+            throw new MogException("XLSX streaming table '" + tableElement.getName()
+                    + "' has invalid overflow sheetNamePattern '" + pattern + "': " + e.getMessage(), e);
+        }
+    }
+
+    private boolean isNewSheetOverflow(Table tableElement) {
+        return tableElement.getOverflow() != null && tableElement.getOverflow().isNewSheet();
     }
 }
