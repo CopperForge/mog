@@ -80,9 +80,9 @@ public class ApiController {
     }
 
     @PostMapping("/runs")
-    public RunResponse startRun(@Valid @RequestBody RunRequest request) throws IOException {
-        RunMetadata metadata = runService.execute(request);
-        return new RunResponse(metadata.getRunId(), metadata.getStatus().name());
+    public ResponseEntity<RunResponse> startRun(@Valid @RequestBody RunRequest request) throws IOException {
+        RunMetadata metadata = runService.submit(request);
+        return ResponseEntity.accepted().body(new RunResponse(metadata.getRunId(), metadata.getStatus().name()));
     }
 
     @GetMapping("/runs/{runId}")

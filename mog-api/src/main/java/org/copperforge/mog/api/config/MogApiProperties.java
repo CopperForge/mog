@@ -12,6 +12,7 @@ public class MogApiProperties {
     private String environment;
     private String mogHome;
     private String mogEtc;
+    private Runs runs = new Runs();
     private RunMetadataStore runMetadataStore = new RunMetadataStore();
 
     public Path getStoreDir() {
@@ -52,6 +53,14 @@ public class MogApiProperties {
 
     public void setRunMetadataStore(RunMetadataStore runMetadataStore) {
         this.runMetadataStore = runMetadataStore != null ? runMetadataStore : new RunMetadataStore();
+    }
+
+    public Runs getRuns() {
+        return runs;
+    }
+
+    public void setRuns(Runs runs) {
+        this.runs = runs != null ? runs : new Runs();
     }
 
     public Path resolvedStoreDir() {
@@ -145,6 +154,36 @@ public class MogApiProperties {
 
         public void setJdbcPassword(String jdbcPassword) {
             this.jdbcPassword = jdbcPassword;
+        }
+    }
+
+    public static class Runs {
+        private int workers = 1;
+        private int queueCapacity = 10;
+        private int shutdownTimeoutSeconds = 30;
+
+        public int getWorkers() {
+            return workers;
+        }
+
+        public void setWorkers(int workers) {
+            this.workers = workers;
+        }
+
+        public int getQueueCapacity() {
+            return queueCapacity;
+        }
+
+        public void setQueueCapacity(int queueCapacity) {
+            this.queueCapacity = queueCapacity;
+        }
+
+        public int getShutdownTimeoutSeconds() {
+            return shutdownTimeoutSeconds;
+        }
+
+        public void setShutdownTimeoutSeconds(int shutdownTimeoutSeconds) {
+            this.shutdownTimeoutSeconds = shutdownTimeoutSeconds;
         }
     }
 }

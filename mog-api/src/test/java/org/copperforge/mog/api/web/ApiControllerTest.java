@@ -77,9 +77,8 @@ class ApiControllerTest {
 
     @Test
     void startRun_passesParamsAndReturnsRunResponse() throws Exception {
-        RunMetadata metadata = RunMetadata.starting("run-123", "sales", "shared", Map.of("year", 2025), "XLSX");
-        metadata.setStatus(RunStatus.STARTED);
-        when(runService.execute(any(RunRequest.class))).thenReturn(metadata);
+        RunMetadata metadata = RunMetadata.queued("run-123", "sales", "shared", Map.of("year", 2025), "XLSX");
+        when(runService.submit(any(RunRequest.class))).thenReturn(metadata);
 
         mockMvc.perform(post("/api/runs")
                         .contentType(APPLICATION_JSON)
@@ -91,12 +90,12 @@ class ApiControllerTest {
                                   "output": { "format": "XLSX" }
                                 }
                                 """))
-                .andExpect(status().isOk())
+                .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.runId").value("run-123"))
-                .andExpect(jsonPath("$.status").value("STARTED"));
+                .andExpect(jsonPath("$.status").value("QUEUED"));
 
         ArgumentCaptor<RunRequest> requestCaptor = ArgumentCaptor.forClass(RunRequest.class);
-        verify(runService).execute(requestCaptor.capture());
+        verify(runService).submit(requestCaptor.capture());
         RunRequest request = requestCaptor.getValue();
         org.junit.jupiter.api.Assertions.assertEquals("sales", request.reportId());
         org.junit.jupiter.api.Assertions.assertEquals("shared", request.datasourceId());
@@ -106,7 +105,7 @@ class ApiControllerTest {
 
     @Test
     void startRun_badRequestIsSurfaced() throws Exception {
-        when(runService.execute(any(RunRequest.class)))
+        when(runService.submit(any(RunRequest.class)))
                 .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Broken report"));
 
         mockMvc.perform(post("/api/runs")
@@ -119,6 +118,17 @@ class ApiControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void artifactBeforeCompletionReturnsConflict() throws Exception {
+        when(runService.loadArtifact("run-123"))
+                .thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                        "Run 'run-123' has not completed"));
+
+        mockMvc.perform(get("/api/runs/run-123/artifact"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Run 'run-123' has not completed"));
     }
 
     @Test

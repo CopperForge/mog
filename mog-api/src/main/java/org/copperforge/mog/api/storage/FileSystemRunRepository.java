@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +40,17 @@ public class FileSystemRunRepository implements RunRepository {
     public void saveMetadata(RunMetadata metadata) throws IOException {
         Path runDir = createRunDirectory(metadata.getRunId());
         Path metaFile = runDir.resolve("meta.json");
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(metaFile.toFile(), metadata);
+        Path tempFile = Files.createTempFile(runDir, "meta", ".json.tmp");
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(tempFile.toFile(), metadata);
+            try {
+                Files.move(tempFile, metaFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException atomicMoveFailure) {
+                Files.move(tempFile, metaFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     @Override

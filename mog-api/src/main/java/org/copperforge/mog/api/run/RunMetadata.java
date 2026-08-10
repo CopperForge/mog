@@ -21,7 +21,7 @@ public class RunMetadata {
     private String message;
     private ArtifactMetadata artifact;
 
-    public static RunMetadata starting(String runId, String reportId, String datasourceId,
+    public static RunMetadata queued(String runId, String reportId, String datasourceId,
             Map<String, Object> params, String format) {
         RunMetadata metadata = new RunMetadata();
         metadata.setRunId(runId);
@@ -31,9 +31,21 @@ public class RunMetadata {
             metadata.setParams(new LinkedHashMap<>(params));
         }
         metadata.setFormat(format);
-        metadata.setStatus(RunStatus.STARTED);
+        metadata.setStatus(RunStatus.QUEUED);
         metadata.setStartedAt(Instant.now());
         return metadata;
+    }
+
+    public static RunMetadata starting(String runId, String reportId, String datasourceId,
+            Map<String, Object> params, String format) {
+        RunMetadata metadata = queued(runId, reportId, datasourceId, params, format);
+        metadata.setStatus(RunStatus.STARTED);
+        return metadata;
+    }
+
+    public void markRunning() {
+        this.status = RunStatus.RUNNING;
+        this.message = null;
     }
 
     public void markCompleted(ArtifactMetadata artifactMetadata) {
