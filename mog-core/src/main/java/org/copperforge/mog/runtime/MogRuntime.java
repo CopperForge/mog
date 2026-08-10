@@ -25,9 +25,13 @@ public final class MogRuntime {
     }
 
     public static Mogf loadMogf(MogConfig config) throws MogException {
-        File mogFile = new File(config.userHome() + "/.mog");
+        return loadMogf(config != null ? config.mogHome() : null);
+    }
+
+    public static Mogf loadMogf(String mogHome) throws MogException {
+        File mogFile = new File(System.getProperty("user.home") + "/.mog");
         if (!mogFile.isFile()) {
-            mogFile = new File(config.mogHome() + "/.mog");
+            mogFile = new File(mogHome + "/.mog");
             if (!mogFile.isFile()) {
                 return new Mogf();
             }

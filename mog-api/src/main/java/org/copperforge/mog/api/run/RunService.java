@@ -314,13 +314,15 @@ public class RunService {
         }
     }
 
-    private MogContext buildContext(Path runDir, Path datasourcePath, Map<String, Object> params) {
+    private MogContext buildContext(Path runDir, Path datasourcePath, Map<String, Object> params) throws MogException {
+        String mogHome = properties.resolvedMogHome();
         return MogContext.builder()
                 .datasourcesPath(datasourcePath != null ? datasourcePath.toAbsolutePath().toString() : null)
                 .environment(properties.resolvedEnvironment())
                 .workingDirectory(runDir.toAbsolutePath().toString())
-                .mogHome(properties.resolvedMogHome())
+                .mogHome(mogHome)
                 .mogEtc(properties.resolvedMogEtc())
+                .mogf(MogRuntime.loadMogf(mogHome))
                 .variables(params)
                 .build();
     }

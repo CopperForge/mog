@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -20,6 +23,7 @@ import org.copperforge.mog.api.storage.FileSystemDslRepository;
 import org.copperforge.mog.api.storage.FileSystemRunRepository;
 import org.copperforge.mog.api.storage.FileSystemStorageLayout;
 import org.copperforge.mog.contract.run.RunRequest;
+import org.copperforge.mog.security.MogAESEncryptorDecryptor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.http.HttpStatus;
@@ -31,6 +35,119 @@ class RunServiceTest {
 
     @TempDir
     Path tempDir;
+
+    @Test
+    void execute_loadsMogfFromResolvedMogHomeForJdbcPasswordDecryption() throws Exception {
+        String originalUserHome = System.getProperty("user.home");
+        Path isolatedUserHome = tempDir.resolve("isolated-user-home");
+        Files.createDirectories(isolatedUserHome);
+        System.setProperty("user.home", isolatedUserHome.toString());
+        try {
+            ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+            MogApiProperties properties = new MogApiProperties();
+            properties.setStoreDir(tempDir.resolve("store-jdbc"));
+            properties.setMogHome(tempDir.toString());
+            properties.setMogEtc(tempDir.resolve("etc").toString());
+
+            String encryptionPassword = "test-api-key";
+            String jdbcPassword = "test-db-password";
+            Files.writeString(tempDir.resolve(".mog"),
+                    "{ \"encryptionPassword\": \"" + encryptionPassword + "\" }");
+            String encryptedJdbcPassword = new MogAESEncryptorDecryptor(encryptionPassword).encrypt(jdbcPassword);
+
+            String dbName = "api_mogf_" + java.util.UUID.randomUUID().toString().replace("-", "");
+            String jdbcUrl = "jdbc:h2:mem:" + dbName + ";DB_CLOSE_DELAY=-1";
+            try (Connection connection = DriverManager.getConnection(jdbcUrl, "sa", jdbcPassword);
+                    Statement statement = connection.createStatement()) {
+                statement.execute("create table messages (message varchar(64))");
+                statement.execute("insert into messages values ('JDBC-OK')");
+            }
+
+            FileSystemStorageLayout layout = new FileSystemStorageLayout(properties);
+            FileSystemDslRepository dslRepository = new FileSystemDslRepository(objectMapper, layout);
+            FileSystemRunRepository runRepository = new FileSystemRunRepository(layout, objectMapper);
+            RunService runService = new RunService(dslRepository, runRepository, properties, objectMapper);
+
+            dslRepository.saveReport(objectMapper.readTree("""
+                    {
+                      "id": "jdbc-report",
+                      "name": "jdbc-report",
+                      "type": "xlsx",
+                      "sheets": [
+                        {
+                          "name": "Sheet1",
+                          "title": "Sheet1",
+                          "elements": [
+                            {
+                              "type": "table",
+                              "name": "t_messages",
+                              "upperLeft": { "row": 1, "col": 1 },
+                              "columns": [
+                                { "title": "Message", "key": "message" }
+                              ],
+                              "dataSource": {
+                                "name": "jdbc",
+                                "filter": { "type": "query", "query": "select message from messages" }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """));
+            dslRepository.saveDatasource(objectMapper.readTree("""
+                    {
+                      "id": "jdbc-datasource",
+                      "datasources": [
+                        {
+                          "name": "jdbc",
+                          "type": "jdbc",
+                          "jdbcClass": "org.h2.Driver",
+                          "url": "%s",
+                          "user": "sa",
+                          "password": "%s"
+                        }
+                      ]
+                    }
+                    """.formatted(jdbcUrl, encryptedJdbcPassword)));
+
+            RunMetadata metadata = runService.execute(new RunRequest("jdbc-report", "jdbc-datasource", Map.of(),
+                    new RunRequest.RunOutput("xlsx")));
+
+            assertEquals(RunStatus.COMPLETED, metadata.getStatus());
+            Path artifact = runRepository.runDirectory(metadata.getRunId()).resolve(metadata.getArtifact().getFileName());
+            try (XSSFWorkbook workbook = new XSSFWorkbook(artifact.toFile())) {
+                assertEquals("Message", workbook.getSheet("Sheet1").getRow(0).getCell(0).getStringCellValue());
+                assertEquals("JDBC-OK", workbook.getSheet("Sheet1").getRow(1).getCell(0).getStringCellValue());
+            }
+            runService.shutdown();
+        } finally {
+            System.setProperty("user.home", originalUserHome);
+        }
+    }
+
+    @Test
+    void execute_missingMogfUsesEmptyMogfAndNonJdbcReportStillCompletes() throws Exception {
+        String originalUserHome = System.getProperty("user.home");
+        Path isolatedUserHome = tempDir.resolve("missing-mogf-user-home");
+        Path isolatedMogHome = tempDir.resolve("missing-mogf-home");
+        Files.createDirectories(isolatedUserHome);
+        Files.createDirectories(isolatedMogHome);
+        System.setProperty("user.home", isolatedUserHome.toString());
+        try {
+            TestFixture fixture = fixture(1, 10, isolatedMogHome);
+            RunService runService = new RunService(fixture.dslRepository, fixture.runRepository, fixture.properties,
+                    fixture.objectMapper);
+
+            RunMetadata metadata = runService.execute(fixture.request());
+
+            assertEquals(RunStatus.COMPLETED, metadata.getStatus());
+            assertNotNull(metadata.getArtifact());
+            runService.shutdown();
+        } finally {
+            System.setProperty("user.home", originalUserHome);
+        }
+    }
 
     @Test
     void execute_usesRunParamsForInlineDatasource_andKeepsInlineDatasourcePrecedence() throws Exception {
@@ -273,10 +390,14 @@ class RunServiceTest {
     }
 
     private TestFixture fixture(int workers, int queueCapacity) throws Exception {
+        return fixture(workers, queueCapacity, tempDir);
+    }
+
+    private TestFixture fixture(int workers, int queueCapacity, Path mogHome) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
         MogApiProperties properties = new MogApiProperties();
         properties.setStoreDir(tempDir.resolve("store-" + java.util.UUID.randomUUID()));
-        properties.setMogHome(tempDir.toString());
+        properties.setMogHome(mogHome.toString());
         properties.setMogEtc(tempDir.resolve("etc").toString());
         properties.getRuns().setWorkers(workers);
         properties.getRuns().setQueueCapacity(queueCapacity);
