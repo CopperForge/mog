@@ -23,10 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.copperforge.mog.MogException;
+import org.copperforge.mog.config.Mogf;
 import org.copperforge.mog.data.filter.MogDataFilter;
 import org.copperforge.mog.data.filter.MogQueryFilter;
 import org.copperforge.mog.data.filter.MogQueryParameter;
 import org.copperforge.mog.runtime.MogContext;
+import org.copperforge.mog.security.MogAESEncryptorDecryptor;
+import org.copperforge.mog.var.MogVariableService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -236,6 +239,104 @@ class MogJdbcDataSourceCursorTest {
         assertEquals("alpha", rows.get(0).get("name"));
     }
 
+    @Test
+    void openCursor_substitutesUrlBeforeConnectionCreation() throws Exception {
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-env-url;DB_CLOSE_DELAY=-1");
+        ProxyDriver.recordings.put(recording.proxyUrl(), recording);
+        MogJdbcDataSource dataSource = h2DataSource("${TEST_JDBC_URL}");
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"),
+                context(Map.of("TEST_JDBC_URL", recording.proxyUrl())))) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals(recording.proxyUrl(), recording.connectionUrl);
+    }
+
+    @Test
+    void openCursor_substitutesUsernameBeforeConnectionCreation() throws Exception {
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-env-user;DB_CLOSE_DELAY=-1");
+        MogJdbcDataSource dataSource = proxyDataSource(recording);
+        dataSource.setUser("${TEST_JDBC_USERNAME}");
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"),
+                context(Map.of("TEST_JDBC_USERNAME", "test-user")))) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals("test-user", recording.connectionProperties.getProperty("user"));
+    }
+
+    @Test
+    void openCursor_substitutesEncryptedPasswordBeforeDecrypting() throws Exception {
+        String encryptionPassword = "test-mog-key";
+        String jdbcPassword = "test-db-password";
+        String encryptedPassword = new MogAESEncryptorDecryptor(encryptionPassword).encrypt(jdbcPassword);
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-env-password;DB_CLOSE_DELAY=-1");
+        MogJdbcDataSource dataSource = proxyDataSource(recording);
+        dataSource.setPassword("${TEST_JDBC_PASSWORD}");
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"),
+                context(mogf(encryptionPassword), Map.of("TEST_JDBC_PASSWORD", encryptedPassword)))) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals(jdbcPassword, recording.connectionProperties.getProperty("password"));
+    }
+
+    @Test
+    void openCursor_keepsLiteralEncryptedPasswordCompatible() throws Exception {
+        String encryptionPassword = "test-mog-key";
+        String jdbcPassword = "literal-test-db-password";
+        String encryptedPassword = new MogAESEncryptorDecryptor(encryptionPassword).encrypt(jdbcPassword);
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-literal-password;DB_CLOSE_DELAY=-1");
+        MogJdbcDataSource dataSource = proxyDataSource(recording);
+        dataSource.setPassword(encryptedPassword);
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"),
+                context(mogf(encryptionPassword), Map.of()))) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals(jdbcPassword, recording.connectionProperties.getProperty("password"));
+    }
+
+    @Test
+    void envsubst_preservesLegalBase64CharactersInPasswordValue() {
+        String encryptedLikeValue = "U2FsdGVkX1+Abc/Def==";
+
+        String resolved = new MogVariableService(context(Map.of("TEST_JDBC_PASSWORD", encryptedLikeValue)))
+                .envsubst("${TEST_JDBC_PASSWORD}");
+
+        assertEquals(encryptedLikeValue, resolved);
+    }
+
+    @Test
+    void openCursor_nullPasswordDoesNotRequireEncryptionKey() throws Exception {
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-null-password;DB_CLOSE_DELAY=-1");
+        MogJdbcDataSource dataSource = proxyDataSource(recording);
+        dataSource.setPassword(null);
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"), context())) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals("", recording.connectionProperties.getProperty("password"));
+    }
+
+    @Test
+    void openCursor_blankPasswordDoesNotRequireEncryptionKey() throws Exception {
+        Recording recording = new Recording("jdbc:h2:mem:mog-cursor-blank-password;DB_CLOSE_DELAY=-1");
+        MogJdbcDataSource dataSource = proxyDataSource(recording);
+        dataSource.setPassword("   ");
+
+        try (MogFetchCursor cursor = dataSource.openCursor(new MogQueryFilter("select 1 as id"), context())) {
+            assertTrue(cursor.next());
+        }
+
+        assertEquals("", recording.connectionProperties.getProperty("password"));
+    }
+
     private MogJdbcDataSource h2DataSource(String url) {
         MogJdbcDataSource dataSource = new MogJdbcDataSource();
         dataSource.setType("jdbc");
@@ -254,8 +355,27 @@ class MogJdbcDataSourceCursorTest {
         return MogContext.builder().build();
     }
 
+    private MogContext context(Map<String, ?> variables) {
+        return context(null, variables);
+    }
+
+    private MogContext context(Mogf mogf, Map<String, ?> variables) {
+        return MogContext.builder()
+                .mogf(mogf)
+                .variables(variables)
+                .build();
+    }
+
+    private Mogf mogf(String encryptionPassword) {
+        Mogf mogf = new Mogf();
+        mogf.setEncryptionPassword(encryptionPassword);
+        return mogf;
+    }
+
     private static final class Recording {
         private final String delegateUrl;
+        private String connectionUrl;
+        private Properties connectionProperties;
         private String preparedSql;
         private int resultSetType;
         private int resultSetConcurrency;
@@ -298,6 +418,11 @@ class MogJdbcDataSourceCursorTest {
             Recording recording = recordings.get(url);
             if (recording == null) {
                 throw new SQLException("No recording for " + url);
+            }
+            recording.connectionUrl = url;
+            recording.connectionProperties = new Properties();
+            if (info != null) {
+                recording.connectionProperties.putAll(info);
             }
             Connection delegate = DriverManager.getConnection(recording.delegateUrl, info);
             return proxy(Connection.class, (proxy, method, args) -> {

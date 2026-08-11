@@ -186,12 +186,14 @@ public class MogJdbcDataSource extends MogDataSource {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
-            String url = new MogVariableService(context).envsubst(getUrl()); // url
-            String username = getUser(); // credentials
+            MogVariableService variables = new MogVariableService(context);
+            String url = variables.envsubst(getUrl()); // url
+            String username = variables.envsubst(getUser()); // credentials
             String password = "";
-            if (getPassword() != null && !getPassword().isBlank()) {
+            String configuredPassword = variables.envsubst(getPassword());
+            if (configuredPassword != null && !configuredPassword.isBlank()) {
                 MogSecurityService securityService = new MogSecurityService(context, null);
-                password = securityService.decryptor().decrypt(getPassword());
+                password = securityService.decryptor().decrypt(configuredPassword);
             }
             String query = queryFilter.getQuery(); // query to be run
             if (getJdbcClass() != null && !getJdbcClass().isEmpty())
